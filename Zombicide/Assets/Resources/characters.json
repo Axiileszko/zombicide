@@ -1,0 +1,53 @@
+{
+    "characters": [
+      {
+        "name": "Wanda",
+        "image": "wanda"
+      },
+      {
+        "name": "Amy",
+        "image": "amy"
+      },
+      {
+        "name": "Doug",
+        "image": "doug"
+      },
+      {
+        "name": "Elle",
+        "image": "elle"
+      },
+      {
+        "name": "Josh",
+        "image": "josh"
+      },
+      {
+        "name": "Ned",
+        "image": "ned"
+      },
+      {
+        "name": "Ostara",
+        "image": "ostara"
+      },
+      {
+        "name": "Bunny G",
+        "image": "bunnyg"
+      },
+      {
+        "name": "Lili",
+        "image": "lili"
+      },
+      {
+        "name": "Lou",
+        "image": "lou"
+      },
+      {
+        "name": "Tiger Sam",
+        "image": "tigersam"
+      },
+      {
+        "name": "Odin",
+        "image": "odin"
+      }
+    ]
+  }
+  
