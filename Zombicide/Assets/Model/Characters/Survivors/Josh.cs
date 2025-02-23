@@ -6,7 +6,20 @@ using System.Threading.Tasks;
 
 namespace Model.Characters.Survivors
 {
-    internal class Josh
+    public class Josh:Survivor
     {
+        private static Josh instance;
+        public static Josh Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new Josh("Josh", false);
+                }
+                return instance;
+            }
+        }
+        private Josh(string name, bool isKid) : base(name, isKid) { }
     }
 }

@@ -25,7 +25,7 @@ namespace Model.Characters.Survivors
             this.isKid = isKid;
             Reset();
         }
-        public abstract void Attack(Character target, int damage);//még változhat
+        //public abstract void Attack(Character target, int damage);//még változhat
         public void PickUpObjective() 
         { 
             CurrentTile.PickUpObjective();//lehet kezdünk még valamit az object refel amit visszaadna

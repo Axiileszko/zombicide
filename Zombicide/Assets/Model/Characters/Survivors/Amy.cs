@@ -22,9 +22,5 @@ namespace Model.Characters.Survivors
             }
         }
         private Amy(string name, bool isKid):base(name, isKid){ }
-        public override void Attack(Character target, int damage)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

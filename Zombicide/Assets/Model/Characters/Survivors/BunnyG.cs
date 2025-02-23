@@ -6,7 +6,20 @@ using System.Threading.Tasks;
 
 namespace Model.Characters.Survivors
 {
-    internal class BunnyG
+    public class BunnyG:Survivor
     {
+        private static BunnyG instance;
+        public static BunnyG Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new BunnyG("BunnyG", true);
+                }
+                return instance;
+            }
+        }
+        private BunnyG(string name, bool isKid) : base(name, isKid) { }
     }
 }

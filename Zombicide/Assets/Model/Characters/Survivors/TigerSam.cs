@@ -6,7 +6,20 @@ using System.Threading.Tasks;
 
 namespace Model.Characters.Survivors
 {
-    internal class TigerSam
+    public class TigerSam:Survivor
     {
+        private static TigerSam instance;
+        public static TigerSam Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new TigerSam("TigerSam", true);
+                }
+                return instance;
+            }
+        }
+        private TigerSam(string name, bool isKid) : base(name, isKid) { }
     }
 }
