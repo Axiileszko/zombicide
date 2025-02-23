@@ -6,51 +6,55 @@ using Network;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using Unity.Netcode;
 
 public class MenuController : MonoBehaviour
 {
-    public GameObject mainMenuCanvas;
-    public GameObject hostGameCanvas;
-    public GameObject joinGameCanvas;
+    [SerializeField] private GameObject mainMenuCanvas;
+    [SerializeField] private GameObject hostGameCanvas;
+    [SerializeField] private GameObject joinGameCanvas;
+    [SerializeField] private GameObject lobbyCanvas;
 
-    public TMP_Dropdown mapDropdown;
-    public Image mapImage;
-    public TMP_Text mapObjectives;
-    public TMP_Text mapDifficulty;
-    public TMP_Text mapRules;
-    public TMP_Dropdown characterDropdown;
-    public Image characterImage;
-    public TMP_Dropdown playerCount;
+    [SerializeField] private TMP_Dropdown mapDropdown;
+    [SerializeField] private Image mapImage;
+    [SerializeField] private TMP_Text mapObjectives;
+    [SerializeField] private TMP_Text mapDifficulty;
+    [SerializeField] private TMP_Text mapRules;
+    [SerializeField] private TMP_Dropdown characterDropdown;
+    [SerializeField] private Image characterImage;
+    [SerializeField] private TMP_Dropdown playerCount;
     private List<MapData> maps;
     private List<CharacterData> characters;
 
 
-    public TMP_InputField codeInputField;
-    public TMP_Text errorText;
-    public TMP_Text characterLabel;
-    public Button codeButton;
-    public Image characterImageForClient;
-    public TMP_Dropdown characterDropdownForClient;
-    public Button joinButton;
-    private List<string> availableCharacters = new List<string>(); // Ezt a host adja meg majd!
-    private string roomCode;
+    [SerializeField] private TMP_InputField codeInputField;
+    [SerializeField] private TMP_Text characterLabel;
+    [SerializeField] private Button codeButton;
+    [SerializeField] private Image characterImageForClient;
+    [SerializeField] private TMP_Dropdown characterDropdownForClient;
+    [SerializeField] private Button joinButton;
+    //private List<string> availableCharacters = new List<string>(); // A választható karakterek
+    //private Dictionary<ulong, string> selectedCharacters = new Dictionary<ulong, string>(); // A kiválasztott karakterek
+    //public List<string> AvailableCharacters { get { return availableCharacters; } }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public static MenuController Instance { get; private set; }
+    private void Awake()
     {
-
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Ezt akkor használd, ha a scene váltás miatt veszhet el
+        }
+        else
+        {
+            Destroy(gameObject); // Ha több példány jön létre, töröljük a másodikat
+        }
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     public void ShowHostGame()
     {
         mainMenuCanvas.SetActive(false);
         joinGameCanvas.SetActive(false);
+        lobbyCanvas.SetActive(false);
         hostGameCanvas.SetActive(true);
 
         maps = FileManager.Instance.LoadMaps();
@@ -65,19 +69,25 @@ public class MenuController : MonoBehaviour
     {
         mainMenuCanvas.SetActive(false);
         hostGameCanvas.SetActive(false);
+        lobbyCanvas.SetActive(false);
         joinGameCanvas.SetActive(true);
 
-        errorText.gameObject.SetActive(false);
         characterDropdown.gameObject.SetActive(false);
         characterLabel.gameObject.SetActive(false);
         joinButton.enabled = false;
-
-        NetworkManagerController.Instance.ConnectClient();
     }
     public void ShowMainMenu()
     {
         mainMenuCanvas.SetActive(true);
         hostGameCanvas.SetActive(false);
+        lobbyCanvas.SetActive(false);
+        joinGameCanvas.SetActive(false);
+    }
+    public void ShowLobbyMenu()
+    {
+        mainMenuCanvas.SetActive(false);
+        hostGameCanvas.SetActive(false);
+        lobbyCanvas.SetActive(true);
         joinGameCanvas.SetActive(false);
     }
     public void Quit()
@@ -108,7 +118,18 @@ public class MenuController : MonoBehaviour
         mapDifficulty.text = maps[index].difficulty;
         mapRules.text = maps[index].rules;
     }
+    public void UpdateCharacterDropdown(string[] characters)
+    {
+        characterLabel.gameObject.SetActive(true);
+        joinButton.enabled = true;
+        characterDropdownForClient.ClearOptions();
+        List<string> characterNames = new List<string>(characters);
+        characterDropdownForClient.gameObject.SetActive(true);
+        characterDropdownForClient.AddOptions(characterNames);
+        characterDropdownForClient.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdownForClient.value); });
 
+        UpdateCharacterDetails(0);
+    }
     void PopulateCharacterDropdown()
     {
         characterDropdown.ClearOptions();
@@ -131,6 +152,7 @@ public class MenuController : MonoBehaviour
             characterImage.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
         else
             characterImageForClient.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
+        //probléma: ez a characters lista üres a kliensnek
     }
     void PopulatePlayerCountDropdown()
     {
@@ -144,17 +166,6 @@ public class MenuController : MonoBehaviour
 
         playerCount.AddOptions(options);
     }
-    void PopulateCharacterDropdownForClient()
-    {
-        List<string> availableCharacters = NetworkManagerController.Instance.AvailableCharacters;
-
-        characterDropdown.ClearOptions();
-        characterDropdown.AddOptions(availableCharacters);
-        characterDropdown.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdown.value); });
-
-        UpdateCharacterDetails(0);
-    }
-
     public int GetSelectedPlayerCount()
     {
         return playerCount.value + 2;
@@ -165,43 +176,20 @@ public class MenuController : MonoBehaviour
         string selectedMap = maps[mapDropdown.value].name;
         string selectedCharacter = characters[characterDropdown.value].name;
 
-        Debug.Log($"Host létrehozva! Pálya: {selectedMap}, Játékosok száma: {playerCount}, Karakter: {selectedCharacter}");
-        List<string> avaliableCharacters=characters.Where(x => x.name != selectedCharacter).Select(x=>x.name).ToList();
-        NetworkManagerController.Instance.StartHost(playerCount,avaliableCharacters);
+        List<string> availableCharacters = characters.Select(x => x.name).ToList();
+        availableCharacters.Remove(selectedCharacter);
+        // A host karakterét eltároljuk
+        //selectedCharacters[NetworkManager.Singleton.LocalClientId] = selectedCharacter;
 
-        // Megjelenítjük a csatlakozási kódot az UI-n (ha lesz rá UI elem)
-        Debug.Log("Csatlakozási kód: " + NetworkManagerController.Instance.GetSessionCode());
-    }
-    public void OnCodeButtonPressed()
-    {
-        if (!NetworkManagerController.Instance.CheckCode(codeInputField.text,out string error))
-        {
-            errorText.gameObject.SetActive(true);
-            errorText.text = error;
-            return;
-        }
-        errorText.gameObject.SetActive(false);
-        characterDropdown.gameObject.SetActive(true);
-        characterLabel.gameObject.SetActive(true);
-        joinButton.enabled = true;
+        NetworkManagerController.Instance.StartHost(playerCount, availableCharacters);
 
-        PopulateCharacterDropdownForClient();
+        //Debug.Log($"Host létrehozva! Pálya: {selectedMap}, Játékosok száma: {playerCount}, Karakter: {selectedCharacter}");
+        ShowLobbyMenu();
     }
     public void OnJoinButtonPressed()
     {
         string selectedCharacter = characterDropdown.options[characterDropdown.value].text;
-
-        if (!NetworkManagerController.Instance.SelectCharacter(selectedCharacter))
-        {
-            errorText.gameObject.SetActive(true);
-            errorText.text = "Ez a karakter már foglalt!";
-            return;
-        }
-
-        // Ha sikeres, csatlakozunk a váróterembe
-        NetworkManagerController.Instance.JoinGame(selectedCharacter);
-
-        //elküldjük a váróterembe
+        NetworkManagerController.Instance.SelectCharacterServerRpc(NetworkManager.Singleton.LocalClientId, selectedCharacter);
     }
     public void OnCancelButtonPressed()
     {

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model
+namespace Model.Characters.Survivors
 {
-    public enum WeaponType
+    internal class Elle
     {
-        BOMB,MELEE,RANGE,MELLEANDRANGE
     }
 }

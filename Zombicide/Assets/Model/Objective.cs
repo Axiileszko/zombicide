@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Model
 {
-    public enum WeaponType
+    public class Objective
     {
-        BOMB,MELEE,RANGE,MELLEANDRANGE
     }
 }

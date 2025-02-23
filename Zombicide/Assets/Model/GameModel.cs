@@ -1,9 +1,281 @@
+using Persistence;
+using Model.Characters.Survivors;
+using Model.Characters.Zombies;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Tilemaps;
+using static UnityEngine.Rendering.DebugUI;
+using Model.Board;
 
 namespace Model
 {
     public class GameModel
     {
-    
+        private Board.Board board;
+        private List<Survivor> survivors = new List<Survivor>();
+        private List<Zombie> zombies = new List<Zombie>();
+        private List<Item> items = new List<Item>();
+        private List<PimpWeapon> pimpWeapons = new List<PimpWeapon>();
+        private Survivor currentPlayer;
+        private List<Survivor> playerOrder = new List<Survivor>();
+        private MapTile FirstSpawn=null;
+        private List<MapTile> ZSpawns=new List<MapTile>();
+        private MapTile StartTile=null;
+        private int dangerLevel;
+        private bool hasAbomination;
+
+        private System.Random random=new System.Random();
+
+        private MapLoader mapLoader;
+
+        public Board.Board Board { get { return board; } }
+        public List<int> SurvivorLocations {  get 
+            {
+                List<int> locations = new List<int>();
+                foreach (var item in survivors)
+                {
+                    locations.Add(item.CurrentTile.Id);
+                }
+                return locations;
+            } 
+        }
+
+        public GameModel(string path)
+        {
+            mapLoader=new MapLoader(path);
+        }
+        public GameModel(MapLoader mapLoader)
+        {
+            this.mapLoader = mapLoader;
+        }
+
+        public void StartGame(List<string> survivors, int mapID)
+        {
+            hasAbomination = false;
+            dangerLevel = 0;
+            this.survivors = SpawnSurvivors(survivors);
+            LoadGame(mapID);
+            FindSpawns();
+            MovePlayersToSpawn();
+            DecidePlayerOrder();
+            GenerateItems();
+        }
+        public void StartRound()
+        {
+            //jatekosok itt jonnek
+            ClearNoiseCounters();
+            SpawnZombies();
+            MoveZombies();
+            ShiftPlayerOrder();
+        }
+
+        private void ClearNoiseCounters()
+        {
+            foreach (var item in board.Tiles)
+            {
+                item.NoiseCounter = 0;
+            }
+        }
+        private void MoveZombies()
+        {
+            foreach (var item in zombies)
+            {
+                item.Move();
+            }
+        }
+        private void MovePlayersToSpawn()
+        {
+            foreach (var item in survivors)
+            {
+                item.MoveTo(StartTile);
+            }
+        }
+        private void GenerateItems()
+        {
+            items = ItemFactory.CreateItems();
+            ItemFactory.CreatePimpWeapons();
+        }
+        public MapTile FindNextStepToNoisiest(MapTile start)
+        {
+            //Megkeressük a leghangosabb mezõt
+            MapTile target = board.Tiles.OrderByDescending(t => t.NoiseCounter).FirstOrDefault();
+            if (target == null || target == start) return null;
+
+            //Dijkstra algoritmus
+            Queue<MapTile> queue = new Queue<MapTile>();
+            Dictionary<MapTile, MapTile> cameFrom = new Dictionary<MapTile, MapTile>(); // Honnan jöttünk egy mezõre
+            HashSet<MapTile> visited = new HashSet<MapTile>(); // Már bejárt mezõk
+
+            queue.Enqueue(start);
+            visited.Add(start);
+            cameFrom[start] = null;
+
+            while (queue.Count > 0)
+            {
+                MapTile current = queue.Dequeue();
+
+                if (current == target) break; // Megtaláltuk a célt
+
+                foreach (var connection in current.Neighbours)
+                {
+                    MapTile neighbor = connection.Destination;
+                    if (!visited.Contains(neighbor) && board.CanMove(current, neighbor))
+                    {
+                        queue.Enqueue(neighbor);
+                        visited.Add(neighbor);
+                        cameFrom[neighbor] = current;
+                    }
+                }
+            }
+
+            // 3. Útvonal visszafejtése: Az elsõ lépés kinyerése
+            if (!cameFrom.ContainsKey(target)) return null; // Nincs elérhetõ út
+
+            MapTile step = target;
+            while (cameFrom[step] != start) // Visszakövetjük az utat a kezdõ mezõig
+            {
+                step = cameFrom[step];
+            }
+
+            return step; // Az elsõ lépés a start mezõ szomszédja
+        }
+        public Item Search(MapTile tile)
+        {
+            int roll = random.Next(0, items.Count()+3);
+            if (roll > items.Count)
+            {
+                SpawnZombie(ZombieType.WALKER, 1, tile);
+            }
+            return items.ElementAt(roll);
+        }
+        private void SpawnZombies()
+        {
+            (ZombieType,int,int,int,int) spawn;
+            if (hasAbomination)
+            {
+                do
+                {
+                    spawn = ZombieFactory.GetSpawnOption();
+                } while (spawn.Item1!=ZombieType.ABOMINAWILD || spawn.Item1 != ZombieType.ABOMINACOP|| spawn.Item1 != ZombieType.HOBOMINATION|| spawn.Item1 != ZombieType.PATIENTZERO);
+            }
+            else
+            {
+                spawn = ZombieFactory.GetSpawnOption();
+            }
+            switch (dangerLevel)
+            {
+                case 0:
+                    SpawnZombie(spawn.Item1,spawn.Item2,FirstSpawn); break;
+                case 1:
+                    SpawnZombie(spawn.Item1, spawn.Item3, FirstSpawn); break;
+                case 2:
+                    SpawnZombie(spawn.Item1, spawn.Item4, FirstSpawn); break;
+                case 3:
+                    SpawnZombie(spawn.Item1, spawn.Item5, FirstSpawn); break;
+                default:
+                    SpawnZombie(spawn.Item1, spawn.Item5, FirstSpawn); break;
+            }
+            foreach (var item in ZSpawns)
+            {
+                if (hasAbomination)
+                {
+                    do
+                    {
+                        spawn = ZombieFactory.GetSpawnOption();
+                    } while (spawn.Item1 != ZombieType.ABOMINAWILD || spawn.Item1 != ZombieType.ABOMINACOP || spawn.Item1 != ZombieType.HOBOMINATION || spawn.Item1 != ZombieType.PATIENTZERO);
+                }
+                else
+                {
+                    spawn = ZombieFactory.GetSpawnOption();
+                }
+                switch (dangerLevel)
+                {
+                    case 0:
+                        SpawnZombie(spawn.Item1, spawn.Item2, item); break;
+                    case 1:
+                        SpawnZombie(spawn.Item1, spawn.Item3, item); break;
+                    case 2:
+                        SpawnZombie(spawn.Item1, spawn.Item4, item); break;
+                    case 3:
+                        SpawnZombie(spawn.Item1, spawn.Item5, item); break;
+                    default:
+                        SpawnZombie(spawn.Item1, spawn.Item5, item); break;
+                }
+            }
+        }
+        private void SpawnZombie(ZombieType type, int amount, MapTile tile)
+        {
+            if (type == ZombieType.ABOMINAWILD || type == ZombieType.ABOMINACOP || type== ZombieType.HOBOMINATION || type ==ZombieType.PATIENTZERO)
+            {
+                hasAbomination = true;
+            }
+            for (int i = 0; i < amount; i++)
+            {
+                Zombie zombie=ZombieFactory.CreateZombie(type);
+                zombie.SetReference(this);
+                zombie.MoveTo(tile);
+                zombies.Add(zombie);
+            }
+        }
+
+        private void FindSpawns()
+        {
+            foreach (var item in board.Tiles)
+            {
+                if (item.SpawnType==ZombieSpawnType.FIRST)
+                {
+                    FirstSpawn = item;
+                }
+                else if (item.SpawnType==ZombieSpawnType.RED || item.SpawnType == ZombieSpawnType.GREEN|| item.SpawnType == ZombieSpawnType.BLUE)
+                {
+                    ZSpawns.Add(item);
+                }
+                else if (item.IsStart)
+                {
+                    StartTile = item;
+                }
+            }
+        }
+
+        private List<Survivor> SpawnSurvivors(List<string> survivors)
+        {
+            List<Survivor> sList= new List<Survivor>();
+            foreach (string s in survivors)
+            {
+                Survivor survivor=SurvivorFactory.CreateSurvivor(s);
+                survivor.SetReference(this);
+                //Weapon.GiveGenericWeapon(); kezdo fegyver a tulelonek
+                sList.Add(survivor);
+            }
+            ResetSurvivors(sList);
+            return sList;
+        }
+
+        private void ResetSurvivors(List<Survivor> sList)
+        {
+            foreach (var survivor in sList)
+            {
+                survivor.Reset();
+            }
+        }
+
+        private void LoadGame(int number)
+        {
+            board=mapLoader.LoadMap(number);
+        }
+        private void DecidePlayerOrder()
+        {
+            playerOrder=survivors.OrderBy(x=>random.Next()).ToList();
+            currentPlayer = playerOrder[0];
+        }
+        private void ShiftPlayerOrder()
+        {
+            var starter = playerOrder[0];
+            playerOrder.RemoveAt(0);
+            playerOrder.Add(starter);
+        }
+
     }
 }

@@ -1,0 +1,69 @@
+﻿using Model.Board;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static UnityEditor.Progress;
+
+namespace Model.Characters.Zombies
+{
+    public abstract class Zombie:Character
+    {
+        public void Move()
+        {
+            Dictionary<MapTile, int> priority = new Dictionary<MapTile, int>();
+            //Latas
+            foreach (var item in CurrentTile.Neighbours)
+            {
+                priority.Add(item.Destination, 1);
+
+                if (CurrentTile.Type==Board.TileType.STREET)
+                {
+                    Street street = model.Board.GetStreetByTiles(CurrentTile.Id,item.Destination.Id);
+                    if (street != null)
+                    {
+                        int survivorsSeen = LookUpStreet(street);
+                        priority[item.Destination] += survivorsSeen;
+                    }
+                }
+                else
+                {
+                    int seen = 0;
+                    foreach (var location in model.SurvivorLocations)
+                    {
+                        if (location == item.Destination.Id && item.IsDoorOpen)
+                            seen++;
+                    }
+                    priority[item.Destination] += seen;
+                }
+            }
+            //Hallas
+            MapTile noisiest = model.FindNextStepToNoisiest(CurrentTile);
+            if (noisiest != null)
+            {
+                priority[noisiest] += 1;
+            }
+            var destination = priority.First(x => x.Value == priority.Values.Max());
+            MoveTo(destination.Key);
+        }
+        private int LookUpStreet(Street street)
+        {
+            int seen = 0;
+            foreach (var tile in street.Tiles)
+            {
+                foreach (var location in model.SurvivorLocations)
+                {
+                    if(location==tile)
+                        seen++;
+                }
+            }
+            return seen;
+        }
+
+        public void Attack()
+        {
+            
+        }
+    }
+}

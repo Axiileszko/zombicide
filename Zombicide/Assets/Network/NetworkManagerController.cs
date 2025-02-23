@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Persistence;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,12 +11,9 @@ namespace Network
 {
     public class NetworkManagerController:NetworkBehaviour
     {
-        public static NetworkManagerController Instance { get; private set; }
-
-        private string sessionCode;
-        private int maxPlayers;
         private List<string> availableCharacters = new List<string>();
-        public List<string> AvailableCharacters {  get { return availableCharacters; } }
+        private Dictionary<ulong, string> selectedCharacters = new Dictionary<ulong, string>();
+        public static NetworkManagerController Instance { get; private set; }
 
         private void Awake()
         {
@@ -32,74 +30,60 @@ namespace Network
 
         public void StartHost(int playerCount, List<string> characters)
         {
-            maxPlayers = playerCount;
-            sessionCode = GenerateSessionCode();
-            availableCharacters = characters;
-
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.StartHost();
-
-            Debug.Log($"Szerver elindítva! Csatlakozási kód: {sessionCode}");
+            availableCharacters = new List<string>(characters); // Tároljuk a karakterlistát
+            //NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
-        public void ConnectClient()
+        //public void OnClientConnected(ulong clientId)
+        //{
+        //    string characterListString = string.Join(",", availableCharacters);
+        //    SendCharacterListClientRpc(characterListString, clientId);
+        //}
+
+        // **Kliens kér egy karakterlistát a hosttól**
+        [ServerRpc(RequireOwnership = false)]
+        public void RequestCharacterListServerRpc(ulong clientId)
         {
-            if (!NetworkManager.Singleton.IsClient)
+            string characterListString=string.Join(",", availableCharacters);
+            Debug.Log(characterListString);//test
+
+            // Ha a host hívja meg ezt, visszaküldi az elérhető karaktereket a kért kliensnek
+            SendCharacterListClientRpc(characterListString, clientId);
+        }
+
+        // **A host elküldi az elérhető karaktereket egy kliensnek**
+        [ClientRpc]
+        private void SendCharacterListClientRpc(string characterList, ulong targetClientId)
+        {
+            if (NetworkManager.Singleton.LocalClientId == targetClientId)
             {
-                NetworkManager.Singleton.StartClient();
+                // Szétválasztjuk a stringet egy tömbbé
+                string[] characters = characterList.Split(',');
+
+                // A kliens frissíti a karakterválasztóját
+                MenuController.Instance.UpdateCharacterDropdown(characters);
             }
         }
-        public bool CheckCode(string inputCode, out string error)
-        {
-            if (inputCode != sessionCode)
-            {
-                error = "Érvénytelen kód!" +" "+sessionCode;
-                return false;
-            }
-
-            error = "";
-            return true;
-        }
-        private string GenerateSessionCode()
-        {
-            return UnityEngine.Random.Range(1000, 9999).ToString();
-        }
-        public void JoinGame(string selectedCharacter)
-        {
-            if (!NetworkManager.Singleton.IsClient)
-            {
-                NetworkManager.Singleton.StartClient();
-            }
-
-            Debug.Log($"Csatlakozás a szerverhez... Kiválasztott karakter: {selectedCharacter}");
-        }
-        public bool SelectCharacter(string character)
+        [ServerRpc(RequireOwnership = false)]
+        public void SelectCharacterServerRpc(ulong clientId, string character)
         {
             if (!availableCharacters.Contains(character))
             {
-                return false;
+                return; // Ha valaki már kiválasztotta ezt a karaktert, nem engedjük
             }
 
             availableCharacters.Remove(character);
-            return true;
+            selectedCharacters[clientId] = character;
+
+            // Frissítjük az összes kliens karakterválasztóját
+            string characterListString = string.Join(",", availableCharacters);
+            UpdateAllClientsCharacterDropdownClientRpc(characterListString);
         }
 
-        private void OnClientConnected(ulong clientId)
+        [ClientRpc]
+        private void UpdateAllClientsCharacterDropdownClientRpc(string characterList)
         {
-            int connectedClients = NetworkManager.Singleton.ConnectedClientsList.Count;
-
-            if (connectedClients > maxPlayers)
-            {
-                Debug.Log($"Túl sok játékos! Kiléptetjük a klienst: {clientId}");
-                NetworkManager.Singleton.DisconnectClient(clientId);
-            }
-            else
-            {
-                Debug.Log($"Új játékos csatlakozott! (ID: {clientId})");
-            }
-        }
-        public string GetSessionCode()
-        {
-            return sessionCode;
+            string[] characters = characterList.Split(',');
+            MenuController.Instance.UpdateCharacterDropdown(characters);
         }
     }
 }
