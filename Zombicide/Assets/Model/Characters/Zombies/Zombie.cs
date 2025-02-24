@@ -10,6 +10,7 @@ namespace Model.Characters.Zombies
 {
     public abstract class Zombie:Character
     {
+        public int Priority { get; protected set; }
         public void Move()
         {
             Dictionary<MapTile, int> priority = new Dictionary<MapTile, int>();

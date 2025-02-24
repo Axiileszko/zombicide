@@ -27,6 +27,13 @@ namespace Model.Characters
             }
             return false;
         }
+        public bool TakeDamage(int amount)
+        {
+            hp -= amount;
+            if (hp <= 0)
+                return true;//true ha meghalt a karakter
+            return false;
+        }
         public void SetReference(GameModel gameModel)
         {
             model = gameModel;

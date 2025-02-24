@@ -78,6 +78,30 @@ namespace Model
                 item.NoiseCounter = 0;
             }
         }
+        public List<Zombie> GetZombiesInPriorityOrderOnTile(MapTile mapTile)
+        {
+            List<Zombie> zombiesOnTile = new List<Zombie>();
+            foreach (var item in zombies)
+            {
+                if(item.CurrentTile==mapTile)
+                    zombiesOnTile.Add(item);
+            }
+            return zombiesOnTile.OrderByDescending(x => x.Priority).ToList();
+        }
+        public List<Survivor> GetSurvivorsOnTile(MapTile mapTile)
+        {
+            List<Survivor> survivorsOnTile = new List<Survivor>();
+            foreach (var item in survivors)
+            {
+                if (item.CurrentTile == mapTile)
+                    survivorsOnTile.Add(item);
+            }
+            return survivorsOnTile;
+        }
+        public void RemoveZombie(Zombie zombie)
+        {
+            zombies.Remove(zombie);
+        }
         private void MoveZombies()
         {
             foreach (var item in zombies)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.Characters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,13 @@ namespace Model.Board
                 Objective = new Objective();
             if (hasPimpW)
                 PimpWeapon = ItemFactory.GetPimpWeapon();
+        }
+        public void OpenDoor(TileConnection tileConnection,Weapon weapon)
+        {
+            if(!Neighbours.Contains(tileConnection) || !weapon.CanOpenDoors || tileConnection.IsDoorOpen) return;
+            if(weapon.IsLoud)
+                NoiseCounter++;
+            tileConnection.IsDoorOpen = true;
         }
         public void AddNeighbour(TileConnection connection)
         {
