@@ -62,12 +62,12 @@ namespace Model
             DecidePlayerOrder();
             GenerateItems();
         }
-        public void StartRound()
+        public void EndRound()
         {
             //jatekosok itt jonnek
-            ClearNoiseCounters();
             SpawnZombies();
             MoveZombies();
+            ClearNoiseCounters();
             ShiftPlayerOrder();
         }
 
@@ -120,6 +120,7 @@ namespace Model
         {
             items = ItemFactory.CreateItems();
             ItemFactory.CreatePimpWeapons();
+            ItemFactory.CreateGenericWeapons();
         }
         public MapTile FindNextStepToNoisiest(MapTile start)
         {
@@ -270,7 +271,7 @@ namespace Model
             {
                 Survivor survivor=SurvivorFactory.CreateSurvivor(s);
                 survivor.SetReference(this);
-                //Weapon.GiveGenericWeapon(); kezdo fegyver a tulelonek
+                survivor.PickGenericWeapon();
                 sList.Add(survivor);
             }
             ResetSurvivors(sList);

@@ -28,23 +28,18 @@ namespace Network
             }
         }
 
-        public void StartHost(int playerCount, List<string> characters)
+        public void StartHost(int playerCount, List<string> characters, string selectedCharacter)
         {
-            availableCharacters = new List<string>(characters); // Tároljuk a karakterlistát
-            //NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            selectedCharacters[NetworkManager.Singleton.LocalClientId] = selectedCharacter;
+            availableCharacters = new List<string>(characters);
+            MenuController.Instance.UpdateLobbyDisplay(selectedCharacters);
         }
-        //public void OnClientConnected(ulong clientId)
-        //{
-        //    string characterListString = string.Join(",", availableCharacters);
-        //    SendCharacterListClientRpc(characterListString, clientId);
-        //}
 
         // **Kliens kér egy karakterlistát a hosttól**
         [ServerRpc(RequireOwnership = false)]
         public void RequestCharacterListServerRpc(ulong clientId)
         {
             string characterListString=string.Join(",", availableCharacters);
-            Debug.Log(characterListString);//test
 
             // Ha a host hívja meg ezt, visszaküldi az elérhető karaktereket a kért kliensnek
             SendCharacterListClientRpc(characterListString, clientId);
@@ -77,6 +72,10 @@ namespace Network
             // Frissítjük az összes kliens karakterválasztóját
             string characterListString = string.Join(",", availableCharacters);
             UpdateAllClientsCharacterDropdownClientRpc(characterListString);
+
+            // Frissítjük az összes kliens lobby képernyőjét
+            string selectedCharactersString = string.Join(";", selectedCharacters.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+            UpdateLobbyClientRpc(selectedCharactersString);
         }
 
         [ClientRpc]
@@ -85,5 +84,25 @@ namespace Network
             string[] characters = characterList.Split(',');
             MenuController.Instance.UpdateCharacterDropdown(characters);
         }
+
+        [ClientRpc]
+        private void UpdateLobbyClientRpc(string selectedCharactersString)
+        {
+            Dictionary<ulong, string> selectedCharacters = new Dictionary<ulong, string>();
+
+            string[] pairs = selectedCharactersString.Split(';');
+            foreach (string pair in pairs)
+            {
+                string[] keyValue = pair.Split(':');
+                if (keyValue.Length == 2 && ulong.TryParse(keyValue[0], out ulong clientId))
+                {
+                    selectedCharacters[clientId] = keyValue[1];
+                }
+            }
+
+            // A MenuController frissíti a lobby megjelenítését
+            MenuController.Instance.UpdateLobbyDisplay(selectedCharacters);
+        }
+
     }
 }

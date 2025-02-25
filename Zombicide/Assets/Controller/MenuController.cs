@@ -33,9 +33,9 @@ public class MenuController : MonoBehaviour
     [SerializeField] private Image characterImageForClient;
     [SerializeField] private TMP_Dropdown characterDropdownForClient;
     [SerializeField] private Button joinButton;
-    //private List<string> availableCharacters = new List<string>(); // A választható karakterek
-    //private Dictionary<ulong, string> selectedCharacters = new Dictionary<ulong, string>(); // A kiválasztott karakterek
-    //public List<string> AvailableCharacters { get { return availableCharacters; } }
+
+    [SerializeField] private GameObject lobbyPlayerPrefab;
+    [SerializeField] private VerticalLayoutGroup lobbyPlayerListContainer;
 
     public static MenuController Instance { get; private set; }
     private void Awake()
@@ -72,6 +72,7 @@ public class MenuController : MonoBehaviour
         lobbyCanvas.SetActive(false);
         joinGameCanvas.SetActive(true);
 
+        characters = FileManager.Instance.LoadCharacters();
         characterDropdown.gameObject.SetActive(false);
         characterLabel.gameObject.SetActive(false);
         joinButton.enabled = false;
@@ -124,9 +125,11 @@ public class MenuController : MonoBehaviour
         joinButton.enabled = true;
         characterDropdownForClient.ClearOptions();
         List<string> characterNames = new List<string>(characters);
+        this.characters=this.characters.Where(c => characterNames.Contains(c.name)).ToList();
         characterDropdownForClient.gameObject.SetActive(true);
         characterDropdownForClient.AddOptions(characterNames);
         characterDropdownForClient.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdownForClient.value); });
+        characterImageForClient.gameObject.SetActive(true);
 
         UpdateCharacterDetails(0);
     }
@@ -152,19 +155,37 @@ public class MenuController : MonoBehaviour
             characterImage.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
         else
             characterImageForClient.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
-        //probléma: ez a characters lista üres a kliensnek
     }
     void PopulatePlayerCountDropdown()
     {
         playerCount.ClearOptions();
 
         List<string> options = new List<string>();
-        for (int i = 2; i <= 12; i++)
+        for (int i = 2; i <= 6; i++)
         {
             options.Add(i.ToString());
         }
 
         playerCount.AddOptions(options);
+    }
+    public void UpdateLobbyDisplay(Dictionary<ulong, string> selectedCharacters)
+    {
+        // Töröljük az elõzõ listát
+        foreach (Transform child in lobbyPlayerListContainer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        foreach (var entry in selectedCharacters)
+        {
+            GameObject playerEntry = Instantiate(lobbyPlayerPrefab, lobbyPlayerListContainer.transform);
+            // A TMP_Text keresése a prefabban
+            TMP_Text playerText = playerEntry.transform.Find("PlayerNameText")?.GetComponent<TMP_Text>();
+            Debug.Log("Maga a text objektum"+playerText);
+            Debug.Log("Szöveg benne:"+playerText.text);
+            Debug.Log(entry.Key+" "+entry.Value);
+            playerText.text = $"Player {entry.Key}: {entry.Value}";
+        }
     }
     public int GetSelectedPlayerCount()
     {
@@ -178,18 +199,16 @@ public class MenuController : MonoBehaviour
 
         List<string> availableCharacters = characters.Select(x => x.name).ToList();
         availableCharacters.Remove(selectedCharacter);
-        // A host karakterét eltároljuk
-        //selectedCharacters[NetworkManager.Singleton.LocalClientId] = selectedCharacter;
 
-        NetworkManagerController.Instance.StartHost(playerCount, availableCharacters);
+        NetworkManagerController.Instance.StartHost(playerCount, availableCharacters, selectedCharacter);
 
-        //Debug.Log($"Host létrehozva! Pálya: {selectedMap}, Játékosok száma: {playerCount}, Karakter: {selectedCharacter}");
         ShowLobbyMenu();
     }
     public void OnJoinButtonPressed()
     {
-        string selectedCharacter = characterDropdown.options[characterDropdown.value].text;
+        string selectedCharacter = characterDropdownForClient.options[characterDropdownForClient.value].text;
         NetworkManagerController.Instance.SelectCharacterServerRpc(NetworkManager.Singleton.LocalClientId, selectedCharacter);
+        ShowLobbyMenu();
     }
     public void OnCancelButtonPressed()
     {

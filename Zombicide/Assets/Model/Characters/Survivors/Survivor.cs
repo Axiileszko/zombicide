@@ -227,5 +227,10 @@ namespace Model.Characters.Survivors
             StartedRound=false;
             usedAction = 0;
         }
+
+        public void PickGenericWeapon()
+        {
+            rightHand = ItemFactory.GetGenericWeapon();
+        }
     }
 }

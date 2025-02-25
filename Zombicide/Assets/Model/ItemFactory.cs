@@ -7,9 +7,9 @@ namespace Model
     public class ItemFactory
     {
         private static Random rand = new Random();
-        private static List<PimpWeapon> list = new()
-            {
-                PimpWeapon.AutShotGun.Instance,
+        private static List<PimpWeapon> pimpWeapons = new()
+        {
+            PimpWeapon.AutShotGun.Instance,
                 PimpWeapon.EvilTwins.Instance,
                 PimpWeapon.GoldenAK47.Instance,
                 PimpWeapon.GoldenKukri.Instance,
@@ -18,7 +18,17 @@ namespace Model
                 PimpWeapon.MilitarySniperRifle.Instance,
                 PimpWeapon.NailBat.Instance,
                 PimpWeapon.Zantetsuken.Instance,
-            };
+        };
+
+        private static List<Weapon> genericWeapons = new()
+        {
+             new Weapon(ItemName.AXE,2,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
+             new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+        };
         public static List<Item> CreateItems()
         {
             List<Item> list = new()
@@ -48,7 +58,7 @@ namespace Model
 
         public static void CreatePimpWeapons()
         {
-            list = new()
+            pimpWeapons = new()
             {
                 PimpWeapon.AutShotGun.Instance,
                 PimpWeapon.EvilTwins.Instance,
@@ -64,10 +74,30 @@ namespace Model
 
         public static PimpWeapon GetPimpWeapon()
         {
-            int roll = rand.Next(0, list.Count);
-            var pimp= list[roll];
-            list.Remove(pimp);
+            int roll = rand.Next(0, pimpWeapons.Count);
+            var pimp= pimpWeapons[roll];
+            pimpWeapons.Remove(pimp);
             return pimp;
+        }
+
+        public static void CreateGenericWeapons()
+        {
+            genericWeapons = new()
+            {
+             new Weapon(ItemName.AXE,2,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
+             new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+            };
+        }
+        public static Weapon GetGenericWeapon()
+        {
+            int roll = rand.Next(0, genericWeapons.Count);
+            var gen = genericWeapons[roll];
+            genericWeapons.Remove(gen);
+            return gen;
         }
     }
 }
