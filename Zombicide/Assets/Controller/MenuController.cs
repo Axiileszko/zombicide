@@ -25,6 +25,7 @@ public class MenuController : MonoBehaviour
     [SerializeField] private TMP_Dropdown playerCount;
     private List<MapData> maps;
     private List<CharacterData> characters;
+    private Dictionary<ulong, GameObject> lobbyUIEntries= new Dictionary<ulong, GameObject>();
 
 
     [SerializeField] private TMP_InputField codeInputField;
@@ -170,21 +171,29 @@ public class MenuController : MonoBehaviour
     }
     public void UpdateLobbyDisplay(Dictionary<ulong, string> selectedCharacters)
     {
-        // Töröljük az elõzõ listát
-        foreach (Transform child in lobbyPlayerListContainer.transform)
-        {
-            Destroy(child.gameObject);
-        }
+        List<ulong> extistingPlayers = new List<ulong>(lobbyUIEntries.Keys);
 
         foreach (var entry in selectedCharacters)
         {
-            GameObject playerEntry = Instantiate(lobbyPlayerPrefab, lobbyPlayerListContainer.transform);
-            // A TMP_Text keresése a prefabban
-            TMP_Text playerText = playerEntry.transform.Find("PlayerNameText")?.GetComponent<TMP_Text>();
-            Debug.Log("Maga a text objektum"+playerText);
-            Debug.Log("Szöveg benne:"+playerText.text);
-            Debug.Log(entry.Key+" "+entry.Value);
-            playerText.text = $"Player {entry.Key}: {entry.Value}";
+            if (lobbyUIEntries.ContainsKey(entry.Key))
+            {
+                lobbyUIEntries[entry.Key].GetComponentInChildren<TMP_Text>().text = $"Player {entry.Key}: {entry.Value}";
+                extistingPlayers.Remove(entry.Key);
+            }
+            else
+            {
+                GameObject playerEntry = Instantiate(lobbyPlayerPrefab, lobbyPlayerListContainer.transform);
+                // A TMP_Text keresése a prefabban
+                TMP_Text playerText = playerEntry.GetComponent<TMP_Text>();
+                playerText.text = $"Player {entry.Key}: {entry.Value}";
+                playerText.enabled = true;
+                lobbyUIEntries.Add(entry.Key, playerEntry);
+            }
+        }
+        foreach(var clientID in extistingPlayers)
+        {
+            Destroy(lobbyUIEntries[clientID]);
+            lobbyUIEntries.Remove(clientID);
         }
     }
     public int GetSelectedPlayerCount()
