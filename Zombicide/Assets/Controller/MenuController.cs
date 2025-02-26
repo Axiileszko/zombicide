@@ -207,13 +207,13 @@ public class MenuController : MonoBehaviour
     public void OnOkButtonPressed()
     {
         int playerCount = GetSelectedPlayerCount();
-        string selectedMap = maps[mapDropdown.value].name;
+        int selectedMap = maps[mapDropdown.value].id;
         string selectedCharacter = characters[characterDropdown.value].name;
 
         List<string> availableCharacters = characters.Select(x => x.name).ToList();
         availableCharacters.Remove(selectedCharacter);
 
-        NetworkManagerController.Instance.StartHost(playerCount, availableCharacters, selectedCharacter);
+        NetworkManagerController.Instance.StartHost(playerCount, availableCharacters, selectedCharacter, selectedMap);
 
         ShowLobbyMenu();
     }

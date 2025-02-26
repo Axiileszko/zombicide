@@ -1,6 +1,7 @@
 {
     "maps": [
       {
+        "id": 0,
         "name": "City Blocks",
         "image": "city_blocks",
         "objectives": " Find supplies for the shelter. First, meet both these. Get an Objective token with each Survivor (see Special Rules). The game is lost if this Objective can no longer be met (if a single Survivor takes too many of them, for example). Get 3 food cards (Bag Of Rice, Canned Food, or Water), distributed in any way among Survivors. Then, reach the Exit with all Survivors. Any Survivor may escape through this Zone at the end of their Turn as long as there are no Zombies in it.",
@@ -8,6 +9,7 @@
         "rules": "There are no special rules."
       },
       {
+        "id": 1,
         "name": "Y-Zone",
         "image": "y_zone",
         "objectives": "Armed escape. Accomplish the Objectives in this order to win the game: 1– Arm the team. Provide the team with as many Epic Weapons as there are Survivors (up to the number of available Epic Weapons). 2– Reach the Exit with all Survivors. Any Survivor may escape through this Zone at the end of their Turn as long as there are no Zombies in it",

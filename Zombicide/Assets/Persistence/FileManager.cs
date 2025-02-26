@@ -9,6 +9,7 @@ namespace Persistence
     [Serializable]
     public class MapData
     {
+        public int id;
         public string name;
         public string image;
         public string objectives;

@@ -14,6 +14,7 @@ namespace Network
         private List<string> availableCharacters = new List<string>();
         private Dictionary<ulong, string> selectedCharacters = new Dictionary<ulong, string>();
         private int expectedPlayerCount;
+        public int SelectedMapID { get; private set; }
         public static NetworkManagerController Instance { get; private set; }
 
         private void Awake()
@@ -29,8 +30,9 @@ namespace Network
             }
         }
 
-        public void StartHost(int playerCount, List<string> characters, string selectedCharacter)
+        public void StartHost(int playerCount, List<string> characters, string selectedCharacter, int selectedMap)
         {
+            SelectedMapID = selectedMap;
             expectedPlayerCount = playerCount;
             selectedCharacters[NetworkManager.Singleton.LocalClientId] = selectedCharacter;
             availableCharacters = new List<string>(characters);
@@ -197,11 +199,12 @@ namespace Network
                 NetworkManager.Singleton.SceneManager.LoadScene("InGameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
             }
 
-            // GameController létrehozása és inicializálása a megfelelő pályával
-            GameObject gameControllerObject = new GameObject("GameController");
-            GameController gameController = gameControllerObject.AddComponent<GameController>();
-            gameController.Initialize();
+            //// GameController létrehozása és inicializálása a megfelelő pályával
+            //GameObject gameControllerObject = new GameObject("GameController");
+            //GameController gameController = gameControllerObject.AddComponent<GameController>();
+            //gameController.Initialize(selectedMapID);
         }
+
 
 
     }
