@@ -106,6 +106,7 @@ public class MenuController : MonoBehaviour
         {
             mapNames.Add(map.name);
         }
+        mapNames.Sort();
 
         mapDropdown.AddOptions(mapNames);
         mapDropdown.onValueChanged.AddListener(delegate { UpdateMapDetails(mapDropdown.value); });
@@ -123,14 +124,15 @@ public class MenuController : MonoBehaviour
     public void UpdateCharacterDropdown(string[] characters)
     {
         characterLabel.gameObject.SetActive(true);
+        characterImageForClient.gameObject.SetActive(true);
         joinButton.enabled = true;
         characterDropdownForClient.ClearOptions();
         List<string> characterNames = new List<string>(characters);
+        characterNames.Sort();
         this.characters=this.characters.Where(c => characterNames.Contains(c.name)).ToList();
         characterDropdownForClient.gameObject.SetActive(true);
         characterDropdownForClient.AddOptions(characterNames);
         characterDropdownForClient.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdownForClient.value); });
-        characterImageForClient.gameObject.SetActive(true);
 
         UpdateCharacterDetails(0);
     }
@@ -143,6 +145,7 @@ public class MenuController : MonoBehaviour
         {
             characterNames.Add(character.name);
         }
+        characterNames.Sort();
 
         characterDropdown.AddOptions(characterNames);
         characterDropdown.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdown.value); });
@@ -152,6 +155,7 @@ public class MenuController : MonoBehaviour
 
     void UpdateCharacterDetails(int index)
     {
+        characters=characters.OrderBy(c => c.name).ToList();
         if(hostGameCanvas.activeInHierarchy)
             characterImage.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
         else
@@ -215,9 +219,18 @@ public class MenuController : MonoBehaviour
     }
     public void OnJoinButtonPressed()
     {
+        characterDropdown.gameObject.SetActive(false);
+        characterLabel.gameObject.SetActive(false);
+        characterImageForClient.gameObject.SetActive(false);
+        joinButton.enabled = false;
         string selectedCharacter = characterDropdownForClient.options[characterDropdownForClient.value].text;
+        NetworkManagerController.Instance.SubscribeClient();
         NetworkManagerController.Instance.SelectCharacterServerRpc(NetworkManager.Singleton.LocalClientId, selectedCharacter);
         ShowLobbyMenu();
+    }
+    public void OnCancelLobbyButtonPressed()
+    {
+        NetworkManagerController.Instance.LobbyCancel();
     }
     public void OnCancelButtonPressed()
     {

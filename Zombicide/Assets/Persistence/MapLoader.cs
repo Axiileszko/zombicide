@@ -9,70 +9,84 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
 
 namespace Persistence
 {
+
+    [Serializable]
     internal class BoardData
     {
-        public List<MapTileData> Tiles { get; set; }
-        public List<TileConnectionData> Connections { get; set; }
-        public List<BuildingData> Buildings { get; set; }
-        public List<StreetData> Streets { get; set; }
+        public List<MapTileData> tiles;
+        public List<TileConnectionData> connections;
+        public List<BuildingData> buildings;
+        public List<StreetData> streets;
     }
+    [Serializable]
     internal class MapTileData
     {
-        public int Id { get; set; }
-        public string Type { get; set; }
-        public string Extra { get; set; }
+        public int id;
+        public string type;
+        public string extra;
     }
+    [Serializable]
     internal class BuildingData
     {
-        public int Id { get; set; }
-        public List<int> Rooms { get; set; }
+        public int id;
+        public List<int> rooms;
     }
+    [Serializable]
     internal class StreetData
     {
-        public int Id { get; set; }
-        public List<int> Tiles { get; set; }
+        public int id;
+        public List<int> tiles;
     }
+    [Serializable]
     internal class TileConnectionData
     {
-        public MapTile From { get; set; }
-        public MapTile To { get; set; }
-        public bool IsWall { get; }
-        public bool HasDoor { get; }
-        public bool IsDoorOpen { get; set; }
+        public int from;
+        public int to;
+        public bool isWall;
+        public bool hasDoor;
+        public bool isDoorOpen;
     }
+    [Serializable]
     internal class MissionList
     {
-        public List<Mission> Missions { get; set; }
+        public List<Mission> missions;
     }
+    [Serializable]
     internal class Mission
     {
-        public int Id { get; set; }
-        public BoardData BoardData { get; set; }
+        public int id;
+        public BoardData boardData;
     }
     public class MapLoader
     {
-        private readonly string jsonFilePath;
-        public MapLoader(string jsonFilePath)
-        {
-            this.jsonFilePath = jsonFilePath;
-        }
+        //private readonly string jsonFilePath;
+        //public MapLoader(string jsonFilePath)
+        //{
+        //    this.jsonFilePath = jsonFilePath;
+        //}
         public Board LoadMap(int mapID)
         {
-            //JSON beolvasása fájlból
-            string jsonText = File.ReadAllText(jsonFilePath);
-            MissionList missionList = JsonConvert.DeserializeObject<MissionList>(jsonText);
+            ////JSON beolvasása fájlból
+            //string jsonText = File.ReadAllText(jsonFilePath);
+            //MissionList missionList = JsonConvert.DeserializeObject<MissionList>(jsonText);
 
-            if (missionList == null || missionList.Missions.Count == 0)
+            TextAsset jsonFile = Resources.Load<TextAsset>("missions");
+            Debug.Log(jsonFile);
+            MissionList missionList = JsonUtility.FromJson<MissionList>(jsonFile.text);
+            Debug.Log(missionList);
+
+            if (missionList == null || missionList.missions.Count == 0)
             {
                 throw new Exception("Nincsenek pályák a JSON fájlban!");
             }
 
             //Keresd meg a megfelelő ID missiont
-            Mission mission = missionList.Missions.FirstOrDefault(m => m.Id == mapID);
+            Mission mission = missionList.missions.FirstOrDefault(m => m.id == mapID);
             if (mission == null)
             {
                 throw new Exception($"Nem található pálya ezzel az ID-val: {mapID}");
@@ -82,19 +96,19 @@ namespace Persistence
             Dictionary<int, MapTile> tileMap = new Dictionary<int, MapTile>();
 
             //Mezők létrehozása és hozzáadása a Boardhoz
-            foreach (var tileData in mission.BoardData.Tiles)
+            foreach (var tileData in mission.boardData.tiles)
             {
                 TileType? type=null;
                 ZombieSpawnType? stype=null;
-                switch (tileData.Type)
+                switch (tileData.type)
                 {
                     case "R":type=TileType.ROOM; break;
                     case "D":type=TileType.DARKROOM; break;
                     case "S":type=TileType.STREET; break;
                 }
-                if (tileData.Extra.Contains("Z"))
+                if (tileData.extra != null && tileData.extra.Contains("Z"))
                 {
-                    switch (tileData.Extra.Substring(tileData.Extra.IndexOf('Z'),2))
+                    switch (tileData.extra.Substring(tileData.extra.IndexOf('Z'),2))
                     {
                         case "ZF": stype = ZombieSpawnType.FIRST; break;
                         case "ZB": stype = ZombieSpawnType.BLUE; break;
@@ -102,34 +116,41 @@ namespace Persistence
                         case "ZR": stype = ZombieSpawnType.RED; break;
                     }
                 }
-                bool hasObj = tileData.Extra.Contains('O');
-                bool hasPW = tileData.Extra.Contains('P');
-                bool isExit = tileData.Extra.Contains('E');
-                bool isStart = tileData.Extra.Contains('S');
-
-                MapTile tile = new MapTile(tileData.Id,type, hasObj,hasPW, isExit,isStart, stype);
-                tileMap[tileData.Id] = tile;
+                bool hasObj, hasPW, isExit, isStart;
+                if (tileData.extra != null)
+                {
+                    hasObj = tileData.extra.Contains('O');
+                    hasPW = tileData.extra.Contains('P');
+                    isExit = tileData.extra.Contains('E');
+                    isStart = tileData.extra.Contains('S');
+                }
+                else
+                {
+                    hasObj=false;hasPW=false;isExit=false;isStart=false;
+                }
+                MapTile tile = new MapTile(tileData.id,type, hasObj,hasPW, isExit,isStart, stype);
+                tileMap[tileData.id] = tile;
                 board.AddTile(tile);
             }
 
             //Kapcsolatok létrehozása
-            foreach (var connectionData in mission.BoardData.Connections)
+            foreach (var connectionData in mission.boardData.connections)
             {
-                if (tileMap.ContainsKey(connectionData.From.Id) && tileMap.ContainsKey(connectionData.To.Id))
+                if (tileMap.ContainsKey(connectionData.from) && tileMap.ContainsKey(connectionData.to))
                 {
-                    MapTile fromTile = tileMap[connectionData.From.Id];
-                    MapTile toTile = tileMap[connectionData.To.Id];
+                    MapTile fromTile = tileMap[connectionData.from];
+                    MapTile toTile = tileMap[connectionData.to];
 
-                    TileConnection connection = new TileConnection(toTile, connectionData.IsWall, connectionData.HasDoor, connectionData.IsDoorOpen);
+                    TileConnection connection = new TileConnection(toTile, connectionData.isWall, connectionData.hasDoor, connectionData.isDoorOpen);
                     fromTile.AddNeighbour(connection);
                 }
             }
 
             //Épületek létrehozása
-            foreach (var buildingData in mission.BoardData.Buildings)
+            foreach (var buildingData in mission.boardData.buildings)
             {
                 List<MapTile> rooms = new List<MapTile>();
-                foreach (var roomId in buildingData.Rooms)
+                foreach (var roomId in buildingData.rooms)
                 {
                     if (tileMap.ContainsKey(roomId))
                     {
@@ -139,10 +160,10 @@ namespace Persistence
                 board.AddBuilding(new Building(rooms));
             }
             //Utcák létrehozása
-            foreach (var streetData in mission.BoardData.Streets)
+            foreach (var streetData in mission.boardData.streets)
             {
                 List<int> streetTiles = new List<int>();
-                foreach (var tileId in streetData.Tiles)
+                foreach (var tileId in streetData.tiles)
                 {
                     if (tileMap.ContainsKey(tileId))
                     {

@@ -42,9 +42,9 @@ namespace Model
             } 
         }
 
-        public GameModel(string path)
+        public GameModel()
         {
-            mapLoader=new MapLoader(path);
+            mapLoader=new MapLoader();
         }
         public GameModel(MapLoader mapLoader)
         {
@@ -286,7 +286,7 @@ namespace Model
             }
         }
 
-        private void LoadGame(int number)
+        public void LoadGame(int number)
         {
             board=mapLoader.LoadMap(number);
         }
