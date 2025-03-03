@@ -756,7 +756,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb06aa636a76a504087f2069fe7c0024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MapPrefab: {fileID: 904774429676293385, guid: 57720d9ce44755342ae55f982d17415d, type: 3}
 --- !u!4 &1797451695
 Transform:
   m_ObjectHideFlags: 0

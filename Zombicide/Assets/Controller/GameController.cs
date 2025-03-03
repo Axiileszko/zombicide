@@ -49,6 +49,7 @@ public class GameController : MonoBehaviour
     {
         MapPrefab = Resources.Load<GameObject>($"Prefabs/Missions/Map_{mapID}");
         GameObject.Instantiate(MapPrefab);
+
     }
     private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {

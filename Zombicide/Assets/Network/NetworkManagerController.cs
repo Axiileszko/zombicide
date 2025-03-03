@@ -198,11 +198,6 @@ namespace Network
             {
                 NetworkManager.Singleton.SceneManager.LoadScene("InGameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
             }
-
-            //// GameController létrehozása és inicializálása a megfelelő pályával
-            //GameObject gameControllerObject = new GameObject("GameController");
-            //GameController gameController = gameControllerObject.AddComponent<GameController>();
-            //gameController.Initialize(selectedMapID);
         }
 
 
