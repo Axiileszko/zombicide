@@ -13,12 +13,12 @@ public class TileDisplay : MonoBehaviour
         // Beállítjuk a helyzetet és forgatást
         transform.position = position;
         transform.rotation = Quaternion.Euler(90, 0, rotation);
-        //transform.localScale = new Vector3(-0.2f, 0, 0);
+
     }
 
-    private void OnMouseDown()
-    {
-        Debug.Log("Tile kattintva: " + gameObject.name);
-    }
+    //private void OnMouseDown()
+    //{
+    //    Debug.Log("Tile kattintva: " + gameObject.name);
+    //}
 
 }
