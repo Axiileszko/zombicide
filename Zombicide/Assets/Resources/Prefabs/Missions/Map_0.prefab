@@ -423,7 +423,7 @@ GameObject:
   - component: {fileID: 8195928502449671351}
   - component: {fileID: 815792945230900570}
   m_Layer: 0
-  m_Name: CityBlocksPrefab
+  m_Name: Map_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
