@@ -20,9 +20,9 @@ namespace Model
         private List<PimpWeapon> pimpWeapons = new List<PimpWeapon>();
         private Survivor currentPlayer;
         private List<Survivor> playerOrder = new List<Survivor>();
-        private MapTile FirstSpawn=null;
-        private List<MapTile> ZSpawns=new List<MapTile>();
-        private MapTile StartTile=null;
+        private MapTile firstSpawn=null;
+        private List<MapTile> zSpawns=new List<MapTile>();
+        private MapTile startTile=null;
         private int dangerLevel;
         private bool hasAbomination;
 
@@ -33,6 +33,7 @@ namespace Model
         public Board.Board Board { get { return board; } }
         public List<Survivor> PlayerOrder { get { return playerOrder; } }
         public Survivor CurrentPlayer { get { return currentPlayer; } }
+        public MapTile StartTile { get { return startTile; } }
         public List<int> SurvivorLocations {  get 
             {
                 List<int> locations = new List<int>();
@@ -114,7 +115,7 @@ namespace Model
         {
             foreach (var item in survivors)
             {
-                item.MoveTo(StartTile);
+                item.MoveTo(startTile);
             }
         }
         private void GenerateItems()
@@ -193,17 +194,17 @@ namespace Model
             switch (dangerLevel)
             {
                 case 0:
-                    SpawnZombie(spawn.Item1,spawn.Item2,FirstSpawn); break;
+                    SpawnZombie(spawn.Item1,spawn.Item2,firstSpawn); break;
                 case 1:
-                    SpawnZombie(spawn.Item1, spawn.Item3, FirstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item3, firstSpawn); break;
                 case 2:
-                    SpawnZombie(spawn.Item1, spawn.Item4, FirstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item4, firstSpawn); break;
                 case 3:
-                    SpawnZombie(spawn.Item1, spawn.Item5, FirstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item5, firstSpawn); break;
                 default:
-                    SpawnZombie(spawn.Item1, spawn.Item5, FirstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item5, firstSpawn); break;
             }
-            foreach (var item in ZSpawns)
+            foreach (var item in zSpawns)
             {
                 if (hasAbomination)
                 {
@@ -252,15 +253,15 @@ namespace Model
             {
                 if (item.SpawnType==ZombieSpawnType.FIRST)
                 {
-                    FirstSpawn = item;
+                    firstSpawn = item;
                 }
                 else if (item.SpawnType==ZombieSpawnType.RED || item.SpawnType == ZombieSpawnType.GREEN|| item.SpawnType == ZombieSpawnType.BLUE)
                 {
-                    ZSpawns.Add(item);
+                    zSpawns.Add(item);
                 }
                 else if (item.IsStart)
                 {
-                    StartTile = item;
+                    startTile = item;
                 }
             }
         }
@@ -305,6 +306,11 @@ namespace Model
                 playerOrder = newOrder;
             }
             currentPlayer = playerOrder[0];
+        }
+
+        public int NumberOfPlayersOnTile(int tileID)
+        {
+            return SurvivorLocations.Count(x=>x==tileID);
         }
         private void ShiftPlayerOrder()
         {

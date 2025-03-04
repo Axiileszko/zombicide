@@ -22,6 +22,7 @@ namespace Network
         private List<string> availableCharacters = new List<string>();
         private Dictionary<ulong, string> selectedCharacters = new Dictionary<ulong, string>();
         private int expectedPlayerCount;
+        private bool hasSentPlayerSelections = false;  // Flag a dupla hívás ellen
         public int SelectedMapID { get; private set; }
         public static NetworkManagerController Instance { get; private set; }
 
@@ -212,7 +213,13 @@ namespace Network
         [ServerRpc(RequireOwnership = false)]
         public void SendPlayerSelectionsServerRpc()
         {
-            Debug.Log("Lefut a SendPlayerSelectionsServerRpc");
+            if (hasSentPlayerSelections)
+            {
+                Debug.LogWarning("SendPlayerSelectionsServerRpc már futott, nem fut újra!");
+                return;
+            }
+
+            hasSentPlayerSelections = true; // Flag beállítása
             if (!NetworkManager.Singleton.IsHost) return;
 
             // A karakterválasztások átalakítása listába
@@ -230,7 +237,6 @@ namespace Network
         [ClientRpc]
         private void ReceivePlayerSelectionsClientRpc(string clientIDsSerialized, string characterNamesSerialized)
         {
-            Debug.Log("LEfut a ReceivePlayerSelectionsClientRpc");
             // Stringek visszaalakítása tömbökké
             string[] clientIDsArray = clientIDsSerialized.Split(',');
             string[] characterNamesArray = characterNamesSerialized.Split(',');

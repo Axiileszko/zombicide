@@ -44,11 +44,11 @@ public class GameController : MonoBehaviour
     }
     public void Initialize(int mapID)
     {
-        Debug.Log("Lefut az initialize");
         gameModel = new GameModel();
         gameModel.StartGame(playerSelections.Values.ToList(),mapID);
         GenerateBoard(mapID);
-        if (NetworkManager.Singleton.LocalClientId==0)
+        GeneratePlayersOnBoard();
+        if (NetworkManager.Singleton.IsHost)
         {
             gameModel.DecidePlayerOrder(null);
             // Küldjük a sorrendet a klienseknek
@@ -58,9 +58,60 @@ public class GameController : MonoBehaviour
             StartNextTurn();
         }
     }
+    private void GeneratePlayersOnBoard()
+    {
+        Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{gameModel.StartTile.Id}");
+        BoxCollider collider = tile.GetComponent<BoxCollider>();
+        float startX = collider.transform.position.x - 1.5f;
+        float startZ = collider.transform.position.z + 0.5f;
+        float startY = 1.631f;
+        Vector3 newPosition = new Vector3();
+        newPosition.x = startX; newPosition.y= startY; newPosition.z = startZ;
+        int multiply = 1;
+
+        foreach (var item in playerSelections.Values)
+        {
+            GameObject playerPrefab = Resources.Load<GameObject>($"Prefabs/Players/{item.Replace(" ",string.Empty)}");
+            GameObject player=Instantiate(playerPrefab);
+            player.transform.position = newPosition;
+            if (multiply < 4)
+            {
+                newPosition.x = startX + (multiply * 1.5f);
+                newPosition.z = startZ;
+            }
+            else
+            {
+                newPosition.x = startX;
+                newPosition.z = startZ + ((multiply - 3) * 0.7f);
+            }
+            multiply++;
+        }
+    }
+    private void MovePlayerToTile(int tileID, GameObject player)
+    {
+        Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
+        BoxCollider collider = tile.GetComponent<BoxCollider>();
+        float startX=collider.transform.position.x-1.5f;
+        float startZ=collider.transform.position.z + 0.5f;
+        float startY = 1.631f; //ez mindig marad
+        int playerCount = gameModel.NumberOfPlayersOnTile(tileID);
+        Vector3 newPosition = player.transform.position;
+
+        if (playerCount < 4)
+        {
+            newPosition.x = startX + (playerCount * 1.5f);
+            newPosition.z = startZ;
+        }
+        else
+        {
+            newPosition.x = startX;
+            newPosition.z = startZ + ((playerCount - 3) * 0.7f);
+        }
+        newPosition.y = startY;
+        player.transform.position = newPosition;
+    }
     private void StartNextTurn()
     {
-        ShowPlayerOrder();
         gameModel.CurrentPlayer.StartedRound = true;
 
         // A hálózati managernek szólunk
@@ -79,29 +130,32 @@ public class GameController : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-  
-        foreach (var item in gameModel.PlayerOrder)
+        GameObject zombieEntry = Instantiate(charImagePrefab, charListContainer.transform);
+        zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
+        Outline zoutline = zombieEntry.GetComponent<Outline>();
+        zoutline.enabled = false;
+        //majd állitsuk be a zombik outlinejat is rendesen
+
+        List<Survivor> reversed = gameModel.PlayerOrder;
+        reversed.Reverse();
+        foreach (var item in reversed)
         {
             GameObject playerEntry = Instantiate(charImagePrefab, charListContainer.transform);
             playerEntry.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Characters/{item.Name.ToLower().Replace(" ",string.Empty)+"_head"}");
             Outline outline = playerEntry.GetComponent<Outline>();
             outline.enabled = gameModel.CurrentPlayer==item;
         }
-        GameObject zombieEntry = Instantiate(charImagePrefab, charListContainer.transform);
-        zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
-        Outline zoutline = zombieEntry.GetComponent<Outline>();
-        zoutline.enabled = false;
-        //majd állitsuk be a zombik outlinejat is rendesen
+        
     }
 
     public void ReceivePlayerOrder(string serializedOrder)
     {
         List<string> orderedPlayers = serializedOrder.Split(',').ToList();
         gameModel.DecidePlayerOrder(orderedPlayers);
+        ShowPlayerOrder();
     }
     public void SetPlayerSelections(Dictionary<ulong, string> selections)
     {
-        Debug.Log("Lefut a SetPlayerSelections");
         playerSelections = selections;
         Initialize(selectedMapID);
     }
@@ -109,7 +163,6 @@ public class GameController : MonoBehaviour
     {
         MapPrefab = Resources.Load<GameObject>($"Prefabs/Missions/Map_{mapID}");
         GameObject.Instantiate(MapPrefab);
-
     }
     private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
@@ -164,7 +217,6 @@ public class GameController : MonoBehaviour
             }
         }
     }
-
     public void EndTurn()
     {
         if (NetworkManager.Singleton.LocalClientId != GetClientIdByCharacter(gameModel.CurrentPlayer.Name))
