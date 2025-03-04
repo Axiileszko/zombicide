@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1043949059676592983}
   - component: {fileID: 3856969309161731633}
-  - component: {fileID: 2805250077459205500}
   - component: {fileID: 2718031764490900293}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -89,52 +88,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &2805250077459205500
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 664180516635370468}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &2718031764490900293
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -619,7 +572,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7795740962770779566}
   - component: {fileID: 2428183853825438885}
-  - component: {fileID: 8398657457456124359}
   - component: {fileID: 1296888573698365519}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -698,52 +650,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &8398657457456124359
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1987387146033167695}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &1296888573698365519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1033,7 +939,7 @@ GameObject:
   - component: {fileID: 8730479023383938040}
   m_Layer: 0
   m_Name: Map_0
-  m_TagString: Untagged
+  m_TagString: MapPrefab
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1190,7 +1096,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3343122860849185290}
   - component: {fileID: 2905061405879208294}
-  - component: {fileID: 8900985837723503901}
   - component: {fileID: 7961013501062343817}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -1269,52 +1174,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &8900985837723503901
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2949908091492088169}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &7961013501062343817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1865,7 +1724,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6903868958892958133}
   - component: {fileID: 1450272810602696031}
-  - component: {fileID: 6001905355141954123}
   - component: {fileID: 7767620441543033584}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -1944,52 +1802,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &6001905355141954123
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4681001148314139390}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &7767620441543033584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2474,7 +2286,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5722153376583318668}
   - component: {fileID: 7531197912908995419}
-  - component: {fileID: 762452703335560179}
   - component: {fileID: 7319438019386888627}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -2553,52 +2364,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &762452703335560179
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5967126370325544094}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &7319438019386888627
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2753,7 +2518,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8790821560419250864}
   - component: {fileID: 3087835152785728256}
-  - component: {fileID: 2094287278927815119}
   - component: {fileID: 6751022542099075694}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -2832,52 +2596,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &2094287278927815119
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6348751861481164821}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &6751022542099075694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2900,7 +2618,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5424364983292711345}
   - component: {fileID: 572100619200097847}
-  - component: {fileID: 1567142035098924863}
   - component: {fileID: 4163535295624366611}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -2979,52 +2696,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &1567142035098924863
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6391944901564049277}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &4163535295624366611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3509,7 +3180,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1994313111990595198}
   - component: {fileID: 2276092218004519714}
-  - component: {fileID: 5775385760645494564}
   - component: {fileID: 3263564065771148570}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -3588,52 +3258,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &5775385760645494564
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7390217797309570670}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &3263564065771148570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3656,7 +3280,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7849714365643058466}
   - component: {fileID: 2292450482539822288}
-  - component: {fileID: 8522247725485944496}
   - component: {fileID: 5901976578567761276}
   m_Layer: 0
   m_Name: TileDisplay(Clone)
@@ -3735,52 +3358,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &8522247725485944496
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7500444809057653345}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.75, y: 6.75}
-    newSize: {x: 6.75, y: 6.75}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
-  m_EdgeRadius: 0
 --- !u!114 &5901976578567761276
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4645,6 +4222,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (8)
@@ -4748,6 +4329,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (6)
@@ -4755,13 +4340,42 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2607983202429067047}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
 --- !u!4 &2030671622293675206 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
   m_PrefabInstance: {fileID: 1991959281435065133}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7703546079258934949 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 1991959281435065133}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &2607983202429067047
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7703546079258934949}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
+  m_Center: {x: 0, y: 0, z: 4.1280026}
 --- !u!1001 &2616230414839019019
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4822,6 +4436,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (1)
@@ -4925,6 +4543,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (8)
@@ -4932,13 +4554,42 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3663937197357048932}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
 --- !u!4 &2371363002743687309 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
   m_PrefabInstance: {fileID: 2837970813720194918}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6210144317346523886 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 2837970813720194918}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &3663937197357048932
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6210144317346523886}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
+  m_Center: {x: 0, y: 1.173249e-13, z: 4.128003}
 --- !u!1001 &3190233849291563050
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4999,6 +4650,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (6)
@@ -5102,6 +4757,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (3)
@@ -5205,6 +4864,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (2)
@@ -5212,13 +4875,42 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6395175263741925086}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
 --- !u!4 &4253811804911005274 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
   m_PrefabInstance: {fileID: 4360093783411919281}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5606568121151671353 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 4360093783411919281}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &6395175263741925086
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5606568121151671353}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
+  m_Center: {x: 0, y: 0, z: 4.1280026}
 --- !u!1001 &4449514288768367990
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5279,6 +4971,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (5)
@@ -5382,6 +5078,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11
@@ -5389,8 +5089,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 171767509896975410}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+--- !u!1 &4103942049066570522 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 5312140609875121810}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &171767509896975410
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4103942049066570522}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
+  m_Center: {x: 0, y: 1.173249e-13, z: 4.128003}
 --- !u!4 &5634630680608895353 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
@@ -5456,6 +5185,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (7)
@@ -5559,6 +5292,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (3)
@@ -5566,8 +5303,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 37603177719093600}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+--- !u!1 &4299291537214533941 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 5397147363073438909}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &37603177719093600
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4299291537214533941}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
+  m_Center: {x: 0, y: 0.0000019073489, z: 4.1280036}
 --- !u!4 &5578901740223255382 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
@@ -5633,6 +5399,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (5)
@@ -5640,8 +5410,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3643925267476279263}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+--- !u!1 &1447684562987839161 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 7303597527051971377}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &3643925267476279263
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1447684562987839161}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
+  m_Center: {x: 0, y: 0, z: 4.1280026}
 --- !u!4 &7120523322305531098 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
@@ -5707,6 +5506,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY
@@ -5810,6 +5613,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (1)
@@ -5817,8 +5624,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6913466773700288041}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+--- !u!1 &1874067373253324593 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 7732298382966237881}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &6913466773700288041
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874067373253324593}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
+  m_Center: {x: 0, y: 0, z: 4.1280026}
 --- !u!4 &7837421223548734802 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
@@ -5884,6 +5720,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (4)
@@ -5891,8 +5731,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8859145143281627014}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+--- !u!1 &2146924148818789457 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 7820441460366574041}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &8859145143281627014
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146924148818789457}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
+  m_Center: {x: 0, y: 1.173249e-13, z: 4.128003}
 --- !u!4 &7713948660041410098 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
@@ -5958,6 +5827,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (4)
@@ -6061,6 +5934,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5db4453306269074ea97bb01e7547746, type: 2}
     - target: {fileID: 919132149155446097, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
       propertyPath: m_Name
       value: Weapons_Crate_Low_Res_22x11 (7)
@@ -6068,8 +5945,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2213968307734764795}
   m_SourcePrefab: {fileID: 100100000, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+--- !u!1 &903488873511978178 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
+  m_PrefabInstance: {fileID: 9062777808096149834}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &2213968307734764795
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 903488873511978178}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
+  m_Center: {x: 0, y: 1.173249e-13, z: 4.1280036}
 --- !u!4 &8813488512295773857 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bf039ac8a2d99914c978f33c6c5b3824, type: 3}
@@ -6135,6 +6041,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: efea0db3eaf7d4648b17855035109313, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f87aa3cc1ee2ad14eb1e9ff978d896ae, type: 2}
     - target: {fileID: 919132149155446097, guid: efea0db3eaf7d4648b17855035109313, type: 3}
       propertyPath: m_Name
       value: Zombicide_2e_target_case_big_by_CINKY (2)

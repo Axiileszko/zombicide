@@ -17,9 +17,10 @@ namespace Model.Characters.Survivors
         protected List<Item> backpack;
         protected Item rightHand;
         protected Item leftHand;
-        public bool FinishedRound {  get; protected set; }
+        public bool FinishedRound {  get; set; }
         public bool StartedRound {  get; set; }
         public bool IsDead { get; set; }
+        public string Name { get { return name; } }
         public Survivor(string name, bool isKid)
         {
             this.name = name;

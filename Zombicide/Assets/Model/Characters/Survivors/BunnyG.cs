@@ -15,7 +15,7 @@ namespace Model.Characters.Survivors
             {
                 if (instance == null)
                 {
-                    instance = new BunnyG("BunnyG", true);
+                    instance = new BunnyG("Bunny G", true);
                 }
                 return instance;
             }

@@ -31,6 +31,8 @@ namespace Model
         private MapLoader mapLoader;
 
         public Board.Board Board { get { return board; } }
+        public List<Survivor> PlayerOrder { get { return playerOrder; } }
+        public Survivor CurrentPlayer { get { return currentPlayer; } }
         public List<int> SurvivorLocations {  get 
             {
                 List<int> locations = new List<int>();
@@ -59,7 +61,6 @@ namespace Model
             LoadGame(mapID);
             FindSpawns();
             MovePlayersToSpawn();
-            DecidePlayerOrder();
             GenerateItems();
         }
         public void EndRound()
@@ -290,9 +291,19 @@ namespace Model
         {
             board=mapLoader.LoadMap(number);
         }
-        private void DecidePlayerOrder()
+        public void DecidePlayerOrder(List<string>? survivorOrder)
         {
-            playerOrder=survivors.OrderBy(x=>random.Next()).ToList();
+            if(survivorOrder ==null)
+                playerOrder=survivors.OrderBy(x=>random.Next()).ToList();
+            else
+            {
+                List<Survivor> newOrder=new List<Survivor>();
+                foreach (var item in survivorOrder)
+                {
+                    newOrder.Add(survivors.First(x => x.Name == item));
+                }
+                playerOrder = newOrder;
+            }
             currentPlayer = playerOrder[0];
         }
         private void ShiftPlayerOrder()

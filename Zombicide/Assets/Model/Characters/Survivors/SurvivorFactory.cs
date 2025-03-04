@@ -9,7 +9,7 @@ namespace Model.Characters.Survivors
             switch (s)
             {
                 case "Amy": return Amy.Instance;
-                case "BunnyG": return BunnyG.Instance;
+                case "Bunny G": return BunnyG.Instance;
                 case "Doug": return Doug.Instance;
                 case "Elle": return Elle.Instance;
                 case "Josh": return Josh.Instance;
@@ -18,7 +18,7 @@ namespace Model.Characters.Survivors
                 case "Ned": return Ned.Instance;
                 case "Odin": return Odin.Instance;
                 case "Ostara": return Ostara.Instance;
-                case "TigerSam": return TigerSam.Instance;
+                case "Tiger Sam": return TigerSam.Instance;
                 case "Wanda": return Wanda.Instance;
                 default: return null;
             }

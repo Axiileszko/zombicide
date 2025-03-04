@@ -76,9 +76,7 @@ namespace Persistence
             //MissionList missionList = JsonConvert.DeserializeObject<MissionList>(jsonText);
 
             TextAsset jsonFile = Resources.Load<TextAsset>("missions");
-            Debug.Log(jsonFile);
             MissionList missionList = JsonUtility.FromJson<MissionList>(jsonFile.text);
-            Debug.Log(missionList);
 
             if (missionList == null || missionList.missions.Count == 0)
             {

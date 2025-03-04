@@ -1,4 +1,6 @@
-﻿using Persistence;
+﻿using Model;
+using Model.Characters.Survivors;
+using Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,12 @@ using UnityEngine;
 
 namespace Network
 {
+    public enum MessageType
+    {
+        PlayerOrder,
+        TurnStart,
+        TurnEnd
+    }
     public class NetworkManagerController:NetworkBehaviour
     {
         private List<string> availableCharacters = new List<string>();
@@ -19,6 +27,7 @@ namespace Network
 
         private void Awake()
         {
+            Debug.Log($"NetworkManagerController létrejött: {gameObject.name} ID: {GetInstanceID()}");
             if (Instance == null)
             {
                 Instance = this;
@@ -200,7 +209,64 @@ namespace Network
             }
         }
 
+        [ServerRpc(RequireOwnership = false)]
+        public void SendPlayerSelectionsServerRpc()
+        {
+            Debug.Log("Lefut a SendPlayerSelectionsServerRpc");
+            if (!NetworkManager.Singleton.IsHost) return;
 
+            // A karakterválasztások átalakítása listába
+            List<ulong> clientIDs = new List<ulong>(selectedCharacters.Keys);
+            List<string> characterNames = new List<string>(selectedCharacters.Values);
 
+            // String tömbök sorosítása
+            string clientIDsSerialized = string.Join(",", clientIDs);
+            string characterNamesSerialized = string.Join(",", characterNames);
+
+            // Küldés a klienseknek
+            ReceivePlayerSelectionsClientRpc(clientIDsSerialized, characterNamesSerialized);
+        }
+
+        [ClientRpc]
+        private void ReceivePlayerSelectionsClientRpc(string clientIDsSerialized, string characterNamesSerialized)
+        {
+            Debug.Log("LEfut a ReceivePlayerSelectionsClientRpc");
+            // Stringek visszaalakítása tömbökké
+            string[] clientIDsArray = clientIDsSerialized.Split(',');
+            string[] characterNamesArray = characterNamesSerialized.Split(',');
+
+            Dictionary<ulong, string> receivedSelections = new Dictionary<ulong, string>();
+
+            for (int i = 0; i < clientIDsArray.Length; i++)
+            {
+                ulong clientID = ulong.Parse(clientIDsArray[i]);
+                string characterName = characterNamesArray[i];
+                receivedSelections[clientID] = characterName;
+            }
+
+            // Átadjuk a GameControllernek
+            GameController.Instance.SetPlayerSelections(receivedSelections);
+        }
+
+        [ClientRpc]
+        public void ReceiveMessageClientRpc(MessageType type, string data)
+        {
+            switch (type)
+            {
+                case MessageType.PlayerOrder:
+                    GameController.Instance.ReceivePlayerOrder(data);
+                    break;
+                case MessageType.TurnStart:
+                    GameController.Instance.ReceiveTurnStart(ulong.Parse(data));
+                    break;
+            }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SendMessageToClientsServerRpc(MessageType type, string data)
+        {
+            Debug.Log($"mtype: {type} data: {data}");
+            ReceiveMessageClientRpc(type, data);
+        }
     }
 }

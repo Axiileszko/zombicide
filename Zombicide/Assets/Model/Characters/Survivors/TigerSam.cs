@@ -15,7 +15,7 @@ namespace Model.Characters.Survivors
             {
                 if (instance == null)
                 {
-                    instance = new TigerSam("TigerSam", true);
+                    instance = new TigerSam("Tiger Sam", true);
                 }
                 return instance;
             }
