@@ -1,26 +1,25 @@
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class HoverClickHandlerForItem : MonoBehaviour
 {
-    private float hoverHeight = 0.5f;
-    private Vector3 originalPosition;
+    [SerializeField] private GameObject item;
+    private Vector3 originalPositionItem;
     void Start()
     {
-        originalPosition = transform.position;
+        originalPositionItem = item.transform.position;
     }
-
     void OnMouseEnter()
     {
-        transform.position = originalPosition + Vector3.up * hoverHeight;
+        item.transform.localPosition = new Vector3(item.transform.localPosition.x, item.transform.localPosition.y + 50f, item.transform.localPosition.z);
     }
-
     void OnMouseExit()
     {
-        transform.position = originalPosition;
+        item.transform.position = originalPositionItem;
     }
 
     void OnMouseDown()
     {
-        Debug.Log("Objektumra kattintottál!");
+        Debug.Log($"{gameObject.name} itemre kattintottál!");
     }
 }

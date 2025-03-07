@@ -48,6 +48,7 @@ public class GameController : MonoBehaviour
         gameModel.StartGame(playerSelections.Values.ToList(),mapID);
         GenerateBoard(mapID);
         GeneratePlayersOnBoard();
+        ShowPlayerUI();
         if (NetworkManager.Singleton.IsHost)
         {
             gameModel.DecidePlayerOrder(null);
@@ -58,6 +59,17 @@ public class GameController : MonoBehaviour
             StartNextTurn();
         }
     }
+
+    private void ShowPlayerUI()
+    {
+        string name = playerSelections[NetworkManager.Singleton.LocalClientId];
+        Debug.Log("Milyen panel kell: "+name);
+        GameObject ui = GameObject.FindWithTag("GameUI");
+        Debug.Log("megvan a ui: " + ui);
+        GameObject panelPrefab = Resources.Load<GameObject>($"Prefabs/Players/PlayerPanel_{name.Replace(" ", string.Empty)}");
+        GameObject player = Instantiate(panelPrefab,ui.transform);
+    }
+
     private void GeneratePlayersOnBoard()
     {
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{gameModel.StartTile.Id}");

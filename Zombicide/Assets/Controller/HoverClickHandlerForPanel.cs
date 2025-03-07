@@ -2,25 +2,25 @@ using UnityEngine;
 
 public class HoverClickHandlerForPanel : MonoBehaviour
 {
-    private float hoverHeight = 0.5f;
-    private Vector3 originalPosition;
+    [SerializeField] private GameObject panel;
+    private Vector3 originalPositionPanel;
     void Start()
     {
-        originalPosition = transform.position;
+        originalPositionPanel = panel.transform.position;
     }
 
     void OnMouseEnter()
     {
-        transform.position = originalPosition + Vector3.up * hoverHeight;
+        panel.transform.localPosition = new Vector3(panel.transform.localPosition.x, panel.transform.localPosition.y+220f, panel.transform.localPosition.z);
     }
 
     void OnMouseExit()
     {
-        transform.position = originalPosition;
+        panel.transform.position = originalPositionPanel;
     }
 
     void OnMouseDown()
     {
-        Debug.Log("Objektumra kattintottál!");
+        Debug.Log($"panelre kattintottál!");
     }
 }

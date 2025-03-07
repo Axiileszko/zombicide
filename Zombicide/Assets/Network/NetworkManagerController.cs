@@ -28,7 +28,6 @@ namespace Network
 
         private void Awake()
         {
-            Debug.Log($"NetworkManagerController létrejött: {gameObject.name} ID: {GetInstanceID()}");
             if (Instance == null)
             {
                 Instance = this;
