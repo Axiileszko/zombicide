@@ -1516,7 +1516,7 @@ GameObject:
   - component: {fileID: 7584978753169705516}
   m_Layer: 5
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: PlayerPanelCollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1723,7 +1723,7 @@ GameObject:
   - component: {fileID: 3303614172033611416}
   m_Layer: 5
   m_Name: PlayerPanel_Doug
-  m_TagString: Untagged
+  m_TagString: PlayerPanel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

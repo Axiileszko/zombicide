@@ -1578,6 +1578,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4469d93858a8bb41a8abb8932f89092, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameUI: {fileID: 160109828}
+  colliders:
+  - {fileID: 1169118297}
+  - {fileID: 1216210623}
+  - {fileID: 2144401757}
+  - {fileID: 734646504}
+  - {fileID: 1362861213}
 --- !u!4 &1964602099
 Transform:
   m_ObjectHideFlags: 0

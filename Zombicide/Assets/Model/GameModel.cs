@@ -305,8 +305,11 @@ namespace Model
 
         public List<Weapon> GenerateGenericWeapons()
         {
-            List<Weapon> weapons = new List<Weapon>();
-            for (int i = 0; i < survivors.Count; i++)
+            List<Weapon> weapons = new List<Weapon>
+            {
+                ItemFactory.GetGenericWeaponByName(ItemName.AXE)
+            };
+            for (int i = 0; i < survivors.Count-1; i++)
             {
                 weapons.Add(ItemFactory.GetGenericWeapon());
             }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8946775580336239599}
   m_Layer: 5
   m_Name: PlayerPanel_BunnyG
-  m_TagString: Untagged
+  m_TagString: PlayerPanel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1617,7 +1617,7 @@ GameObject:
   - component: {fileID: 2698130348976567349}
   m_Layer: 5
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: PlayerPanelCollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

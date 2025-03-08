@@ -218,7 +218,7 @@ GameObject:
   - component: {fileID: 1503995815469425733}
   m_Layer: 5
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: PlayerPanelCollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -623,7 +623,7 @@ GameObject:
   - component: {fileID: 6108541189336728382}
   m_Layer: 5
   m_Name: PlayerPanel_Odin
-  m_TagString: Untagged
+  m_TagString: PlayerPanel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

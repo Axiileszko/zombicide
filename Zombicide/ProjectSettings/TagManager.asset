@@ -6,6 +6,8 @@ TagManager:
   tags:
   - MapPrefab
   - GameUI
+  - PlayerPanel
+  - PlayerPanelCollider
   layers:
   - Default
   - TransparentFX

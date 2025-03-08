@@ -1018,7 +1018,7 @@ GameObject:
   - component: {fileID: 5240477299279786638}
   m_Layer: 5
   m_Name: PlayerPanel_Josh
-  m_TagString: Untagged
+  m_TagString: PlayerPanel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1102,7 +1102,7 @@ GameObject:
   - component: {fileID: 51703455524756334}
   m_Layer: 5
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: PlayerPanelCollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

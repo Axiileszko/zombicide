@@ -73,6 +73,14 @@ public class GameController : MonoBehaviour
         string name = playerSelections[NetworkManager.Singleton.LocalClientId];
         GameObject ui = GameObject.FindWithTag("GameUI");
         GameObject panelPrefab = Resources.Load<GameObject>($"Prefabs/Players/PlayerPanel_{name.Replace(" ", string.Empty)}");
+        foreach(Transform child in panelPrefab.transform)
+        {
+            var component=child.GetComponent<HoverClickHandlerForPanel>();
+            if (component != null)
+            {
+                CameraZoom.PanelHoverScript=component;
+            }
+        }
         GameObject player = Instantiate(panelPrefab,ui.transform);
 
     }

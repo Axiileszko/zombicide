@@ -75,7 +75,7 @@ GameObject:
   - component: {fileID: 3016713508777148616}
   m_Layer: 5
   m_Name: PlayerPanel_Amy
-  m_TagString: Untagged
+  m_TagString: PlayerPanel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1179,7 +1179,7 @@ GameObject:
   - component: {fileID: 4363176658081749971}
   m_Layer: 5
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: PlayerPanelCollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

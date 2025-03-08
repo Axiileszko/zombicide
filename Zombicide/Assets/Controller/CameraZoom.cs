@@ -1,12 +1,26 @@
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CameraZoom : MonoBehaviour
 {
+    [SerializeField] private List<GameObject> colliders = new List<GameObject>();
+    private List<HoverClickHandlerForItem> itemHoverScripts=new List<HoverClickHandlerForItem>();
+    private float timer = 0f;
+    public static HoverClickHandlerForPanel PanelHoverScript;
+    private void Start()
+    {
+        foreach (var item in colliders)
+        {
+            itemHoverScripts.Add(item.GetComponent<HoverClickHandlerForItem>());
+        }
+    }
     void Update()
     {
         float ScrollWheelChange = Input.GetAxis("Mouse ScrollWheel");
-        if (ScrollWheelChange != 0)
-        {                                            
+        if (ScrollWheelChange != 0 && !HoverClickHandlerForItem.IsHovering && !HoverClickHandlerForPanel.IsHovering)
+        {
+            ToggleHoverScripts(false);
             float R = ScrollWheelChange * 15;                                   
             float PosX = Camera.main.transform.eulerAngles.x + 90;              
             float PosY = -1 * (Camera.main.transform.eulerAngles.y - 90);       
@@ -20,5 +34,23 @@ public class CameraZoom : MonoBehaviour
             float CamZ = Camera.main.transform.position.z;
             Camera.main.transform.position = new Vector3(CamX + X, CamY + Y, CamZ + Z);
         }
+        else 
+        {
+            timer += Time.deltaTime;
+            if (timer > 10)
+            {
+                timer = 0f;
+                ToggleHoverScripts(true); 
+            }
+        }
+    }
+    private void ToggleHoverScripts(bool state)
+    {
+        foreach (var script in itemHoverScripts)
+        {
+            script.enabled = state; // Engedélyezzük vagy tiltjuk a hover scripteket
+        }
+        if(PanelHoverScript != null)
+            PanelHoverScript.enabled = state;
     }
 }
