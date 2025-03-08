@@ -14,13 +14,16 @@ namespace Model.Characters.Survivors
         protected string name;
         protected int aPoints;
         protected bool isKid;
-        protected List<Item> backpack;
+        protected List<Item> backpack=new List<Item>();
         protected Item rightHand;
         protected Item leftHand;
         public bool FinishedRound {  get; set; }
         public bool StartedRound {  get; set; }
         public bool IsDead { get; set; }
         public string Name { get { return name; } }
+        public Item RightHand { get { return rightHand; } }
+        public Item LeftHand { get { return leftHand; } }
+        public List<Item> BackPack { get { return backpack; } }
         public Survivor(string name, bool isKid)
         {
             this.name = name;
@@ -229,9 +232,9 @@ namespace Model.Characters.Survivors
             usedAction = 0;
         }
 
-        public void PickGenericWeapon()
+        public void PickGenericWeapon(Weapon weapon)
         {
-            rightHand = ItemFactory.GetGenericWeapon();
+            rightHand = weapon;
         }
     }
 }

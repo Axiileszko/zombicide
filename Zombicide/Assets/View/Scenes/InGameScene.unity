@@ -1528,6 +1528,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb06aa636a76a504087f2069fe7c0024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rightHand: {fileID: 863299380}
+  leftHand: {fileID: 1347755896}
+  backPack:
+  - {fileID: 1656419635}
+  - {fileID: 1994645916}
+  - {fileID: 238387709}
 --- !u!4 &1797451695
 Transform:
   m_ObjectHideFlags: 0

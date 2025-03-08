@@ -17,7 +17,6 @@ namespace Model
         private List<Survivor> survivors = new List<Survivor>();
         private List<Zombie> zombies = new List<Zombie>();
         private List<Item> items = new List<Item>();
-        private List<PimpWeapon> pimpWeapons = new List<PimpWeapon>();
         private Survivor currentPlayer;
         private List<Survivor> playerOrder = new List<Survivor>();
         private MapTile firstSpawn=null;
@@ -56,13 +55,13 @@ namespace Model
 
         public void StartGame(List<string> survivors, int mapID)
         {
+            GenerateItems();
             hasAbomination = false;
             dangerLevel = 0;
             this.survivors = SpawnSurvivors(survivors);
             LoadGame(mapID);
             FindSpawns();
             MovePlayersToSpawn();
-            GenerateItems();
         }
         public void EndRound()
         {
@@ -79,6 +78,18 @@ namespace Model
             {
                 item.NoiseCounter = 0;
             }
+        }
+        public void GiveSurvivorsGenericWeapon(List<ItemName> weapons)
+        {
+            if(survivors.Count != weapons.Count) return;
+            for (int i = 0; i < survivors.Count; i++)
+            {
+                survivors[i].PickGenericWeapon(ItemFactory.GetGenericWeaponByName(weapons[i]));
+            }
+        }
+        public Survivor GetSurvivorByName(string name)
+        {
+            return survivors.First(x => x.Name == name);
         }
         public List<Zombie> GetZombiesInPriorityOrderOnTile(MapTile mapTile)
         {
@@ -273,7 +284,6 @@ namespace Model
             {
                 Survivor survivor=SurvivorFactory.CreateSurvivor(s);
                 survivor.SetReference(this);
-                survivor.PickGenericWeapon();
                 sList.Add(survivor);
             }
             ResetSurvivors(sList);
@@ -291,6 +301,16 @@ namespace Model
         public void LoadGame(int number)
         {
             board=mapLoader.LoadMap(number);
+        }
+
+        public List<Weapon> GenerateGenericWeapons()
+        {
+            List<Weapon> weapons = new List<Weapon>();
+            for (int i = 0; i < survivors.Count; i++)
+            {
+                weapons.Add(ItemFactory.GetGenericWeapon());
+            }
+            return weapons;
         }
         public void DecidePlayerOrder(List<string>? survivorOrder)
         {

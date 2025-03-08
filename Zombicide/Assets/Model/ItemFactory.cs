@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.Characters.Survivors;
+using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 
@@ -80,6 +81,22 @@ namespace Model
             return pimp;
         }
 
+        public static PimpWeapon GetPimpWeaponByName(ItemName s)
+        {
+            switch (s)
+            {
+                case ItemName.AUTSHOTGUN: return PimpWeapon.AutShotGun.Instance;
+                case ItemName.EVILTWINS: return PimpWeapon.EvilTwins.Instance;
+                case ItemName.GOLDENAK47: return PimpWeapon.GoldenAK47.Instance;
+                case ItemName.GOLDENKUKRI: return PimpWeapon.GoldenKukri.Instance;
+                case ItemName.GUNBLADE: return PimpWeapon.GunBlade.Instance;
+                case ItemName.MASSHOTGUN: return PimpWeapon.MasShotGun.Instance;
+                case ItemName.MILITARYSNIPERRIFLE: return PimpWeapon.MilitarySniperRifle.Instance;
+                case ItemName.NAILBAT: return PimpWeapon.NailBat.Instance;
+                case ItemName.ZANTETSUKEN :return PimpWeapon.Zantetsuken.Instance;
+                default: return null;
+            }
+        }
         public static void CreateGenericWeapons()
         {
             genericWeapons = new()
@@ -98,6 +115,17 @@ namespace Model
             var gen = genericWeapons[roll];
             genericWeapons.Remove(gen);
             return gen;
+        }
+        public static Weapon GetGenericWeaponByName(ItemName s)
+        {
+            switch (s)
+            {
+                case ItemName.AXE:return new Weapon(ItemName.AXE, 2, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
+                case ItemName.BASEBALLBAT:return new Weapon(ItemName.BASEBALLBAT, 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
+                case ItemName.CROWBAR:return new Weapon(ItemName.CROWBAR, 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
+                case ItemName.PISTOL:return new Weapon(ItemName.PISTOL, 1, 3, 1, 1, true, false, WeaponType.RANGE, false, true);
+                default: return null;
+            }
         }
     }
 }

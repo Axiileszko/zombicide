@@ -15,13 +15,16 @@ using UnityEngine.UI;
 public class GameController : MonoBehaviour
 {
     private GameModel gameModel;
+    private Survivor survivor;
     private GameObject MapPrefab;
+    [SerializeField] private GameObject rightHand;
+    [SerializeField] private GameObject leftHand;
+    [SerializeField] private List<GameObject> backPack=new List<GameObject>();
     private int selectedMapID;
     private Dictionary<ulong, string> playerSelections;
     private GameObject charImagePrefab;
     private HorizontalLayoutGroup charListContainer;
     public static GameController Instance { get; private set; }
-
     private void Start()
     {
         if (NetworkManager.Singleton != null)
@@ -48,7 +51,7 @@ public class GameController : MonoBehaviour
         gameModel.StartGame(playerSelections.Values.ToList(),mapID);
         GenerateBoard(mapID);
         GeneratePlayersOnBoard();
-        ShowPlayerUI();
+        survivor = gameModel.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]);
         if (NetworkManager.Singleton.IsHost)
         {
             gameModel.DecidePlayerOrder(null);
@@ -56,20 +59,23 @@ public class GameController : MonoBehaviour
             string serializedOrder = string.Join(',', gameModel.PlayerOrder.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PlayerOrder, serializedOrder);
 
+            // Kezdő fegyverek küldése 
+            List<Weapon> genericW=gameModel.GenerateGenericWeapons();
+            string serializedGenericW = string.Join(",", genericW.Select(x => x.Name));
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GenericWeapon, serializedGenericW);
+
             StartNextTurn();
         }
+        ShowPlayerUI();
     }
-
     private void ShowPlayerUI()
     {
         string name = playerSelections[NetworkManager.Singleton.LocalClientId];
-        Debug.Log("Milyen panel kell: "+name);
         GameObject ui = GameObject.FindWithTag("GameUI");
-        Debug.Log("megvan a ui: " + ui);
         GameObject panelPrefab = Resources.Load<GameObject>($"Prefabs/Players/PlayerPanel_{name.Replace(" ", string.Empty)}");
         GameObject player = Instantiate(panelPrefab,ui.transform);
-    }
 
+    }
     private void GeneratePlayersOnBoard()
     {
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{gameModel.StartTile.Id}");
@@ -129,7 +135,6 @@ public class GameController : MonoBehaviour
         // A hálózati managernek szólunk
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
     }
-
     private void ShowPlayerOrder()
     {
         if(charImagePrefab==null || charListContainer == null)
@@ -159,7 +164,6 @@ public class GameController : MonoBehaviour
         }
         
     }
-
     public void ReceivePlayerOrder(string serializedOrder)
     {
         List<string> orderedPlayers = serializedOrder.Split(',').ToList();
@@ -200,12 +204,10 @@ public class GameController : MonoBehaviour
     {
         UpdateBoardForActivePlayer(playerID);
     }
-
     private void UpdateBoardForActivePlayer(ulong playerID)
     {
         // Itt kapcsoljuk ki/be az interakciót
         bool isActive = playerID == NetworkManager.Singleton.LocalClientId;
-        Debug.Log($"Host-e: {NetworkManager.Singleton.IsHost} current player: {gameModel.CurrentPlayer} isActive {isActive}");
         EnableBoardInteraction(isActive);
     }
     public void EnableBoardInteraction(bool enable)
@@ -244,6 +246,33 @@ public class GameController : MonoBehaviour
         else
         {
             StartNextTurn();
+        }
+    }
+    public void ReceiveGenericWeapons(string data)
+    {
+        List<ItemName> weapons=data.Split(',').Select(x=>(ItemName)Enum.Parse(typeof(ItemName), x.Replace("ItemName.",""),true)).ToList();
+        gameModel.GiveSurvivorsGenericWeapon(weapons);
+        UpdateItemSlots();
+    }
+    private void UpdateItemSlots()
+    {
+        if (survivor.LeftHand == null)
+            leftHand.GetComponent<Image>().sprite= Resources.Load<Sprite>("Objects/card_lefthand");
+        else
+            leftHand.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.LeftHand.Name.ToString().ToLower()}");
+        if (survivor.RightHand == null)
+            rightHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_righthand");
+        else
+            rightHand.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.RightHand.Name.ToString().ToLower()}");
+        for (int i = 0; i < 3; i++)
+        {
+            if(survivor.BackPack.Count > i)
+            {
+                if (survivor.BackPack[i] == null)
+                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_backpack");
+                else
+                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.BackPack[i].Name.ToString().ToLower()}");
+            }
         }
     }
 }

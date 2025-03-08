@@ -15,7 +15,8 @@ namespace Network
     {
         PlayerOrder,
         TurnStart,
-        TurnEnd
+        TurnEnd,
+        GenericWeapon
     }
     public class NetworkManagerController:NetworkBehaviour
     {
@@ -263,6 +264,9 @@ namespace Network
                     break;
                 case MessageType.TurnStart:
                     GameController.Instance.ReceiveTurnStart(ulong.Parse(data));
+                    break;
+                case MessageType.GenericWeapon:
+                    GameController.Instance.ReceiveGenericWeapons(data);
                     break;
             }
         }
