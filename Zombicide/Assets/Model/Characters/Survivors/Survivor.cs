@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 
 namespace Model.Characters.Survivors
 {
+    public enum Trait
+    {
+        SLIPPERY, MEDIC, LUCKY, MATHCINGSET, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, MULTIPLESEARCH, AMBIDEXTROUS
+    }
     public abstract class Survivor:Character
     {
-        protected int usedAction;
         protected string name;
         protected int aPoints;
         protected bool isKid;
@@ -19,18 +22,31 @@ namespace Model.Characters.Survivors
         protected Item leftHand;
         public bool FinishedRound {  get; set; }
         public bool StartedRound {  get; set; }
+        public List<Trait> Traits { get; protected set; } = new List<Trait>();
         public bool IsDead { get; set; }
         public string Name { get { return name; } }
         public Item RightHand { get { return rightHand; } }
         public Item LeftHand { get { return leftHand; } }
         public List<Item> BackPack { get { return backpack; } }
+        public Dictionary<string, GameAction> Actions { get; protected set; } = new Dictionary<string, GameAction>();
         public Survivor(string name, bool isKid)
         {
             this.name = name;
             this.isKid = isKid;
             Reset();
         }
-        public virtual void Attack(MapTile targetTile, Weapon weapon, bool isMelee)
+        public abstract void SetActions(MapTile tileClicked);
+        public virtual void Move(MapTile targetTile)
+        {
+            if(model.GetZombiesInPriorityOrderOnTile(targetTile).Count==0)
+                MoveTo(targetTile);
+        }
+        public void SlipperyMove(MapTile targetTile)
+        {
+            if (Traits.Contains(Trait.SLIPPERY))
+                MoveTo(targetTile);
+        }
+        public virtual void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws)
         {
             if (weapon == null || !CanTargetTile(targetTile)) return;
             if (!isMelee)
@@ -76,11 +92,9 @@ namespace Model.Characters.Survivors
 
             // Dobások végrehajtása
             int successfulHits = 0;
-            Random random = new Random();
             for (int i = 0; i < weapon.DiceAmount; i++)
             {
-                int roll = random.Next(1, 7); // 1-6 között
-                if (roll >= weapon.Accuracy)
+                if (throws[i] >= weapon.Accuracy)
                     successfulHits++;
             }
 
@@ -162,10 +176,13 @@ namespace Model.Characters.Survivors
         {
             StartedRound = false;
             FinishedRound = false;
-            usedAction = 0;
+            UsedAction = 0;
             aPoints = 0;
             model = null;
             backpack = new List<Item>();
+            //Traits.Clear(); valamikor kéne clearelni
+            if (isKid)
+                Traits.Add(Trait.SLIPPERY);
             rightHand = null;
             leftHand = null;
             if (isKid)
@@ -229,7 +246,7 @@ namespace Model.Characters.Survivors
         {
             FinishedRound=true;
             StartedRound=false;
-            usedAction = 0;
+            UsedAction = 0;
         }
 
         public void PickGenericWeapon(Weapon weapon)

@@ -1,22 +1,24 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ProgressBar : MonoBehaviour
 {
-    private float minimum= 0.015f;
-    private int maximum=43;
-    private int current;
+    private static float current= 0.015f;
     [SerializeField] private Image mask;
 
-    void Update()
-    {
-        GetCurrentFill();
-    }
+    //void Update()
+    //{
+    //    GetCurrentFill();
+    //}
     void GetCurrentFill()
     {
-        float currentOffset=current-minimum;
-        float maximumOffset=maximum-minimum;
-        float fillAmount=(float)current/ (float)maximumOffset;
+        float fillAmount = Math.Max(1, current);
         mask.fillAmount = fillAmount;
+    }
+
+    public static void IncreaseFill(int amount)
+    {
+        current += amount * 0.015f;
     }
 }

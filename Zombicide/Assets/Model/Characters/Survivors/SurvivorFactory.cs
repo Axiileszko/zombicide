@@ -4,7 +4,7 @@ namespace Model.Characters.Survivors
 {
     public class SurvivorFactory
     {
-        public static Survivor CreateSurvivor(string s)
+        public static Survivor GetSurvivorByName(string s)
         {
             switch (s)
             {

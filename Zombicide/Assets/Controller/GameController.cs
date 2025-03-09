@@ -52,6 +52,7 @@ public class GameController : MonoBehaviour
         GenerateBoard(mapID);
         GeneratePlayersOnBoard();
         survivor = gameModel.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]);
+        survivor.SetReference(gameModel);
         if (NetworkManager.Singleton.IsHost)
         {
             gameModel.DecidePlayerOrder(null);
@@ -282,5 +283,10 @@ public class GameController : MonoBehaviour
                     backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.BackPack[i].Name.ToString().ToLower()}");
             }
         }
+    }
+    public List<string> GetAvailableActionsOnTile(string tileName)
+    {
+        SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).SetActions(gameModel.Board.GetTileByID(int.Parse(tileName.Substring(8))));
+        return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.Distinct().ToList();
     }
 }

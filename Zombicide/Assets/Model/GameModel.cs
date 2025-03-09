@@ -179,6 +179,23 @@ namespace Model
 
             return step; // Az elsõ lépés a start mezõ szomszédja
         }
+        public List<int> DiceRoll(int diceAmount, int accuracy)
+        {
+            List<int> result = new List<int>();
+            for (int i = 0; i < diceAmount; i++)
+            {
+                result.Add(random.Next(1, 7)); // 1-6 között
+            }
+            return result;
+        }
+        public void ReRoll(ref List<int> before, int accuracy)
+        {
+            for (int i = 0; i < before.Count; i++)
+            {
+                if (before[i]<accuracy)
+                    before[i]=random.Next(1, 7); // 1-6 között
+            }
+        }
         public Item Search(MapTile tile)
         {
             int roll = random.Next(0, items.Count()+3);
@@ -282,7 +299,7 @@ namespace Model
             List<Survivor> sList= new List<Survivor>();
             foreach (string s in survivors)
             {
-                Survivor survivor=SurvivorFactory.CreateSurvivor(s);
+                Survivor survivor=SurvivorFactory.GetSurvivorByName(s);
                 survivor.SetReference(this);
                 sList.Add(survivor);
             }

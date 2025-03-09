@@ -13,6 +13,7 @@ namespace Model.Characters
         protected int action;
         protected GameModel model;
         public MapTile CurrentTile { get; private set; }
+        public int UsedAction {  get; set; }
         protected Character() { }
         public bool MoveTo(MapTile to)
         {
