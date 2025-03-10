@@ -1,4 +1,5 @@
 ﻿using Model;
+using Model.Board;
 using Model.Characters.Survivors;
 using Network;
 using Persistence;
@@ -10,6 +11,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
@@ -22,6 +24,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private List<GameObject> backPack=new List<GameObject>();
     private int selectedMapID;
     private Dictionary<ulong, string> playerSelections;
+    private Dictionary<string, GameObject> playerPrefabs=new Dictionary<string, GameObject>();
     private GameObject charImagePrefab;
     private HorizontalLayoutGroup charListContainer;
     public static GameController Instance { get; private set; }
@@ -100,6 +103,7 @@ public class GameController : MonoBehaviour
         {
             GameObject playerPrefab = Resources.Load<GameObject>($"Prefabs/Players/{item.Replace(" ",string.Empty)}");
             GameObject player=Instantiate(playerPrefab);
+            playerPrefabs.Add(item.Replace(" ", string.Empty), player);
             player.transform.position = newPosition;
             if (multiply < 4)
             {
@@ -140,6 +144,7 @@ public class GameController : MonoBehaviour
     private void StartNextTurn()
     {
         gameModel.CurrentPlayer.StartedRound = true;
+        gameModel.CurrentPlayer.SetFreeActions();
 
         // A hálózati managernek szólunk
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
@@ -240,6 +245,42 @@ public class GameController : MonoBehaviour
             }
         }
     }
+    public void EnableDoors(bool enable)
+    {
+        foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
+        {
+            if (child.name=="Doors")
+            {
+                foreach (Transform subChild in child.transform)
+                {
+                    Debug.Log("subchild: "+subChild.name+"currenttile id: "+survivor.CurrentTile.Id);
+                    if (int.Parse(subChild.name.Substring(5).Split('_')[0])==survivor.CurrentTile.Id || int.Parse(subChild.name.Substring(5).Split('_')[1]) == survivor.CurrentTile.Id)
+                    {
+                        var collider = subChild.GetComponent<BoxCollider>();
+                        if (collider != null)
+                            collider.enabled = enable;
+                    }
+                }
+            }
+        }
+    }
+
+    public void OpenDoor(GameObject door, string weaponOption, Survivor s)
+    {
+        TileConnection connection = s.CurrentTile.GetTileConnectionById(int.Parse(door.gameObject.name.Substring(5).Split('_')[0]), int.Parse(door.gameObject.name.Substring(5).Split('_')[1]));
+        if (weaponOption == "Right Hand")
+            s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
+        else
+            s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
+        Destroy(door);
+        IncreaseUsedActions("Open Door",s);
+        EnableDoors(false);
+    }
+
+    public void IncreaseUsedActions(string action, Survivor s)
+    {
+        s.OnUsedAction(action);
+    }
     public void EndTurn()
     {
         if (NetworkManager.Singleton.LocalClientId != GetClientIdByCharacter(gameModel.CurrentPlayer.Name))
@@ -287,6 +328,88 @@ public class GameController : MonoBehaviour
     public List<string> GetAvailableActionsOnTile(string tileName)
     {
         SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).SetActions(gameModel.Board.GetTileByID(int.Parse(tileName.Substring(8))));
-        return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.Distinct().ToList();
+        return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.ToList();
+    }
+
+    public List<string> GetAvailableDoorOpeners()
+    {
+        List<string> result = new List<string>();
+        if (survivor.RightHand != null && survivor.RightHand is Weapon weapon && weapon.CanOpenDoors) result.Add("Right Hand");
+        if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
+        return result;
+    }
+    //public bool ExecuteAction(string action, string objectName)
+    //{
+    //    // Csak a hoston fut
+    //    switch (action)
+    //    {
+    //        case "Search":
+    //            //
+    //            return true;
+    //        default:
+    //            Debug.LogWarning("Unknown action: " + action);
+    //            return false;
+    //    }
+    //}
+
+    public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
+    {
+        GameObject gObject = null;
+        Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]);
+        switch (actionName)
+        {
+            case "Open Door Right Hand":
+                foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
+                {
+                    if (child.name=="Doors")
+                    {
+                        foreach (Transform subChild in child.transform)
+                        {
+                            if (subChild.name == objectName)
+                            {
+                                gObject = subChild.gameObject; break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                OpenDoor(gObject, "Right Hand", s);
+                break;
+            case "Open Door Left Hand":
+                foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
+                {
+                    if (child.name == "Doors")
+                    {
+                        foreach (Transform subChild in child.transform)
+                        {
+                            if (subChild.name == objectName)
+                            {
+                                gObject = subChild.gameObject; break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                OpenDoor(gObject, "Left Hand", s);
+                break;
+            case "Search":
+                break;
+            case "Skip":
+                s.Skip();
+                break;
+            case "Move":
+                s.Move(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[survivor.Name.Replace(" ",string.Empty)]);
+                break;
+            default:
+                Debug.LogWarning("Unknown action: " + actionName);
+                break;
+        }
+        if (s.FinishedRound)
+        {
+            gameModel.NextPlayer();
+            StartNextTurn();
+        }
+            
     }
 }

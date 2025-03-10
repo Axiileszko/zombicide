@@ -22,15 +22,24 @@ namespace Model.Characters.Survivors
             }
         }
         private Lou(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.CHARGE); }
+        public override void SetFreeActions()
+        {
+        }
         public override void SetActions(MapTile tileClicked)
         {
+            Actions.Clear();
+            if (tileClicked == CurrentTile && CanOpenDoorOnTile())
+                Actions.Add("Open Door", new GameAction("Open Door", 1, null));
             if (tileClicked == CurrentTile)
                 Actions.Add("Search", new GameAction("Search", 1, () => Search()));
-            if (tileClicked.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
+            if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
             {
-                Actions.Add("Charge Move", new GameAction("Charge Move", 1, () => Move(tileClicked)));
-                Actions.Add("Slippery Move", new GameAction("Slippery Move", 1, () => Move(tileClicked)));
-                Actions.Add("Move", new GameAction("Move", 1, () => Move(tileClicked)));
+                if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
+                {
+                    Actions.Add("Charge Move", new GameAction("Charge Move", 1, () => Move(tileClicked)));
+                    Actions.Add("Slippery Move", new GameAction("Slippery Move", 1, () => Move(tileClicked)));
+                    Actions.Add("Move", new GameAction("Move", 1, () => Move(tileClicked)));
+                }
             }
             if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
                 Actions.Add("Attack", new GameAction("Attack", 1, null));

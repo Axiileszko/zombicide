@@ -12,16 +12,16 @@ namespace Model.Characters.Survivors
     {
         SLIPPERY, MEDIC, LUCKY, MATHCINGSET, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, MULTIPLESEARCH, AMBIDEXTROUS
     }
-    public abstract class Survivor:Character
+    public abstract class Survivor : Character
     {
         protected string name;
         protected int aPoints;
         protected bool isKid;
-        protected List<Item> backpack=new List<Item>();
+        protected List<Item> backpack = new List<Item>();
         protected Item rightHand;
         protected Item leftHand;
-        public bool FinishedRound {  get; set; }
-        public bool StartedRound {  get; set; }
+        public bool FinishedRound { get; set; }
+        public bool StartedRound { get; set; }
         public List<Trait> Traits { get; protected set; } = new List<Trait>();
         public bool IsDead { get; set; }
         public string Name { get { return name; } }
@@ -29,13 +29,25 @@ namespace Model.Characters.Survivors
         public Item LeftHand { get { return leftHand; } }
         public List<Item> BackPack { get { return backpack; } }
         public Dictionary<string, GameAction> Actions { get; protected set; } = new Dictionary<string, GameAction>();
+        public Dictionary<string, GameAction> FreeActions { get; protected set; } = new Dictionary<string, GameAction>();
         public Survivor(string name, bool isKid)
         {
             this.name = name;
             this.isKid = isKid;
             Reset();
         }
+        public bool CanOpenDoorOnTile()
+        {
+            if (!CurrentTile.Neighbours.Select(x => x.IsDoorOpen).ToList().Contains(false)) return false;
+            bool rightH = false;
+            bool leftH = false;
+            if (rightHand != null && rightHand is Weapon weapon && weapon.CanOpenDoors) rightH = true;
+            if (leftHand != null && leftHand is Weapon weapon2 && weapon2.CanOpenDoors) leftH = true;
+            if (!rightH && !leftH) return false;
+            return true;
+        }
         public abstract void SetActions(MapTile tileClicked);
+        public abstract void SetFreeActions();
         public virtual void Move(MapTile targetTile)
         {
             if(model.GetZombiesInPriorityOrderOnTile(targetTile).Count==0)
@@ -245,13 +257,25 @@ namespace Model.Characters.Survivors
         public void Skip()
         {
             FinishedRound=true;
-            StartedRound=false;
-            UsedAction = 0;
+            //StartedRound=false;
         }
 
         public void PickGenericWeapon(Weapon weapon)
         {
             rightHand = weapon;
         }
+
+        public void OnUsedAction(string action)
+        {
+            if (FreeActions.Keys.Contains(action))
+                FreeActions.Remove(action);
+            else
+                UsedAction += Actions[action].Cost;
+            if (UsedAction == this.action)
+            {
+                FinishedRound = true;
+            }
+        }
+        
     }
 }

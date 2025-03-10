@@ -46,6 +46,17 @@ namespace Model.Board
                 NoiseCounter++;
             tileConnection.IsDoorOpen = true;
         }
+        public TileConnection GetTileConnectionById(int from, int to)
+        {
+            if (from == Id)
+            {
+                return Neighbours.First(x=>x.Destination.Id == to);
+            }
+            else
+            {
+                return Neighbours.First(x => x.Destination.Id == from);
+            }
+        }
         public void AddNeighbour(TileConnection connection)
         {
             Neighbours.Add(connection);

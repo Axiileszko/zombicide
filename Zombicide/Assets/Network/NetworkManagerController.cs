@@ -215,7 +215,6 @@ namespace Network
         {
             if (hasSentPlayerSelections)
             {
-                Debug.LogWarning("SendPlayerSelectionsServerRpc már futott, nem fut újra!");
                 return;
             }
 
@@ -274,8 +273,32 @@ namespace Network
         [ServerRpc(RequireOwnership = false)]
         public void SendMessageToClientsServerRpc(MessageType type, string data)
         {
-            Debug.Log($"mtype: {type} data: {data}");
             ReceiveMessageClientRpc(type, data);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void RequestActionServerRpc(ulong playerId, string actionName, string objectName)
+        {
+            Debug.Log($"[SERVER] Player {playerId} requested action: {actionName} on tile {objectName}");
+
+            // Az akciót végrehajtjuk a szerveren
+            //bool success = GameController.Instance.ExecuteAction(actionName, objectName);
+
+            // Az eredményt kiküldjük minden kliensnek
+            //if (success)
+            //{
+            //    ApplyActionClientRpc(playerId, actionName, objectName);
+            //}
+            ApplyActionClientRpc(playerId, actionName, objectName);
+        }
+
+        [ClientRpc]
+        public void ApplyActionClientRpc(ulong playerId, string actionName, string objectName)
+        {
+            Debug.Log($"[CLIENT] Player {playerId} executed action: {actionName} on tile {objectName}");
+
+            // Minden kliens végrehajtja az akciót
+            GameController.Instance.ApplyActionLocally(playerId,actionName, objectName);
         }
     }
 }

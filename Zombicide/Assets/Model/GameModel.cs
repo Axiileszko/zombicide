@@ -347,7 +347,18 @@ namespace Model
             }
             currentPlayer = playerOrder[0];
         }
-
+        public void NextPlayer()
+        {
+            if(CurrentPlayer==playerOrder.Last())
+            {
+                //endround
+            }
+            else
+            {
+                int index=playerOrder.IndexOf(CurrentPlayer);
+                currentPlayer = playerOrder[index++];
+            }
+        }
         public int NumberOfPlayersOnTile(int tileID)
         {
             return SurvivorLocations.Count(x=>x==tileID);

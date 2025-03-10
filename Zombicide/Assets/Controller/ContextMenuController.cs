@@ -23,9 +23,9 @@ public class ContextMenuController : MonoBehaviour
         // Ha már van egy nyitott menü, elõször azt töröljük
         if (currentMenu != null) Destroy(currentMenu);
 
+        GameController.Instance.EnableBoardInteraction(false);
         // Menü létrehozása
         currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);
-        Debug.Log("currentmenu isntantiate után: "+currentMenu.name);
         currentMenu.transform.localPosition = position;
 
         VerticalLayoutGroup layout = null;
@@ -49,6 +49,7 @@ public class ContextMenuController : MonoBehaviour
 
     public void CloseMenu()
     {
+        GameController.Instance.EnableBoardInteraction(true);
         if (currentMenu != null) Destroy(currentMenu);
     }
 }
