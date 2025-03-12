@@ -141,6 +141,9 @@ namespace Persistence
 
                     TileConnection connection = new TileConnection(toTile, connectionData.isWall, connectionData.hasDoor, connectionData.isDoorOpen);
                     fromTile.AddNeighbour(connection);
+
+                    TileConnection connection2 = new TileConnection(fromTile, connectionData.isWall, connectionData.hasDoor, connectionData.isDoorOpen);
+                    toTile.AddNeighbour(connection2);
                 }
             }
 

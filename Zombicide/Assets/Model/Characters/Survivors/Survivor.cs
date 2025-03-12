@@ -2,6 +2,7 @@
 using Model.Characters.Zombies;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,8 +23,10 @@ namespace Model.Characters.Survivors
         protected Item leftHand;
         public bool FinishedRound { get; set; }
         public bool StartedRound { get; set; }
+        public bool SearchedAlready { get; set; }
         public List<Trait> Traits { get; protected set; } = new List<Trait>();
         public bool IsDead { get; set; }
+        public int APoints { get {  return aPoints; } }
         public string Name { get { return name; } }
         public Item RightHand { get { return rightHand; } }
         public Item LeftHand { get { return leftHand; } }
@@ -159,38 +162,20 @@ namespace Model.Characters.Survivors
             CurrentTile.PickUpObjective();//lehet kezdünk még valamit az object refel amit visszaadna
             aPoints += 5;
         }
-        public void RecieveItem(Item item)
-        {
-            backpack.Add(item);
-            //ilyenkor lehet majd rendezni
-        }
-        public void Search() 
-        {
-            var item=model.Search(CurrentTile);
-            if (item != null) { backpack.Add(item); }
-            //nézzuk hogy belefér-e->muszáj e eldobni
-        }
-
-        public Item ThrowAway(Item item)
+        public void ThrowAway(Item item)
         {
             if (item.Name==ItemName.RICE || item.Name == ItemName.WATER || item.Name == ItemName.CANNEDFOOD)
             {
                 aPoints += 3;
             }
-            if(rightHand==item)
-                rightHand = null;
-            else if (leftHand==item)
-                leftHand = null;
-            backpack.Remove(item);
-            return item;
         }
         public void Reset()
         {
             StartedRound = false;
             FinishedRound = false;
+            SearchedAlready = false;
             UsedAction = 0;
             aPoints = 0;
-            model = null;
             backpack = new List<Item>();
             //Traits.Clear(); valamikor kéne clearelni
             if (isKid)
@@ -203,54 +188,41 @@ namespace Model.Characters.Survivors
                 hp = 3;
             action = 3;
         }
-        public void SwitchItems(Survivor survivor, Item item, bool gives)
-        {
-            //másiknak adunk vagy másiktól kérünk
-            if (survivor.CurrentTile == CurrentTile)
-            {
-                if(gives)
-                {
-                    //mi adunk
-                    var itemToGive = ThrowAway(item);
-                    survivor.RecieveItem(itemToGive);
-                }
-                else
-                {
-                    //mi kapunk
-                    var itemToGet = survivor.ThrowAway(item);
-                    RecieveItem(itemToGet);
-                }
-            }
-        }
+        //public void SwitchItems(Survivor survivor, Item item, bool gives)
+        //{
+        //    //másiknak adunk vagy másiktól kérünk
+        //    if (survivor.CurrentTile == CurrentTile)
+        //    {
+        //        if(gives)
+        //        {
+        //            //mi adunk
+        //            var itemToGive = ThrowAway(item);
+        //            survivor.RecieveItem(itemToGive);
+        //        }
+        //        else
+        //        {
+        //            //mi kapunk
+        //            var itemToGet = survivor.ThrowAway(item);
+        //            RecieveItem(itemToGet);
+        //        }
+        //    }
+        //}
 
-        public void PutIntoBackpack(bool isRightHand)
+        public void PutIntoBackpack(List<Item> items)
         {
-            if (backpack.Count < 3)
+            if (items.Count <= 3)
             {
-                if (isRightHand)
-                {
-                    var item = rightHand;
-                    rightHand = null;
-                    backpack.Add(item);
-                }
-                else
-                {
-                    var item = leftHand;
-                    leftHand = null;
-                    backpack.Add(item);
-                }
+                backpack = items;
             }
         }
-        public void TakeFromBackpack(bool isRightHand, Item item)
+        public void PutIntoHand(bool isRightHand, Item item)
         {
-            if (isRightHand && rightHand==null)
+            if (isRightHand)
             {
-                backpack.Remove(item);
                 rightHand = item;
             }
-            else if(leftHand==null)
+            else
             {
-                backpack.Remove(item);
                 leftHand = item;
             }
         }
@@ -260,6 +232,10 @@ namespace Model.Characters.Survivors
             //StartedRound=false;
         }
 
+        public bool HasFlashLight()
+        {
+            return (rightHand != null && rightHand.Name == ItemName.FLASHLIGHT) || (leftHand != null && leftHand.Name == ItemName.FLASHLIGHT) || backpack.Any(x => x.Name == ItemName.FLASHLIGHT);
+        }
         public void PickGenericWeapon(Weapon weapon)
         {
             rightHand = weapon;

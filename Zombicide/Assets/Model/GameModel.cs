@@ -196,14 +196,28 @@ namespace Model
                     before[i]=random.Next(1, 7); // 1-6 között
             }
         }
-        public Item Search(MapTile tile)
+        public List<Item> Search(MapTile tile, bool useFlashlight)
         {
-            int roll = random.Next(0, items.Count()+3);
-            if (roll > items.Count)
+            if (useFlashlight)
             {
-                SpawnZombie(ZombieType.WALKER, 1, tile);
+                List<Item> result = new List<Item>();
+                int roll = random.Next(0, items.Count() + 3);
+                int roll2 = random.Next(0, items.Count() + 3);
+                if (roll < items.Count)
+                    result.Add(items.ElementAt(roll));
+                if (roll2 < items.Count)
+                    result.Add(items.ElementAt(roll2));
+                return result;
             }
-            return items.ElementAt(roll);
+            else
+            {
+                int roll = random.Next(0, items.Count()+3);
+                if (roll > items.Count)
+                {
+                    return null;
+                }
+                return new List<Item>() { items.ElementAt(roll) };
+            }
         }
         private void SpawnZombies()
         {
@@ -260,7 +274,7 @@ namespace Model
                 }
             }
         }
-        private void SpawnZombie(ZombieType type, int amount, MapTile tile)
+        public void SpawnZombie(ZombieType type, int amount, MapTile tile)
         {
             if (type == ZombieType.ABOMINAWILD || type == ZombieType.ABOMINACOP || type== ZombieType.HOBOMINATION || type ==ZombieType.PATIENTZERO)
             {
@@ -332,31 +346,37 @@ namespace Model
             }
             return weapons;
         }
-        public void DecidePlayerOrder(List<string>? survivorOrder)
+        public void DecidePlayerOrder()
         {
-            if(survivorOrder ==null)
-                playerOrder=survivors.OrderBy(x=>random.Next()).ToList();
-            else
+            playerOrder = survivors.OrderBy(x => random.Next()).ToList();
+            currentPlayer = playerOrder[0];
+        }
+
+        public void SetPlayerOrder(List<string>? survivorOrder)
+        {
+            if (playerOrder.Count==0)
             {
-                List<Survivor> newOrder=new List<Survivor>();
+                List<Survivor> newOrder = new List<Survivor>();
                 foreach (var item in survivorOrder)
                 {
                     newOrder.Add(survivors.First(x => x.Name == item));
                 }
                 playerOrder = newOrder;
+                currentPlayer = playerOrder[0];
             }
-            currentPlayer = playerOrder[0];
         }
         public void NextPlayer()
         {
-            if(CurrentPlayer==playerOrder.Last())
+            if (currentPlayer==playerOrder.Last())
             {
                 //endround
             }
             else
             {
-                int index=playerOrder.IndexOf(CurrentPlayer);
-                currentPlayer = playerOrder[index++];
+                int index=playerOrder.IndexOf(currentPlayer);
+                index++;
+                currentPlayer = playerOrder[index];
+                Debug.Log("uj currentplayer:" + currentPlayer);
             }
         }
         public int NumberOfPlayersOnTile(int tileID)

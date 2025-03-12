@@ -231,7 +231,7 @@ GameObject:
   m_Component:
   - component: {fileID: 206984485186099052}
   m_Layer: 0
-  m_Name: Objectiive_19
+  m_Name: Objective_19
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -357,7 +357,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -465,7 +465,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
   m_Center: {x: 0, y: 1.173249e-13, z: 4.1280036}
@@ -573,7 +573,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -879,7 +879,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
   m_Center: {x: 0, y: 0, z: 4.1280026}
@@ -1085,7 +1085,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -1446,7 +1446,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
   m_Center: {x: 0, y: 0, z: 4.1280026}
@@ -1786,7 +1786,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
   m_Center: {x: 0, y: 1.173249e-13, z: 4.128003}
@@ -1866,7 +1866,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3156818511658878913}
   m_Layer: 0
-  m_Name: Objectiive_15
+  m_Name: Objective_15
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2313,7 +2313,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2577201164985569760}
   m_Layer: 0
-  m_Name: Objectiive_10
+  m_Name: Objective_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2871,7 +2871,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4254249211920673597}
   m_Layer: 0
-  m_Name: Objectiive_3
+  m_Name: Objective_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3001,7 +3001,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4194365103219235485}
   m_Layer: 0
-  m_Name: Objectiive_7
+  m_Name: Objective_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3664,7 +3664,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
   m_Center: {x: 0, y: 1.173249e-13, z: 4.128003}
@@ -3772,7 +3772,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -3946,7 +3946,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
   m_Center: {x: 0, y: 0.0000019073489, z: 4.1280036}
@@ -4335,7 +4335,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5568766168938355302}
   m_Layer: 0
-  m_Name: Objectiive_16
+  m_Name: Objective_16
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4801,7 +4801,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -5030,7 +5030,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -5138,7 +5138,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
   m_Center: {x: 0, y: 0, z: 4.1280026}
@@ -5832,7 +5832,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -5940,7 +5940,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017258, z: 9.095858}
   m_Center: {x: 0, y: 1.173249e-13, z: 4.128003}
@@ -6380,7 +6380,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -7172,7 +7172,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7004337632648683818}
   m_Layer: 0
-  m_Name: Objectiive_9
+  m_Name: Objective_9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7298,7 +7298,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 22.034513, y: 11.017256, z: 9.095856}
   m_Center: {x: 0, y: 0, z: 4.1280026}
@@ -7815,7 +7815,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8709124485302664864}
   m_Layer: 0
-  m_Name: Objectiive_6
+  m_Name: Objective_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7941,7 +7941,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 190.56697, y: 198.7915, z: 192.79587}
   m_Center: {x: -0.37123108, y: 0.006477357, z: -0.1263428}
@@ -8274,7 +8274,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9068514128325868827}
   m_Layer: 0
-  m_Name: Objectiive_2
+  m_Name: Objective_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

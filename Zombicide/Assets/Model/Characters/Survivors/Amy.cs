@@ -26,24 +26,28 @@ namespace Model.Characters.Survivors
         private Amy(string name, bool isKid):base(name, isKid){ }
         public override void SetFreeActions()
         {
-            FreeActions.Add("Move", new GameAction("Move", 0, null));
+            FreeActions.Add("Move", new GameAction("Move", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
             Actions.Clear();
             if (tileClicked == CurrentTile && CanOpenDoorOnTile())
-                Actions.Add("Open Door", new GameAction("Open Door", 1, null));
-            if (tileClicked==CurrentTile)
-                Actions.Add("Search", new GameAction("Search", 1, () => Search()));
+                Actions.Add("Open Door", new GameAction("Open Door", 1));
+            if (tileClicked==CurrentTile && CurrentTile.Type!=TileType.STREET&&!SearchedAlready)
+                Actions.Add("Search", new GameAction("Search", 1));
             if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
             {
                 if(CurrentTile.Neighbours.First(x=>x.Destination==tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
                 {
-                    Actions.Add("Move", new GameAction("Move", 1, () => Move(tileClicked)));
+                    Actions.Add("Move", new GameAction("Move", 1));
                 }
             }
             if(model.GetZombiesInPriorityOrderOnTile(tileClicked).Count>0)
-                Actions.Add("Attack",new GameAction("Attack",1,null));
+                Actions.Add("Attack",new GameAction("Attack",1));
+            if(CurrentTile.Objective!=null && tileClicked==CurrentTile)
+                Actions.Add("Pick Up Objective", new GameAction("Pick Up Objective", 1));
+            if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)
+                Actions.Add("Pick Up Pimp Weapon", new GameAction("Pick Up Pimp Weapon", 1));
         }
     }
 }

@@ -16,9 +16,4 @@ public class TileDisplay : MonoBehaviour
 
     }
 
-    //private void OnMouseDown()
-    //{
-    //    Debug.Log("Tile kattintva: " + gameObject.name);
-    //}
-
 }

@@ -45,6 +45,7 @@ namespace Model.Board
             if(weapon.IsLoud)
                 NoiseCounter++;
             tileConnection.IsDoorOpen = true;
+            tileConnection.Destination.Neighbours.First(x=>x.Destination.Id==Id).IsDoorOpen = true;
         }
         public TileConnection GetTileConnectionById(int from, int to)
         {

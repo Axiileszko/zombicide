@@ -10,16 +10,10 @@ namespace Model
     {
         public string Name { get; private set; }
         public int Cost { get; private set; }
-        public Action ExecutionMethod { get; private set; }
-        public GameAction(string name, int cost, Action executionMethod)
+        public GameAction(string name, int cost)
         {
             Name = name;
             Cost = cost;
-            ExecutionMethod = executionMethod;
-        }
-        public void Execute()
-        {
-            ExecutionMethod.Invoke();
         }
     }
 }

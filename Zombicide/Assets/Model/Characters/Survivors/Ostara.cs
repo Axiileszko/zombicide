@@ -21,7 +21,7 @@ namespace Model.Characters.Survivors
                 return instance;
             }
         }
-        private Ostara(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.MULTIPLESEARCH); }
+        private Ostara(string name, bool isKid) : base(name, isKid) { }
         public override void SetFreeActions()
         {
         }
@@ -29,20 +29,24 @@ namespace Model.Characters.Survivors
         {
             Actions.Clear();
             if (tileClicked == CurrentTile && CanOpenDoorOnTile())
-                Actions.Add("Open Door", new GameAction("Open Door", 1, null));
-            if (tileClicked == CurrentTile)
-                Actions.Add("Search", new GameAction("Search", 1, () => Search()));
-                Actions.Add("Multi Search", new GameAction("Multi Search", 1, () => Search()));
+                Actions.Add("Open Door", new GameAction("Open Door", 1));
+            if (tileClicked == CurrentTile && CurrentTile.Type != TileType.STREET)
+                Actions.Add("Search", new GameAction("Search", 1));
+                Actions.Add("Multi Search", new GameAction("Multi Search", 1));
             if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
             {
                 if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
                 {
-                    Actions.Add("Move", new GameAction("Move", 1, () => Move(tileClicked)));
-                    Actions.Add("Slippery Move", new GameAction("Slippery Move", 1, () => Move(tileClicked)));
+                    Actions.Add("Move", new GameAction("Move", 1));
+                    Actions.Add("Slippery Move", new GameAction("Slippery Move", 1));
                 }
             }
             if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
-                Actions.Add("Attack", new GameAction("Attack", 1, null));
+                Actions.Add("Attack", new GameAction("Attack", 1));
+            if (CurrentTile.Objective != null && tileClicked == CurrentTile)
+                Actions.Add("Pick Up Objective", new GameAction("Pick Up Objective", 1));
+            if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)
+                Actions.Add("Pick Up Pimp Weapon", new GameAction("Pick Up Pimp Weapon", 1));
         }
     }
 }

@@ -14,14 +14,16 @@ namespace Model.Characters
         protected GameModel model;
         public MapTile CurrentTile { get; private set; }
         public int UsedAction {  get; set; }
+        public int HP { get { return hp; } }
         protected Character() { }
         public bool MoveTo(MapTile to)
         {
             if (CurrentTile is null)
             {
-                CurrentTile = to;return true;
+                CurrentTile = to;
+                return true;
             }
-            else if (CurrentTile.Neighbours.Any(n => n.Destination == to && !n.IsWall && (n.HasDoor == false || n.IsDoorOpen)))
+            else if (CurrentTile.Neighbours.Any(n => n.Destination == to && !n.IsWall || (n.HasDoor == true && n.IsDoorOpen)))
             {
                 CurrentTile = to;
                 return true;
@@ -37,7 +39,7 @@ namespace Model.Characters
         }
         public void SetReference(GameModel gameModel)
         {
-            model = gameModel;
+            this.model = gameModel;
         }
     }
 }

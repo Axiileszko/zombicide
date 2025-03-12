@@ -16,7 +16,11 @@ namespace Network
         PlayerOrder,
         TurnStart,
         TurnEnd,
-        GenericWeapon
+        GenericWeapon,
+        FinishedRound,
+        PimpWeapon,
+        ItemsChanged,
+        Search
     }
     public class NetworkManagerController:NetworkBehaviour
     {
@@ -266,6 +270,18 @@ namespace Network
                     break;
                 case MessageType.GenericWeapon:
                     GameController.Instance.ReceiveGenericWeapons(data);
+                    break;
+                case MessageType.FinishedRound:
+                    GameController.Instance.PlayerFinishedRound(data);
+                    break;
+                case MessageType.PimpWeapon:
+                    GameController.Instance.ReceivePimpWeapon(data);
+                    break;
+                case MessageType.ItemsChanged:
+                    GameController.Instance.ReceiveItemsChanged(data);
+                    break;
+                case MessageType.Search:
+                    GameController.Instance.ReceiveSearch(data);
                     break;
             }
         }
