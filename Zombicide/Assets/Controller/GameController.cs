@@ -33,6 +33,7 @@ public class GameController : MonoBehaviour
     private GameObject charImagePrefab;
     private HorizontalLayoutGroup charListContainer;
     private GameObject? inventoryForS;
+    private bool isInventoryOpen=false;
     public static GameController Instance { get; private set; }
     private void Start()
     {
@@ -250,6 +251,7 @@ public class GameController : MonoBehaviour
     }
     public void EnableBoardInteraction(bool enable)
     {
+        if (enable && isInventoryOpen) return; 
         //SubTile objektumok collidereinek engedélyezése/tiltása
         foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
         {
@@ -300,7 +302,7 @@ public class GameController : MonoBehaviour
         if (weaponOption == "Right Hand")
             s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
         else
-            s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
+            s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
         Destroy(door);
         EnableDoors(false);
     }
@@ -349,20 +351,6 @@ public class GameController : MonoBehaviour
         if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
         return result;
     }
-    //public bool ExecuteAction(string action, string objectName)
-    //{
-    //    // Csak a hoston fut
-    //    switch (action)
-    //    {
-    //        case "Search":
-    //            //
-    //            return true;
-    //        default:
-    //            Debug.LogWarning("Unknown action: " + action);
-    //            return false;
-    //    }
-    //}
-
     public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
     {
         Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[playerID]);
@@ -442,6 +430,7 @@ public class GameController : MonoBehaviour
     }
     public void OpenInventory(List<Item>? additionalItems)
     {
+        isInventoryOpen = true;
         cameraDrag.SetActive(false);
         GameObject gameUI = GameObject.FindGameObjectWithTag("GameUI");
         GameObject inventoryPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Inventory");
@@ -516,7 +505,6 @@ public class GameController : MonoBehaviour
         string leftH = string.Empty;string rightH = string.Empty;
         List<string> backP = new List<string>();
         List<string> throwAway = new List<string>();
-        EnableBoardInteraction(survivor==gameModel.CurrentPlayer);
         if (inventoryForS!=null)
         {
             foreach (Transform child in inventoryForS.transform)
@@ -541,6 +529,8 @@ public class GameController : MonoBehaviour
         Destroy(inventoryForS);
         string data = $"{leftH};{rightH};{string.Join(',', backP)};{string.Join(',', throwAway)}:{survivor.Name}";
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ItemsChanged, data);
+        isInventoryOpen = false;
+        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
 
     public void ReceiveItemsChanged(string data)
@@ -575,11 +565,9 @@ public class GameController : MonoBehaviour
         s.PutIntoBackpack(backpackItem);
         foreach (var item in throwAwayItem) { s.ThrowAway(item); }
         UpdateItemSlots();
-        if(s.LeftHand != null)
-            Debug.Log(s.LeftHand.Name);
-        if (s.RightHand != null)
-            Debug.Log(s.RightHand.Name);
-        Debug.Log(string.Join(',', s.BackPack));
+        UpdatePlayerStats();
+        Debug.Log(survivor.LeftHand);
+        Debug.Log(survivor.RightHand);
     }
 
     public void ReceiveSearch(string data)

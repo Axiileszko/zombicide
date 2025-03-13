@@ -296,15 +296,6 @@ namespace Network
         public void RequestActionServerRpc(ulong playerId, string actionName, string objectName)
         {
             Debug.Log($"[SERVER] Player {playerId} requested action: {actionName} on tile {objectName}");
-
-            // Az akciót végrehajtjuk a szerveren
-            //bool success = GameController.Instance.ExecuteAction(actionName, objectName);
-
-            // Az eredményt kiküldjük minden kliensnek
-            //if (success)
-            //{
-            //    ApplyActionClientRpc(playerId, actionName, objectName);
-            //}
             ApplyActionClientRpc(playerId, actionName, objectName);
         }
 
