@@ -43,15 +43,15 @@ namespace Model.Characters.Survivors
                 if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)
                     Actions.Add("Pick Up Pimp Weapon", new GameAction("Pick Up Pimp Weapon", 1));
             }
-            int amount = model.GetZombiesInPriorityOrderOnTile(tileClicked).Count + 1;
-            if (amount + UsedAction <= action)
+            if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
             {
-                if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
+                if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
                 {
-                    if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
-                    {
+                    int amount = model.GetZombiesInPriorityOrderOnTile(tileClicked).Count + 1;
+                    if (model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0 && !SlipperyMovedAlready && Traits.Contains(Trait.SLIPPERY))
+                        Actions.Add("Slippery Move", new GameAction("Slippery Move", 1));
+                    if (amount + UsedAction <= action)
                         Actions.Add("Move", new GameAction("Move", amount));
-                    }
                 }
             }
         }

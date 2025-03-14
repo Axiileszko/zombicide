@@ -24,6 +24,7 @@ namespace Model.Characters.Survivors
         public bool FinishedRound { get; set; }
         public bool StartedRound { get; set; }
         public bool SearchedAlready { get; set; }
+        public bool SlipperyMovedAlready { get; set; }
         public List<Trait> Traits { get; protected set; } = new List<Trait>();
         public bool IsDead { get; set; }
         public int APoints { get {  return aPoints; } }
@@ -49,6 +50,14 @@ namespace Model.Characters.Survivors
             if (!rightH && !leftH) return false;
             return true;
         }
+        public void NewRound()
+        {
+            UsedAction = 0;
+            StartedRound = false;
+            SlipperyMovedAlready = false;
+            SearchedAlready = false;
+            FinishedRound = false;
+        }
         public abstract void SetActions(MapTile tileClicked);
         public abstract void SetFreeActions();
         public virtual void Move(MapTile targetTile)
@@ -60,6 +69,7 @@ namespace Model.Characters.Survivors
         {
             if (Traits.Contains(Trait.SLIPPERY))
                 MoveTo(targetTile);
+            SlipperyMovedAlready=true;
         }
         public virtual void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws)
         {
@@ -174,6 +184,7 @@ namespace Model.Characters.Survivors
             StartedRound = false;
             FinishedRound = false;
             SearchedAlready = false;
+            SlipperyMovedAlready = false;
             UsedAction = 0;
             aPoints = 0;
             backpack = new List<Item>();
@@ -229,7 +240,6 @@ namespace Model.Characters.Survivors
         public void Skip()
         {
             FinishedRound=true;
-            //StartedRound=false;
         }
 
         public bool HasFlashLight()

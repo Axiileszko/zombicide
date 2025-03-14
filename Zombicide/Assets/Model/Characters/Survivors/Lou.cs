@@ -48,7 +48,7 @@ namespace Model.Characters.Survivors
                 if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
                 {
                     int amount = model.GetZombiesInPriorityOrderOnTile(tileClicked).Count + 1;
-                    if (model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0)
+                    if (model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0 && !SlipperyMovedAlready && Traits.Contains(Trait.SLIPPERY))
                         Actions.Add("Slippery Move", new GameAction("Slippery Move", 1));
                     if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0 && l)//nem teljesen
                         Actions.Add("Charge Move", new GameAction("Charge Move", 1));

@@ -20,7 +20,9 @@ namespace Network
         FinishedRound,
         PimpWeapon,
         ItemsChanged,
-        Search
+        Search,
+        PriorityChanged,
+        ZombieSpawn
     }
     public class NetworkManagerController:NetworkBehaviour
     {
@@ -282,6 +284,12 @@ namespace Network
                     break;
                 case MessageType.Search:
                     GameController.Instance.ReceiveSearch(data);
+                    break;
+                case MessageType.PriorityChanged:
+                    GameController.Instance.ReceiveNewPriority(data);
+                    break;
+                case MessageType.ZombieSpawn:
+                    GameController.Instance.ReceiveZombieSpawns(data);
                     break;
             }
         }

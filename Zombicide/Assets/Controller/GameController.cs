@@ -33,7 +33,9 @@ public class GameController : MonoBehaviour
     private GameObject charImagePrefab;
     private HorizontalLayoutGroup charListContainer;
     private GameObject? inventoryForS;
+    private GameObject? sniperMenuForS;
     private bool isInventoryOpen=false;
+    private Dictionary<int, GameObject> zombieCanvases = new Dictionary<int, GameObject>();
     public static GameController Instance { get; private set; }
     private void Start()
     {
@@ -42,7 +44,6 @@ public class GameController : MonoBehaviour
             NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnSceneLoaded;
         }
     }
-
     private void Awake()
     {
         if (Instance == null)
@@ -161,6 +162,38 @@ public class GameController : MonoBehaviour
         newPosition.y = startY;
         player.transform.position = newPosition;
     }
+    private void UpdateZombieCanvasOnTile(int tileID)
+    {
+        if(zombieCanvases.ContainsKey(tileID))
+        {
+            Destroy(zombieCanvases[tileID]);
+            zombieCanvases.Remove(tileID);
+        }
+        List<Zombie> zombies = gameModel.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(tileID));
+        if(zombies!=null && zombies.Count > 0)
+        {
+            GameObject zombieCanvasPrefab = Resources.Load<GameObject>("Prefabs/ZombieCanvas");
+            Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
+            BoxCollider collider = tile.GetComponent<BoxCollider>();
+            float startX = collider.transform.position.x;
+            float startZ = collider.transform.position.z + 0.1f;
+            float startY = 1f;
+            Vector3 newPosition = new Vector3();
+            newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
+            GameObject zc = Instantiate(zombieCanvasPrefab);
+            zc.transform.position = newPosition;
+            Transform panel=zc.transform.GetChild(0);
+            GameObject zombiePrefab = Resources.Load<GameObject>("Prefabs/Zombie");
+            foreach (string zombie in zombies.Select(x=>x.GetType().Name).Distinct())
+            {
+                int amount = zombies.Count(x => x.GetType().Name == zombie);
+                GameObject newZombie = Instantiate(zombiePrefab, panel.transform);
+                newZombie.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Characters/Zombies/{zombie}");
+                newZombie.transform.GetChild(0).GetComponent<TMP_Text>().text = amount.ToString();
+            }
+            zombieCanvases.Add(tileID, zc);
+        }
+    }
     private void StartNextTurn()
     {
         gameModel.CurrentPlayer.StartedRound = true;
@@ -184,7 +217,7 @@ public class GameController : MonoBehaviour
         GameObject zombieEntry = Instantiate(charImagePrefab, charListContainer.transform);
         zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
         Outline zoutline = zombieEntry.GetComponent<Outline>();
-        zoutline.enabled = false;
+        zoutline.enabled = gameModel.IsPlayerRoundOver;
         //majd állitsuk be a zombik outlinejat is rendesen
 
         List<Survivor> reversed = gameModel.PlayerOrder.ToList();
@@ -306,7 +339,6 @@ public class GameController : MonoBehaviour
         Destroy(door);
         EnableDoors(false);
     }
-
     public void IncreaseUsedActions(string action, Survivor s)
     {
         s.OnUsedAction(action);
@@ -343,7 +375,6 @@ public class GameController : MonoBehaviour
         SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).SetActions(gameModel.Board.GetTileByID(int.Parse(tileName.Substring(8))));
         return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.ToList();
     }
-
     public List<string> GetAvailableDoorOpeners()
     {
         List<string> result = new List<string>();
@@ -379,6 +410,12 @@ public class GameController : MonoBehaviour
                 MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ",string.Empty)]);
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Move", s);
+                break;
+            case "Slippery Move":
+                s.SlipperyMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Slippery Move", s);
                 break;
             case "Pick Up Pimp Weapon":
                 PickUpPimpW(s);
@@ -427,6 +464,70 @@ public class GameController : MonoBehaviour
             }
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
         }
+    }
+    public void OpenSniperMenu(List<Zombie> zombies)
+    {
+        isInventoryOpen = true;
+        cameraDrag.SetActive(false);
+        GameObject gameUI = GameObject.FindGameObjectWithTag("GameUI");
+        GameObject sniperPrefab = Resources.Load<GameObject>($"Prefabs/SniperMenu");
+        GameObject sniper = Instantiate(sniperPrefab, gameUI.transform);
+        EnableBoardInteraction(false);
+        List<string> zombieTypeList = zombies.Select(x=>x.GetType().Name).Distinct().ToList();
+        foreach (Transform child in sniper.transform)
+        {
+            if (child.name.StartsWith("Zombie"))
+            {
+                int i = 0;
+                foreach (Transform subChild in child.transform)
+                {
+                    if (i >=zombieTypeList.Count)
+                        break;
+                    if (zombieTypeList[i] != null)
+                    {
+                        GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
+                        GameObject item = Instantiate(itemPrefab, subChild.transform);
+                        if (zombieTypeList[i].StartsWith("Hobo")|| zombieTypeList[i].StartsWith("Abo"))
+                            item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Menu/AbominationSlot");
+                        else
+                            item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Menu/{zombieTypeList[i]}Slot");
+                    }
+                    i++;
+                }
+            }
+            else if (child.name.StartsWith("Ok"))
+            {
+                child.GetComponent<Button>().onClick.AddListener(() => {
+                    OnOkSniperMenuClicked();
+                });
+            }
+        }
+        sniperMenuForS = sniper;
+    }
+    public void OnOkSniperMenuClicked()
+    {
+        cameraDrag.SetActive(true);
+        List<string> newPriority = new List<string>();
+        if (sniperMenuForS != null)
+        {
+            foreach (Transform child in sniperMenuForS.transform)
+            {
+                foreach (Transform subChild in child.transform)
+                {
+                    if (subChild.transform.childCount > 0)
+                    {
+                        Transform item = subChild.transform.GetChild(0);
+                        if (child.name.StartsWith("Priority"))
+                            newPriority.Add(item.GetComponent<Image>().sprite.name.TrimEnd("Slot"));
+                    }
+                }
+            }
+        }
+        Destroy(sniperMenuForS);
+        string data = $"{string.Join(',', newPriority)}:{survivor.Name}";
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PriorityChanged, data);
+        isInventoryOpen = false;
+        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
     public void OpenInventory(List<Item>? additionalItems)
     {
@@ -497,10 +598,8 @@ public class GameController : MonoBehaviour
         }
         inventoryForS=inventory;
     }
-
     public void OnOkInventoryClicked()
     {
-        Debug.Log("Fut az onOk");
         cameraDrag.SetActive(true);
         string leftH = string.Empty;string rightH = string.Empty;
         List<string> backP = new List<string>();
@@ -532,7 +631,6 @@ public class GameController : MonoBehaviour
         isInventoryOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
-
     public void ReceiveItemsChanged(string data)
     {
         string[] strings = data.Split(':');
@@ -566,10 +664,33 @@ public class GameController : MonoBehaviour
         foreach (var item in throwAwayItem) { s.ThrowAway(item); }
         UpdateItemSlots();
         UpdatePlayerStats();
-        Debug.Log(survivor.LeftHand);
-        Debug.Log(survivor.RightHand);
     }
+    public void ReceiveNewPriority(string data)
+    {
+        string[] strings = data.Split(':');
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[1]); 
+        List<string> priority = strings[2].Split(',').ToList();//befejezni
+    }
+    public void ReceiveZombieSpawns(string data)
+    {
+        string[] strings = data.Split(";");
+        List<(ZombieType, int, int, int, int)> spawns = new List<(ZombieType, int, int, int, int)>();
+        foreach (string s in strings)
+        {
+            string[] spawnData = s.Split(",");
+            ZombieType type = (ZombieType)Enum.Parse(typeof(ZombieType), spawnData[0], true);
+            spawns.Add((type, int.Parse(spawnData[1]), int.Parse(spawnData[2]), int.Parse(spawnData[3]), int.Parse(spawnData[4])));
+        }
+        gameModel.SpawnZombies(spawns);
+        foreach (var item in gameModel.Board.Tiles)
+        {
+            UpdateZombieCanvasOnTile(item.Id);
+        }
 
+        gameModel.IsPlayerRoundOver = false;
+        NewRoundForPlayers();
+        StartNextTurn();
+    }
     public void ReceiveSearch(string data)
     {
         string[] strings = data.Split(';');
@@ -620,7 +741,6 @@ public class GameController : MonoBehaviour
             OpenInventory(new List<Item>() { pimp });
         }
     }
-
     public void PickUpPimpW(Survivor s)
     {
         if (NetworkManager.Singleton.IsHost)
@@ -631,9 +751,36 @@ public class GameController : MonoBehaviour
     }
     public void PlayerFinishedRound(string data)
     {
-        SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;
+        SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;//beállitani a használt képességeket falsera
         gameModel.NextPlayer();
-        StartNextTurn();
+        if(gameModel.IsPlayerRoundOver)
+        {
+            ShowPlayerOrder();
+            ZombieRound();
+        }
+        else
+            StartNextTurn();
+    }
+    private void ZombieRound()
+    {
+        gameModel.EndRound();
+        if(NetworkManager.Singleton.IsHost)
+        {
+            List<string> spawns = new List<string>();
+            for (int i = 0; i < gameModel.SpawnCount; i++)
+            {
+                (ZombieType, int, int, int, int) option = gameModel.ChooseZombieSpawnOption();
+                spawns.Add($"{option.Item1},{option.Item2},{option.Item3},{option.Item4},{option.Item5}");
+            }
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawn, string.Join(';',spawns));
+        }
+    }
+    private void NewRoundForPlayers()
+    {
+        foreach(var s in playerSelections.Values)
+        {
+            SurvivorFactory.GetSurvivorByName(s).NewRound();
+        }
     }
     public void ReceivePimpWeapon(string data)
     {

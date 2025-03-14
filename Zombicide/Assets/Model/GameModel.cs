@@ -28,7 +28,8 @@ namespace Model
         private System.Random random=new System.Random();
 
         private MapLoader mapLoader;
-
+        public bool IsPlayerRoundOver=false;
+        public int SpawnCount { get {  return zSpawns.Count+1; } }
         public Board.Board Board { get { return board; } }
         public List<Survivor> PlayerOrder { get { return playerOrder; } }
         public Survivor CurrentPlayer { get { return currentPlayer; } }
@@ -55,6 +56,7 @@ namespace Model
 
         public void StartGame(List<string> survivors, int mapID)
         {
+            IsPlayerRoundOver = false;
             GenerateItems();
             hasAbomination = false;
             dangerLevel = 0;
@@ -66,7 +68,6 @@ namespace Model
         public void EndRound()
         {
             //jatekosok itt jonnek
-            SpawnZombies();
             MoveZombies();
             ClearNoiseCounters();
             ShiftPlayerOrder();
@@ -219,59 +220,46 @@ namespace Model
                 return new List<Item>() { items.ElementAt(roll) };
             }
         }
-        private void SpawnZombies()
+        public (ZombieType, int, int, int, int) ChooseZombieSpawnOption()
         {
-            (ZombieType,int,int,int,int) spawn;
+            (ZombieType, int, int, int, int) spawn;
             if (hasAbomination)
             {
                 do
                 {
                     spawn = ZombieFactory.GetSpawnOption();
-                } while (spawn.Item1!=ZombieType.ABOMINAWILD || spawn.Item1 != ZombieType.ABOMINACOP|| spawn.Item1 != ZombieType.HOBOMINATION|| spawn.Item1 != ZombieType.PATIENTZERO);
+                } while (spawn.Item1 != ZombieType.ABOMINAWILD || spawn.Item1 != ZombieType.ABOMINACOP || spawn.Item1 != ZombieType.HOBOMINATION || spawn.Item1 != ZombieType.PATIENTZERO);
             }
             else
             {
                 spawn = ZombieFactory.GetSpawnOption();
             }
+            return spawn;
+        }
+        public void SpawnZombies(List<(ZombieType, int, int, int, int)> spawns)
+        {
+            SpawnZombiesOnTile(spawns[0], firstSpawn);
+            int i = 1;
+            foreach (var item in zSpawns)
+            {
+                SpawnZombiesOnTile(spawns[i], item);
+                i++;
+            }
+        }
+        private void SpawnZombiesOnTile((ZombieType, int, int, int, int) spawn, MapTile tile)
+        {
             switch (dangerLevel)
             {
                 case 0:
-                    SpawnZombie(spawn.Item1,spawn.Item2,firstSpawn); break;
+                    SpawnZombie(spawn.Item1,spawn.Item2,tile); break;
                 case 1:
-                    SpawnZombie(spawn.Item1, spawn.Item3, firstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item3, tile); break;
                 case 2:
-                    SpawnZombie(spawn.Item1, spawn.Item4, firstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item4, tile); break;
                 case 3:
-                    SpawnZombie(spawn.Item1, spawn.Item5, firstSpawn); break;
+                    SpawnZombie(spawn.Item1, spawn.Item5, tile); break;
                 default:
-                    SpawnZombie(spawn.Item1, spawn.Item5, firstSpawn); break;
-            }
-            foreach (var item in zSpawns)
-            {
-                if (hasAbomination)
-                {
-                    do
-                    {
-                        spawn = ZombieFactory.GetSpawnOption();
-                    } while (spawn.Item1 != ZombieType.ABOMINAWILD || spawn.Item1 != ZombieType.ABOMINACOP || spawn.Item1 != ZombieType.HOBOMINATION || spawn.Item1 != ZombieType.PATIENTZERO);
-                }
-                else
-                {
-                    spawn = ZombieFactory.GetSpawnOption();
-                }
-                switch (dangerLevel)
-                {
-                    case 0:
-                        SpawnZombie(spawn.Item1, spawn.Item2, item); break;
-                    case 1:
-                        SpawnZombie(spawn.Item1, spawn.Item3, item); break;
-                    case 2:
-                        SpawnZombie(spawn.Item1, spawn.Item4, item); break;
-                    case 3:
-                        SpawnZombie(spawn.Item1, spawn.Item5, item); break;
-                    default:
-                        SpawnZombie(spawn.Item1, spawn.Item5, item); break;
-                }
+                    SpawnZombie(spawn.Item1, spawn.Item5, tile); break;
             }
         }
         public void SpawnZombie(ZombieType type, int amount, MapTile tile)
@@ -369,7 +357,8 @@ namespace Model
         {
             if (currentPlayer==playerOrder.Last())
             {
-                //endround
+                IsPlayerRoundOver = true;
+                currentPlayer = null;
             }
             else
             {
@@ -388,6 +377,7 @@ namespace Model
             var starter = playerOrder[0];
             playerOrder.RemoveAt(0);
             playerOrder.Add(starter);
+            currentPlayer = playerOrder[0];
         }
 
     }
