@@ -8,6 +8,7 @@ TagManager:
   - GameUI
   - PlayerPanel
   - PlayerPanelCollider
+  - DiceRoller
   layers:
   - Default
   - TransparentFX

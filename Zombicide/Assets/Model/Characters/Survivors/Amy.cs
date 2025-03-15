@@ -26,6 +26,7 @@ namespace Model.Characters.Survivors
         private Amy(string name, bool isKid):base(name, isKid){ }
         public override void SetFreeActions()
         {
+            FreeActions.Clear();
             FreeActions.Add("Move", new GameAction("Move", 0));
         }
         public override void SetActions(MapTile tileClicked)
@@ -34,6 +35,7 @@ namespace Model.Characters.Survivors
             bool l = UsedAction != action;
             if (l)
             {
+                Actions.Add("Roll", new GameAction("Roll", 0));//test
                 Actions.Add("Rearrange Items", new GameAction("Rearrange Items", 1));
                 if (tileClicked == CurrentTile && CanOpenDoorOnTile())
                     Actions.Add("Open Door", new GameAction("Open Door", 1));

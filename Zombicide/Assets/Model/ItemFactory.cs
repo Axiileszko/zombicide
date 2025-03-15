@@ -23,7 +23,7 @@ namespace Model
 
         private static List<Weapon> genericWeapons = new()
         {
-             new Weapon(ItemName.AXE,2,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.AXE,2,4,1,0,true,false,WeaponType.MELEE,true,true),
              new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
              new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
              new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
@@ -34,7 +34,7 @@ namespace Model
         {
             List<Item> list = new()
             {
-                new Weapon(ItemName.AXE,2,4,1,0,false,false,WeaponType.MELEE,true,true),
+                new Weapon(ItemName.AXE,2,4,1,0,true,false,WeaponType.MELEE,true,true),
                 new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
                 new Weapon(ItemName.CHAINSAW,2,5,5,0,true,false,WeaponType.MELEE,true,true),
                 new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
@@ -84,7 +84,7 @@ namespace Model
         {
             genericWeapons = new()
             {
-             new Weapon(ItemName.AXE,2,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.AXE,2,4,1,0,true,false,WeaponType.MELEE,true,true),
              new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
              new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
              new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
@@ -103,7 +103,7 @@ namespace Model
         {
             switch (s)
             {
-                case ItemName.AXE:return new Weapon(ItemName.AXE, 2, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
+                case ItemName.AXE:return new Weapon(ItemName.AXE, 2, 4, 1, 0, true, false, WeaponType.MELEE, true, true);
                 case ItemName.BASEBALLBAT:return new Weapon(ItemName.BASEBALLBAT, 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
                 case ItemName.CROWBAR:return new Weapon(ItemName.CROWBAR, 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
                 case ItemName.PISTOL:return new Weapon(ItemName.PISTOL, 1, 3, 1, 1, true, false, WeaponType.RANGE, false, true);
@@ -123,7 +123,7 @@ namespace Model
                 case ItemName.MILITARYSNIPERRIFLE: return PimpWeapon.MilitarySniperRifle.Instance;
                 case ItemName.NAILBAT: return PimpWeapon.NailBat.Instance;
                 case ItemName.ZANTETSUKEN: return PimpWeapon.Zantetsuken.Instance;
-                case ItemName.AXE : return new Weapon(ItemName.AXE, 2, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
+                case ItemName.AXE : return new Weapon(ItemName.AXE, 2, 4, 1, 0, true, false, WeaponType.MELEE, true, true);
                 case ItemName.BASEBALLBAT : return new Weapon(ItemName.BASEBALLBAT, 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
                 case ItemName.CHAINSAW : return new Weapon(ItemName.CHAINSAW, 2, 5, 5, 0, true, false, WeaponType.MELEE, true, true);
                 case ItemName.CROWBAR : return new Weapon(ItemName.CROWBAR, 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);

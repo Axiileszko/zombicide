@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour
     private Survivor survivor;
     private GameObject MapPrefab;
     [SerializeField] private GameObject cameraDrag;
+    [SerializeField] private DiceRoller diceRoller;
     [SerializeField] private GameObject rightHand;
     [SerializeField] private GameObject leftHand;
     [SerializeField] private List<GameObject> backPack=new List<GameObject>();
@@ -175,8 +176,8 @@ public class GameController : MonoBehaviour
             GameObject zombieCanvasPrefab = Resources.Load<GameObject>("Prefabs/ZombieCanvas");
             Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
             BoxCollider collider = tile.GetComponent<BoxCollider>();
-            float startX = collider.transform.position.x;
-            float startZ = collider.transform.position.z + 0.1f;
+            float startX = collider.transform.position.x - 0.7f;
+            float startZ = collider.transform.position.z + 0.5f;
             float startY = 1f;
             Vector3 newPosition = new Vector3();
             newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
@@ -426,6 +427,10 @@ public class GameController : MonoBehaviour
                 PickUpObjective(s);
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Pick Up Objective", s);
+                break;
+            case "Roll":
+                List<int> rolledNumbers = new List<int> { 3, 6, 2 };
+                diceRoller.RollDice(rolledNumbers);
                 break;
             default:
                 Debug.LogWarning("Unknown action: " + actionName);
@@ -689,6 +694,7 @@ public class GameController : MonoBehaviour
 
         gameModel.IsPlayerRoundOver = false;
         NewRoundForPlayers();
+        gameModel.ShiftPlayerOrder();
         StartNextTurn();
     }
     public void ReceiveSearch(string data)

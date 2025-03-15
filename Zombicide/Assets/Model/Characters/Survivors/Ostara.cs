@@ -24,6 +24,7 @@ namespace Model.Characters.Survivors
         private Ostara(string name, bool isKid) : base(name, isKid) { }
         public override void SetFreeActions()
         {
+            FreeActions.Clear();
         }
         public override void SetActions(MapTile tileClicked)
         {

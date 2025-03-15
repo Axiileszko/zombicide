@@ -70,7 +70,6 @@ namespace Model
             //jatekosok itt jonnek
             MoveZombies();
             ClearNoiseCounters();
-            ShiftPlayerOrder();
         }
 
         private void ClearNoiseCounters()
@@ -118,11 +117,21 @@ namespace Model
         }
         private void MoveZombies()
         {
+            UpdateNoiseCounters();
             foreach (var item in zombies)
             {
                 item.Move();
             }
         }
+
+        private void UpdateNoiseCounters()
+        {
+            foreach (var item in survivors)
+            {
+                item.CurrentTile.NoiseCounter++;
+            }
+        }
+
         private void MovePlayersToSpawn()
         {
             foreach (var item in survivors)
@@ -372,7 +381,7 @@ namespace Model
         {
             return SurvivorLocations.Count(x=>x==tileID);
         }
-        private void ShiftPlayerOrder()
+        public void ShiftPlayerOrder()
         {
             var starter = playerOrder[0];
             playerOrder.RemoveAt(0);

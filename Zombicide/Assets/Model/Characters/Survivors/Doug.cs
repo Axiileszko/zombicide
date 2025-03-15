@@ -24,6 +24,7 @@ namespace Model.Characters.Survivors
         private Doug(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.MATHCINGSET); }
         public override void SetFreeActions()
         {
+            FreeActions.Clear();
         }
         public override void SetActions(MapTile tileClicked)
         {

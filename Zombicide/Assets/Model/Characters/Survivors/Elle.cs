@@ -24,6 +24,7 @@ namespace Model.Characters.Survivors
         private Elle(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.SNIPER); }
         public override void SetFreeActions()
         {
+            FreeActions.Clear();
         }
         public override void SetActions(MapTile tileClicked)
         {
