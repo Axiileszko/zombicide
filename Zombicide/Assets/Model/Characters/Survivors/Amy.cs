@@ -35,14 +35,17 @@ namespace Model.Characters.Survivors
             bool l = UsedAction != action;
             if (l)
             {
-                Actions.Add("Roll", new GameAction("Roll", 0));//test
                 Actions.Add("Rearrange Items", new GameAction("Rearrange Items", 1));
                 if (tileClicked == CurrentTile && CanOpenDoorOnTile())
                     Actions.Add("Open Door", new GameAction("Open Door", 1));
                 if (tileClicked==CurrentTile && CurrentTile.Type!=TileType.STREET&&!SearchedAlready)
                     Actions.Add("Search", new GameAction("Search", 1));
                 if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
-                    Actions.Add("Attack", new GameAction("Attack", 1));
+                {
+                    List<string> list = GetAvailableAttacks();
+                    if(list!=null && list.Count>0)
+                        Actions.Add("Attack", new GameAction("Attack", 1));
+                }
                 if (CurrentTile.Objective != null && tileClicked == CurrentTile)
                     Actions.Add("Pick Up Objective", new GameAction("Pick Up Objective", 1));
                 if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)

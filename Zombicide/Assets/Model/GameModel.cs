@@ -101,6 +101,19 @@ namespace Model
             }
             return zombiesOnTile.OrderByDescending(x => x.Priority).ToList();
         }
+        public List<Zombie> SortZombiesByNewPriority(List<Zombie> zombies,List<string> order)
+        {
+            return zombies.OrderBy(z => GetPriorityIndex(z, order)).ToList();
+        }
+        private static int GetPriorityIndex(Zombie z, List<string> order)
+        {
+            string typeName = z.GetType().Name.ToLower();
+
+            if (z is AbominationZombie)
+                typeName = "abomination";
+
+            return order.IndexOf(typeName);
+        }
         public List<Survivor> GetSurvivorsOnTile(MapTile mapTile)
         {
             List<Survivor> survivorsOnTile = new List<Survivor>();

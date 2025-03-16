@@ -37,6 +37,7 @@ public class GameController : MonoBehaviour
     private GameObject? sniperMenuForS;
     private bool isInventoryOpen=false;
     private Dictionary<int, GameObject> zombieCanvases = new Dictionary<int, GameObject>();
+    public string AttackFlag {  get; set; }
     public static GameController Instance { get; private set; }
     private void Start()
     {
@@ -299,6 +300,7 @@ public class GameController : MonoBehaviour
     }
     public void EnableDoors(bool enable)
     {
+        EnableBoardInteraction(false);
         foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
         {
             if (child.name=="Doors")
@@ -339,6 +341,7 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
         Destroy(door);
         EnableDoors(false);
+        EnableBoardInteraction(s == gameModel.CurrentPlayer);
     }
     public void IncreaseUsedActions(string action, Survivor s)
     {
@@ -383,6 +386,70 @@ public class GameController : MonoBehaviour
         if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
         return result;
     }
+    public List<string> GetAvailableAttacks()
+    {
+        return survivor.GetAvailableAttacks();
+    }
+    public List<string> GetAvailableWeapons(bool isMelee)
+    {
+        List<string> result = new List<string>();
+        if (isMelee)
+        {
+            if(survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && weapon.CanBeUsedAsMelee)
+                result.Add("Left Hand");
+            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && weapon2.CanBeUsedAsMelee)
+                result.Add("Right Hand");
+        }
+        else
+        {
+            if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && weapon.Range>=1)
+                result.Add("Left Hand");
+            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && weapon2.Range >= 1)
+                result.Add("Right Hand");
+        }
+        return result;
+    }
+    public void StartAttack(string objectName, bool isRightHand)
+    {
+        bool isMelee = AttackFlag == "Melee";
+        Weapon weapon = null;
+        if (isRightHand)
+            weapon = (Weapon)survivor.RightHand;
+        else
+            weapon = (Weapon)survivor.LeftHand;
+
+        string data = $"{objectName.Substring(8)}:{weapon.Name}:{isMelee}";
+
+        if (isMelee)
+        {
+            OpenSniperMenu(data);
+            return;
+        }
+        else if((!isMelee && survivor.Traits.Contains(Trait.SNIPER))||((!isMelee)&& (weapon.Name==ItemName.SNIPERRIFLE || weapon.Name==ItemName.MILITARYSNIPERRIFLE)))
+        {
+            OpenSniperMenu(data);
+            return;
+        }
+        else 
+        { 
+            data += $"::{survivor.Name}";
+            RollDice(data);
+        }
+    }
+
+    public void RollDice(string data)
+    {
+        diceRoller.RollDice(4);
+        StartCoroutine(diceRoller.WaitForDiceToStop((results) => {
+            OnOkRollDiceClicked(data, results);
+        }));
+    }
+
+    private void OnOkRollDiceClicked(string data, List<int> results)
+    {
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data+=$"{string.Join(',',results)}");
+    }
+
     public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
     {
         Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[playerID]);
@@ -428,10 +495,6 @@ public class GameController : MonoBehaviour
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Pick Up Objective", s);
                 break;
-            case "Roll":
-                List<int> rolledNumbers = new List<int> { 3, 6, 2 };
-                diceRoller.RollDice(rolledNumbers);
-                break;
             default:
                 Debug.LogWarning("Unknown action: " + actionName);
                 break;
@@ -470,8 +533,9 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
         }
     }
-    public void OpenSniperMenu(List<Zombie> zombies)
+    public void OpenSniperMenu(string data)
     {
+        List<Zombie> zombies = gameModel.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(data.Split(':')[0])));
         isInventoryOpen = true;
         cameraDrag.SetActive(false);
         GameObject gameUI = GameObject.FindGameObjectWithTag("GameUI");
@@ -503,13 +567,13 @@ public class GameController : MonoBehaviour
             else if (child.name.StartsWith("Ok"))
             {
                 child.GetComponent<Button>().onClick.AddListener(() => {
-                    OnOkSniperMenuClicked();
+                    OnOkSniperMenuClicked(data);
                 });
             }
         }
         sniperMenuForS = sniper;
     }
-    public void OnOkSniperMenuClicked()
+    public void OnOkSniperMenuClicked(string data)
     {
         cameraDrag.SetActive(true);
         List<string> newPriority = new List<string>();
@@ -529,10 +593,10 @@ public class GameController : MonoBehaviour
             }
         }
         Destroy(sniperMenuForS);
-        string data = $"{string.Join(',', newPriority)}:{survivor.Name}";
-        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PriorityChanged, data);
+
+        data += $":{string.Join(',', newPriority)}:{survivor.Name}";
         isInventoryOpen = false;
-        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+        RollDice(data);
     }
     public void OpenInventory(List<Item>? additionalItems)
     {
@@ -670,11 +734,11 @@ public class GameController : MonoBehaviour
         UpdateItemSlots();
         UpdatePlayerStats();
     }
-    public void ReceiveNewPriority(string data)
+    public void ReceiveAttack(string data)
     {
+        //tileid:weaponname:ismelee:prioritylist(,):survivorname:results(,)
         string[] strings = data.Split(':');
-        Survivor s = SurvivorFactory.GetSurvivorByName(strings[1]); 
-        List<string> priority = strings[2].Split(',').ToList();//befejezni
+        //meghivni mindenkinek az adatokkal az attackot
     }
     public void ReceiveZombieSpawns(string data)
     {

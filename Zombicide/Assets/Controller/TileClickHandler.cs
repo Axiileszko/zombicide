@@ -25,7 +25,6 @@ public class TileClickHandler : MonoBehaviour
         if (availableActions.Count == 0) return;
         availableActions.Add("Skip");
         availableActions.Add("Cancel");
-        Debug.Log("actions:"+string.Join(", ", availableActions));
         ContextMenuController.Instance.OpenMenu(anchoredPosition, availableActions, OnOptionSelected);
     }
     private void OnOptionSelected(string option)
@@ -38,6 +37,19 @@ public class TileClickHandler : MonoBehaviour
             case "Cancel": ContextMenuController.Instance.CloseMenu(); return;
             case "Rearrange Items": GameController.Instance.OpenInventory(null); return;
             case "Open Door": GameController.Instance.EnableDoors(true); return;
+            case "Attack":
+                GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
+                RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                Vector2 anchoredPosition;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect,
+                    Input.mousePosition,
+                    Camera.main,
+                    out anchoredPosition
+                );
+                anchoredPosition.x += 107;
+                anchoredPosition.y -= 140;
+                ContextMenuController.Instance.OpenMenu(anchoredPosition, GameController.Instance.GetAvailableAttacks(), OnAttackOptionSelected); return;
             default:
                 break;
         }
@@ -45,5 +57,34 @@ public class TileClickHandler : MonoBehaviour
         ulong localPlayerId = NetworkManager.Singleton.LocalClientId;
         NetworkManagerController.Instance.RequestActionServerRpc(localPlayerId, option, gameObject.name);
     }
+    private void OnAttackOptionSelected(string option)
+    {
+        List<string> wOptions = new List<string>();
+        GameController.Instance.AttackFlag = option;
+        if(option == "Range")
+            wOptions=GameController.Instance.GetAvailableWeapons(false);
+        else
+            wOptions = GameController.Instance.GetAvailableWeapons(true);
 
+        GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
+        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+        Vector2 anchoredPosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            Input.mousePosition,
+            Camera.main,
+            out anchoredPosition
+        );
+        anchoredPosition.x += 107;
+        anchoredPosition.y -= 140;
+        ContextMenuController.Instance.OpenMenu(anchoredPosition, wOptions, OnWeaponOptionSelected); return;
+    }
+
+    private void OnWeaponOptionSelected(string option)
+    {
+        if (option == "Right Hand")
+            GameController.Instance.StartAttack(gameObject.name,true);
+        else
+            GameController.Instance.StartAttack(gameObject.name,false);
+    }
 }

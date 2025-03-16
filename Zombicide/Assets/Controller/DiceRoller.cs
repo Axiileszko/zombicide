@@ -11,29 +11,28 @@ public class DiceRoller : MonoBehaviour
 
     private List<GameObject> spawnedDice = new List<GameObject>();
 
-    public void RollDice(List<int> predefinedResults)
+    public void RollDice(int diceNum)
     {
         groundPlane.gameObject.SetActive(true);
-        StartCoroutine(RollDiceCoroutine(predefinedResults));
+        StartCoroutine(RollDiceCoroutine(diceNum));
     }
-
-    IEnumerator RollDiceCoroutine(List<int> predefinedResults)
+    public void ReRollDice(int num, List<int> results)
     {
-        List<Rigidbody> diceRigidbodies = new List<Rigidbody>();
+        StartCoroutine(RerollDiceCoroutine(num, results));
+    }
+    IEnumerator RollDiceCoroutine(int diceNum)
+    {
         // Töröljük a régi kockákat
         foreach (var die in spawnedDice)
         {
             Destroy(die);
         }
         spawnedDice.Clear();
-
         // Létrehozzuk az új kockákat
-        for (int i = 0; i < predefinedResults.Count; i++)
+        for (int i = 0; i < diceNum; i++)
         {
             GameObject dice = Instantiate(dicePrefab, spawnPoint.position + new Vector3(i * 1.5f, 0, 0), Random.rotation);
             Rigidbody rb = dice.GetComponent<Rigidbody>();
-
-            diceRigidbodies.Add(rb);
 
             // Egy véletlenszerû erõt adunk neki, hogy dobásnak tûnjön
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
@@ -42,30 +41,92 @@ public class DiceRoller : MonoBehaviour
             spawnedDice.Add(dice);
         }
 
-        // Várunk, amíg az összes kocka lelassul
-        yield return new WaitUntil(() =>
-            diceRigidbodies.All(rb => rb.velocity.magnitude < 0.1f && rb.angularVelocity.magnitude < 0.1f));
-
-        // Finom igazítás az elõre meghatározott eredményekre
-        for (int i = 0; i < spawnedDice.Count; i++)
-        {
-            AlignDiceToResult(spawnedDice[i], predefinedResults[i]);
-        }
+        // Megvárjuk, hogy a kockák leessenek és megálljanak
+        yield return new WaitForSeconds(2f);
     }
-    void AlignDiceToResult(GameObject die, int result)
+    public IEnumerator WaitForDiceToStop(System.Action<List<int>> onResultReady)
     {
-        // A dobás végeredményéhez tartozó megfelelõ forgatások
-        Quaternion[] diceRotations = new Quaternion[]
+        bool allStopped = false;
+
+        while (!allStopped)
         {
-        Quaternion.Euler(0, 0, 0),   // 1-es oldal felfelé
-        Quaternion.Euler(0, 0, 180), // 2-es oldal felfelé
-        Quaternion.Euler(0, 0, 90),  // 3-as oldal felfelé
-        Quaternion.Euler(0, 0, -90), // 4-es oldal felfelé
-        Quaternion.Euler(90, 0, 0),  // 5-ös oldal felfelé
-        Quaternion.Euler(-90, 0, 0), // 6-os oldal felfelé
+            allStopped = true;
+
+            foreach (var die in spawnedDice)
+            {
+                Rigidbody rb = die.GetComponent<Rigidbody>();
+
+                if (!rb.IsSleeping()) // Ha még mozog, nem állt meg
+                {
+                    allStopped = false;
+                    break;
+                }
+            }
+
+            yield return null; // Várunk egy frame-et, majd újra ellenõrizzük
+        }
+
+        // Amikor minden kocka megállt, akkor olvassuk le az eredményeket
+        List<int> results = new List<int>();
+        foreach (var die in spawnedDice)
+        {
+            results.Add(ReadDieValue(die));
+        }
+
+        // Callback, hogy jelezzük a dobás eredményét
+        onResultReady?.Invoke(results);
+    }
+    private int ReadDieValue(GameObject die)
+    {
+        Transform dieTransform = die.transform;
+
+        // Az arcok lehetséges irányai és azokhoz tartozó értékek
+        Dictionary<Vector3, int> faceValues = new Dictionary<Vector3, int>()
+        {
+        { dieTransform.up, 2 },    // Felfelé nézõ
+        { -dieTransform.up, 5 },   // Lefelé nézõ
+        { dieTransform.right, 4 }, // Jobbra nézõ
+        { -dieTransform.right, 3 },// Balra nézõ
+        { dieTransform.forward, 1 },// Elõre nézõ
+        { -dieTransform.forward, 6 } // Hátra nézõ
         };
 
-        // A kocka végsõ igazítása a kívánt eredményre
-        die.transform.rotation = diceRotations[result - 1];
+        Vector3 upVector = Vector3.up;
+        float maxDot = -1;
+        int bestValue = 1;
+
+        foreach (var face in faceValues)
+        {
+            float dot = Vector3.Dot(face.Key, upVector); // Mennyire néz felfelé?
+            if (dot > maxDot)
+            {
+                maxDot = dot;
+                bestValue = face.Value;
+            }
+        }
+
+        return bestValue;
+    }
+    IEnumerator RerollDiceCoroutine(int rerollThreshold, List<int> results)
+    {
+        for (int i = 0; i < spawnedDice.Count; i++)
+        {
+            if (results[i] < rerollThreshold)
+            {
+                var die = spawnedDice[i];
+                spawnedDice.RemoveAt(i);
+                Destroy(die);
+
+                GameObject newDie = Instantiate(dicePrefab, spawnPoint.position + new Vector3(i * 1.5f, 0, 0), Random.rotation);
+                Rigidbody rb = newDie.GetComponent<Rigidbody>();
+
+                // Egy véletlenszerû erõt adunk neki, hogy dobásnak tûnjön
+                rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+                rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
+
+                spawnedDice.Add(newDie);
+            }
+        }
+        yield return new WaitForSeconds(2f);
     }
 }

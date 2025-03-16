@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using static UnityEngine.Rendering.DebugUI;
 
 public class HoverClickHandlerForItem : MonoBehaviour
@@ -23,10 +24,5 @@ public class HoverClickHandlerForItem : MonoBehaviour
     {
         item.transform.position = originalPositionItem;
         IsHovering = false;
-    }
-
-    void OnMouseDown()
-    {
-        Debug.Log($"{gameObject.name} itemre kattintottál!");
     }
 }

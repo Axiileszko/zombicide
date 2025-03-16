@@ -21,7 +21,7 @@ namespace Network
         PimpWeapon,
         ItemsChanged,
         Search,
-        PriorityChanged,
+        Attack,
         ZombieSpawn
     }
     public class NetworkManagerController:NetworkBehaviour
@@ -285,8 +285,8 @@ namespace Network
                 case MessageType.Search:
                     GameController.Instance.ReceiveSearch(data);
                     break;
-                case MessageType.PriorityChanged:
-                    GameController.Instance.ReceiveNewPriority(data);
+                case MessageType.Attack:
+                    GameController.Instance.ReceiveAttack(data);
                     break;
                 case MessageType.ZombieSpawn:
                     GameController.Instance.ReceiveZombieSpawns(data);

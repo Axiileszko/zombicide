@@ -58,6 +58,30 @@ namespace Model.Characters.Survivors
             SearchedAlready = false;
             FinishedRound = false;
         }
+        public List<string> GetAvailableAttacks()
+        {
+            List<string> result = new List<string>();
+            bool isLeftMelee = false; bool isRightMelee = false; bool isLeftRange = false; bool isRightRange = false;
+            if (LeftHand != null && LeftHand is Weapon leftW)
+            {
+                if (leftW.CanBeUsedAsMelee)
+                    isLeftMelee = true;
+                if (leftW.Range >= 1)
+                    isLeftRange = true;
+            }
+            if (RightHand != null && RightHand is Weapon rightW)
+            {
+                if (rightW.CanBeUsedAsMelee)
+                    isRightMelee = true;
+                if (rightW.Range >= 1)
+                    isRightRange = true;
+            }
+            if (isLeftMelee || isRightMelee)
+                result.Add("Melee");
+            if (isLeftRange || isRightRange)
+                result.Add("Range");
+            return (result);
+        }
         public abstract void SetActions(MapTile tileClicked);
         public abstract void SetFreeActions();
         public virtual void Move(MapTile targetTile)
@@ -71,7 +95,7 @@ namespace Model.Characters.Survivors
                 MoveTo(targetTile);
             SlipperyMovedAlready=true;
         }
-        public virtual void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws)
+        public virtual void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws, List<string>? newPriority)
         {
             if (weapon == null || !CanTargetTile(targetTile)) return;
             if (!isMelee)
@@ -89,6 +113,9 @@ namespace Model.Characters.Survivors
                 CurrentTile.NoiseCounter++;
 
             List<Zombie> zombies = model.GetZombiesInPriorityOrderOnTile(targetTile);
+            if (newPriority != null)
+                zombies = model.SortZombiesByNewPriority(zombies, newPriority);
+
             List<Survivor> survivors = model.GetSurvivorsOnTile(targetTile);
 
             // Molotov

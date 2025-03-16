@@ -38,7 +38,11 @@ namespace Model.Characters.Survivors
                 if (tileClicked == CurrentTile && CurrentTile.Type != TileType.STREET && !SearchedAlready)
                     Actions.Add("Search", new GameAction("Search", 1));
                 if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
-                    Actions.Add("Sniper Attack", new GameAction("Sniper Attack", 1));
+                {
+                    List<string> list = GetAvailableAttacks();
+                    if (list != null && list.Count > 0)
+                        Actions.Add("Attack", new GameAction("Attack", 1));
+                }
                 if (CurrentTile.Objective != null && tileClicked == CurrentTile)
                     Actions.Add("Pick Up Objective", new GameAction("Pick Up Objective", 1));
                 if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)
