@@ -42,13 +42,39 @@ namespace Model.Characters.Survivors
         }
         public bool CanOpenDoorOnTile()
         {
-            if (!CurrentTile.Neighbours.Select(x => x.IsDoorOpen).ToList().Contains(false)) return false;
+            if (CurrentTile.Neighbours.Count(x=>x.HasDoor && !x.IsDoorOpen)==0) return false;
             bool rightH = false;
             bool leftH = false;
             if (rightHand != null && rightHand is Weapon weapon && weapon.CanOpenDoors) rightH = true;
             if (leftHand != null && leftHand is Weapon weapon2 && weapon2.CanOpenDoors) leftH = true;
             if (!rightH && !leftH) return false;
             return true;
+        }
+        public bool HasPlentyOfShells()
+        {
+            bool l=false;
+            if(leftHand!=null && leftHand.Name==ItemName.PLENTYOFSHELLS)
+                l = true;
+            else if(rightHand != null && rightHand.Name == ItemName.PLENTYOFSHELLS)
+                l = true;
+            foreach (var item in backpack)
+            {
+                if (item.Name == ItemName.PLENTYOFSHELLS) l = true;
+            }
+            return l;
+        }
+        public bool HasPlentyOfBullets()
+        {
+            bool l = false;
+            if (leftHand != null && leftHand.Name == ItemName.PLENTYOFBULLETS)
+                l = true;
+            else if (rightHand != null && rightHand.Name == ItemName.PLENTYOFBULLETS)
+                l = true;
+            foreach (var item in backpack)
+            {
+                if (item.Name == ItemName.PLENTYOFBULLETS) l = true;
+            }
+            return l;
         }
         public void NewRound()
         {
@@ -58,7 +84,7 @@ namespace Model.Characters.Survivors
             SearchedAlready = false;
             FinishedRound = false;
         }
-        public List<string> GetAvailableAttacks()
+        public List<string> GetAvailableAttacksOnTile(MapTile targetTile)
         {
             List<string> result = new List<string>();
             bool isLeftMelee = false; bool isRightMelee = false; bool isLeftRange = false; bool isRightRange = false;
@@ -76,18 +102,24 @@ namespace Model.Characters.Survivors
                 if (rightW.Range >= 1)
                     isRightRange = true;
             }
-            if (isLeftMelee || isRightMelee)
+            if ((isLeftMelee || isRightMelee) && CanTargetTile(targetTile))
                 result.Add("Melee");
-            if (isLeftRange || isRightRange)
-                result.Add("Range");
-            return (result);
+            if (CanTargetTile(targetTile))
+            {
+                int distance = 1;
+                if (CurrentTile.Type == TileType.STREET)
+                {
+                    distance = Math.Abs(CurrentTile.Id - targetTile.Id);
+                }
+                if ((isLeftRange && distance <= ((Weapon)leftHand).Range) || (isRightRange && distance <= ((Weapon)leftHand).Range)) result.Add("Range");
+            }
+            return result;
         }
         public abstract void SetActions(MapTile tileClicked);
         public abstract void SetFreeActions();
         public virtual void Move(MapTile targetTile)
         {
-            if(model.GetZombiesInPriorityOrderOnTile(targetTile).Count==0)
-                MoveTo(targetTile);
+            MoveTo(targetTile);
         }
         public void SlipperyMove(MapTile targetTile)
         {
@@ -113,7 +145,7 @@ namespace Model.Characters.Survivors
                 CurrentTile.NoiseCounter++;
 
             List<Zombie> zombies = model.GetZombiesInPriorityOrderOnTile(targetTile);
-            if (newPriority != null)
+            if (newPriority != null && newPriority.Count>0)
                 zombies = model.SortZombiesByNewPriority(zombies, newPriority);
 
             List<Survivor> survivors = model.GetSurvivorsOnTile(targetTile);

@@ -16,12 +16,14 @@ namespace Model
         public int Accuracy { get; private set; }
         public int DiceAmount { get; private set; }
         public int Range { get; private set; }
+        public char BulletType {  get; private set; }
         public bool IsLoud { get; private set; }
         public bool Reloadable { get; private set; }
         public WeaponType Type { get; private set; }
         public bool CanOpenDoors { get; private set; }
-        public Weapon(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) :base(name)
+        public Weapon(ItemName name,char bulletType ,int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) :base(name)
         {
+            BulletType = bulletType;
             Damage = damage;
             Accuracy = accuracy;
             DiceAmount = diceAmount;
@@ -35,7 +37,7 @@ namespace Model
     }
     public class PimpWeapon : Weapon
     {
-        public PimpWeapon(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors,canBeMelee) { }
+        public PimpWeapon(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors,canBeMelee) { }
         public class AutShotGun : PimpWeapon
         {
             private static AutShotGun instance;
@@ -45,12 +47,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new AutShotGun(ItemName.AUTSHOTGUN,2,4,3,1,true,false,WeaponType.RANGE,false,true);
+                        instance = new AutShotGun(ItemName.AUTSHOTGUN,'S',2,4,3,1,true,false,WeaponType.RANGE,false,true);
                     }
                     return instance;
                 }
             }
-            private AutShotGun(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private AutShotGun(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
 
         public class EvilTwins : PimpWeapon
@@ -62,12 +64,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new EvilTwins(ItemName.EVILTWINS, 1, 3, 2, 1, true, false, WeaponType.RANGE, false,true);
+                        instance = new EvilTwins(ItemName.EVILTWINS,'B', 1, 3, 2, 1, true, false, WeaponType.RANGE, false,true);
                     }
                     return instance;
                 }
             }
-            private EvilTwins(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private EvilTwins(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
 
         public class GoldenKukri : PimpWeapon
@@ -79,12 +81,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new GoldenKukri(ItemName.GOLDENKUKRI, 2, 4, 4, 0, false, false, WeaponType.MELEE, false,true);
+                        instance = new GoldenKukri(ItemName.GOLDENKUKRI,'N', 2, 4, 4, 0, false, false, WeaponType.MELEE, false,true);
                     }
                     return instance;
                 }
             }
-            private GoldenKukri(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private GoldenKukri(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
 
         public class GoldenAK47 : PimpWeapon
@@ -96,12 +98,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new GoldenAK47(ItemName.GOLDENAK47, 2, 4, 3, 2, true, false, WeaponType.RANGE, false,false);
+                        instance = new GoldenAK47(ItemName.GOLDENAK47,'B', 2, 4, 3, 2, true, false, WeaponType.RANGE, false,false);
                     }
                     return instance;
                 }
             }
-            private GoldenAK47(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private GoldenAK47(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
         public class GunBlade : PimpWeapon
         {
@@ -112,12 +114,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new GunBlade(ItemName.GUNBLADE, 2, 4, 2, 1, true, false, WeaponType.MELLEANDRANGE, false,true);
+                        instance = new GunBlade(ItemName.GUNBLADE,'B', 2, 4, 2, 1, true, false, WeaponType.MELLEANDRANGE, false,true);
                     }
                     return instance;
                 }
             }
-            private GunBlade(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private GunBlade(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
         public class MasShotGun : PimpWeapon
         {
@@ -128,12 +130,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new MasShotGun(ItemName.MASSHOTGUN, 2, 3, 2, 1, true, true, WeaponType.MELLEANDRANGE, false,true);
+                        instance = new MasShotGun(ItemName.MASSHOTGUN, 'S', 2, 3, 2, 1, true, true, WeaponType.MELLEANDRANGE, false,true);
                     }
                     return instance;
                 }
             }
-            private MasShotGun(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private MasShotGun(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
         public class MilitarySniperRifle : PimpWeapon
         {
@@ -144,12 +146,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new MilitarySniperRifle(ItemName.MILITARYSNIPERRIFLE, 2, 3, 2, 4, true, false, WeaponType.RANGE, false,false);
+                        instance = new MilitarySniperRifle(ItemName.MILITARYSNIPERRIFLE, 'B', 2, 3, 2, 4, true, false, WeaponType.RANGE, false,false);
                     }
                     return instance;
                 }
             }
-            private MilitarySniperRifle(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private MilitarySniperRifle(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
         public class NailBat : PimpWeapon
         {
@@ -160,12 +162,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new NailBat(ItemName.NAILBAT, 2, 3, 2, 0, false, false, WeaponType.MELEE, false,true);
+                        instance = new NailBat(ItemName.NAILBAT, 'N', 2, 3, 2, 0, false, false, WeaponType.MELEE, false,true);
                     }
                     return instance;
                 }
             }
-            private NailBat(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private NailBat(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
         public class Zantetsuken : PimpWeapon
         {
@@ -176,12 +178,12 @@ namespace Model
                 {
                     if (instance == null)
                     {
-                        instance = new Zantetsuken(ItemName.ZANTETSUKEN, 1, 4, 5, 0, false, false, WeaponType.MELEE, false,true);
+                        instance = new Zantetsuken(ItemName.ZANTETSUKEN, 'N', 1, 4, 5, 0, false, false, WeaponType.MELEE, false,true);
                     }
                     return instance;
                 }
             }
-            private Zantetsuken(ItemName name, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
+            private Zantetsuken(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name,bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors, canBeMelee) { }
         }
     }
 

@@ -20,12 +20,12 @@ public class CameraDrag : MonoBehaviour
     }
     void HandleMouseDrag()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1))
         {
             dragOrigin = Input.mousePosition;
             isDragging = true;
         }
-        if (Input.GetMouseButton(0) && isDragging)
+        if (Input.GetMouseButton(1) && isDragging)
         {
             Vector3 difference = dragOrigin - Input.mousePosition;
             dragOrigin = Input.mousePosition;
@@ -33,14 +33,14 @@ public class CameraDrag : MonoBehaviour
             Vector3 move = new Vector3(difference.x * dragSpeed * Time.deltaTime, 0, difference.y * dragSpeed * Time.deltaTime);
             MoveCamera(move);
         }
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(1))
         {
             isDragging = false;
         }
     }
     void HandleResetCamera()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Space))
         {
             Camera.main.transform.position = resetCameraPosition;
         }

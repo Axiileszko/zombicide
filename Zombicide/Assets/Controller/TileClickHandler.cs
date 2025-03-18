@@ -36,7 +36,7 @@ public class TileClickHandler : MonoBehaviour
         {
             case "Cancel": ContextMenuController.Instance.CloseMenu(); return;
             case "Rearrange Items": GameController.Instance.OpenInventory(null); return;
-            case "Open Door": GameController.Instance.EnableDoors(true); return;
+            case "Open Door": GameController.Instance.EnableDoors(true); GameController.Instance.EnableBoardInteraction(false); return;
             case "Attack":
                 GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
                 RectTransform canvasRect = canvas.GetComponent<RectTransform>();
@@ -49,7 +49,7 @@ public class TileClickHandler : MonoBehaviour
                 );
                 anchoredPosition.x += 107;
                 anchoredPosition.y -= 140;
-                ContextMenuController.Instance.OpenMenu(anchoredPosition, GameController.Instance.GetAvailableAttacks(), OnAttackOptionSelected); return;
+                ContextMenuController.Instance.OpenMenu(anchoredPosition, GameController.Instance.GetAvailableAttacks(gameObject.name.Substring(8)), OnAttackOptionSelected); return;
             default:
                 break;
         }
@@ -62,9 +62,9 @@ public class TileClickHandler : MonoBehaviour
         List<string> wOptions = new List<string>();
         GameController.Instance.AttackFlag = option;
         if(option == "Range")
-            wOptions=GameController.Instance.GetAvailableWeapons(false);
+            wOptions=GameController.Instance.GetAvailableWeapons(false, gameObject.name.Substring(8));
         else
-            wOptions = GameController.Instance.GetAvailableWeapons(true);
+            wOptions = GameController.Instance.GetAvailableWeapons(true, gameObject.name.Substring(8));
 
         GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
         RectTransform canvasRect = canvas.GetComponent<RectTransform>();

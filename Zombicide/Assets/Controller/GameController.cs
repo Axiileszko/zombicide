@@ -177,8 +177,8 @@ public class GameController : MonoBehaviour
             GameObject zombieCanvasPrefab = Resources.Load<GameObject>("Prefabs/ZombieCanvas");
             Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
             BoxCollider collider = tile.GetComponent<BoxCollider>();
-            float startX = collider.transform.position.x - 0.7f;
-            float startZ = collider.transform.position.z + 0.5f;
+            float startX = collider.transform.position.x - 0.8f;
+            float startZ = collider.transform.position.z+0.15f;
             float startY = 1f;
             Vector3 newPosition = new Vector3();
             newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
@@ -346,6 +346,7 @@ public class GameController : MonoBehaviour
     public void IncreaseUsedActions(string action, Survivor s)
     {
         s.OnUsedAction(action);
+        UpdatePlayerStats();
     }
     public void ReceiveGenericWeapons(string data)
     {
@@ -386,11 +387,14 @@ public class GameController : MonoBehaviour
         if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
         return result;
     }
-    public List<string> GetAvailableAttacks()
+    public List<string> GetAvailableAttacks(string tileID)
     {
-        return survivor.GetAvailableAttacks();
+        List<string> options = survivor.GetAvailableAttacksOnTile(gameModel.Board.GetTileByID(int.Parse(tileID)));
+        if (options.Contains("Melee") && survivor.CurrentTile.Id != int.Parse(tileID))
+            options.Remove("Melee");
+        return options;
     }
-    public List<string> GetAvailableWeapons(bool isMelee)
+    public List<string> GetAvailableWeapons(bool isMelee, string tileID)
     {
         List<string> result = new List<string>();
         if (isMelee)
@@ -402,9 +406,14 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && weapon.Range>=1)
+            int distance = 1;
+            if (survivor.CurrentTile.Type == TileType.STREET)
+            {
+                distance = Math.Abs(survivor.CurrentTile.Id - int.Parse(tileID));
+            }
+            if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && distance <= weapon.Range)
                 result.Add("Left Hand");
-            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && weapon2.Range >= 1)
+            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && distance <= weapon2.Range)
                 result.Add("Right Hand");
         }
         return result;
@@ -418,7 +427,7 @@ public class GameController : MonoBehaviour
         else
             weapon = (Weapon)survivor.LeftHand;
 
-        string data = $"{objectName.Substring(8)}:{weapon.Name}:{isMelee}";
+        string data = $"{objectName.Substring(8)}:{isRightHand}:{isMelee}";
 
         if (isMelee)
         {
@@ -436,20 +445,51 @@ public class GameController : MonoBehaviour
             RollDice(data);
         }
     }
-
     public void RollDice(string data)
     {
-        diceRoller.RollDice(4);
+        string[] strings = data.Split(':');
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
+        Weapon weapon = null;
+        if (strings[1] == "True")
+            weapon = (Weapon)s.RightHand;
+        else
+            weapon = (Weapon)s.LeftHand;
+        int diceAmount=weapon.DiceAmount;
+        if (strings[2]=="True" && weapon.Name==ItemName.GUNBLADE)
+            diceAmount *=2;
+        else if(strings[2] == "True" && weapon.Name == ItemName.MASSHOTGUN)
+            diceAmount -=1;
+        diceRoller.RollDice(diceAmount);
         StartCoroutine(diceRoller.WaitForDiceToStop((results) => {
-            OnOkRollDiceClicked(data, results);
+            OnDiceResultsReady(data, results);
         }));
     }
-
-    private void OnOkRollDiceClicked(string data, List<int> results)
+    private void OnDiceResultsReady(string data, List<int> results)
     {
-        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data+=$"{string.Join(',',results)}");
+        string[] strings = data.Split(':');
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
+        Weapon weapon = null;
+        if (strings[1] == "True")
+            weapon = (Weapon)s.RightHand;
+        else
+            weapon = (Weapon)s.LeftHand;
+        bool isLucky = s.Traits.Contains(Trait.LUCKY) || (s.HasPlentyOfBullets()&&weapon.BulletType=='B')|| (s.HasPlentyOfShells() && weapon.BulletType == 'S');
+        if (isLucky)
+        {
+            diceRoller.ReRollDice(weapon.Accuracy, results);
+            StartCoroutine(diceRoller.WaitForDiceToStop((newResults) => {
+                diceRoller.RollFinished(data, newResults);
+            }));
+        }
+        else
+        {
+            diceRoller.RollFinished(data, results);
+        }
     }
-
+    public void OnOkRollDiceClicked(string data, List<int> results)
+    {
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data += $":{string.Join(',', results)}");
+    }
     public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
     {
         Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[playerID]);
@@ -459,11 +499,13 @@ public class GameController : MonoBehaviour
                 OpenDoor(objectName, "Right Hand", s);
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Open Door", s);
+                EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
                 break;
             case "Open Door Left Hand":
                 OpenDoor(objectName, "Left Hand", s);
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Open Door", s);
+                EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
                 break;
             case "Search":
                 SearchOnTile(s);
@@ -507,7 +549,6 @@ public class GameController : MonoBehaviour
         {
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
         }
-            
     }
     public void SearchOnTile(Survivor s)
     {
@@ -731,14 +772,37 @@ public class GameController : MonoBehaviour
         }
         s.PutIntoBackpack(backpackItem);
         foreach (var item in throwAwayItem) { s.ThrowAway(item); }
+        ProgressBar.UpdateFill(survivor.APoints);
         UpdateItemSlots();
         UpdatePlayerStats();
+        if (survivor.FinishedRound && survivor == gameModel.CurrentPlayer)
+        {
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
+        }
     }
     public void ReceiveAttack(string data)
     {
-        //tileid:weaponname:ismelee:prioritylist(,):survivorname:results(,)
+        //tileid:isrighthand:ismelee:prioritylist(,):survivorname:results(,)
         string[] strings = data.Split(':');
-        //meghivni mindenkinek az adatokkal az attackot
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
+        Weapon weapon = null;
+        if (strings[1] == "True")
+            weapon = (Weapon)s.RightHand;
+        else
+            weapon=(Weapon)s.LeftHand;
+        List<int> throws=new List<int>();
+        foreach (var item in strings[5].Split(',').ToList())
+            throws.Add(int.Parse(item));
+        s.Attack(gameModel.Board.GetTileByID(int.Parse(strings[0])), weapon, bool.Parse(strings[2]), throws, strings[3].Split(',').ToList());
+        UpdateZombieCanvasOnTile(int.Parse(strings[0]));
+        if (survivor.Name == s.Name)
+            IncreaseUsedActions("Attack", s);
+        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+        ProgressBar.UpdateFill(survivor.APoints);
+        if (survivor.FinishedRound && survivor == gameModel.CurrentPlayer)
+        {
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
+        }
     }
     public void ReceiveZombieSpawns(string data)
     {
@@ -794,6 +858,7 @@ public class GameController : MonoBehaviour
         }
         s.PickUpObjective();
         Destroy(gObject);
+        ProgressBar.UpdateFill(survivor.APoints);
     }
     public void PickUpPimpWLocally(Survivor s, PimpWeapon pimp)
     {
@@ -805,6 +870,7 @@ public class GameController : MonoBehaviour
                 gObject = child.gameObject; break;
             }
         }
+        s.CurrentTile.PickUpPimpWeapon();
         Destroy(gObject);
         if (survivor == s)
         {
@@ -844,6 +910,7 @@ public class GameController : MonoBehaviour
             }
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawn, string.Join(';',spawns));
         }
+        UpdatePlayerStats();
     }
     private void NewRoundForPlayers()
     {

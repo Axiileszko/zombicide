@@ -42,21 +42,30 @@ namespace Model.Characters.Survivors
                     Actions.Add("Search", new GameAction("Search", 1));
                 if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
                 {
-                    List<string> list = GetAvailableAttacks();
+                    List<string> list = GetAvailableAttacksOnTile(tileClicked);
                     if(list!=null && list.Count>0)
-                        Actions.Add("Attack", new GameAction("Attack", 1));
+                        if (tileClicked == CurrentTile)
+                        {
+                            if(list.Contains("Melee"))
+                                Actions.Add("Attack", new GameAction("Attack", 1));
+                        }
+                        else
+                        {
+                            if (list.Contains("Range"))
+                                Actions.Add("Attack", new GameAction("Attack", 1));
+                        }
                 }
                 if (CurrentTile.Objective != null && tileClicked == CurrentTile)
                     Actions.Add("Pick Up Objective", new GameAction("Pick Up Objective", 1));
                 if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)
                     Actions.Add("Pick Up Pimp Weapon", new GameAction("Pick Up Pimp Weapon", 1));
             }
-            int amount = model.GetZombiesInPriorityOrderOnTile(tileClicked).Count + 1;
+            int amount = model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count + 1;
             if (amount + UsedAction <= action)
             {
                 if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
                 {
-                    if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall)
+                    if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || (!CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall&& !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).HasDoor))
                     {
                         Actions.Add("Move", new GameAction("Move", amount));
                     }

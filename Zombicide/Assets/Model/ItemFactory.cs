@@ -23,30 +23,30 @@ namespace Model
 
         private static List<Weapon> genericWeapons = new()
         {
-             new Weapon(ItemName.AXE,2,4,1,0,true,false,WeaponType.MELEE,true,true),
-             new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
-             new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
-             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
-             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
-             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.AXE,'N',2,4,1,0,true,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.BASEBALLBAT,'N',1,3,2,0,false,false,WeaponType.MELEE,false,true),
+             new Weapon(ItemName.CROWBAR,'N',1,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.PISTOL,'B', 1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,'B',1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,'B',1,3,1,1,true,false,WeaponType.RANGE,false,true),
         };
         public static List<Item> CreateItems()
         {
             List<Item> list = new()
             {
-                new Weapon(ItemName.AXE,2,4,1,0,true,false,WeaponType.MELEE,true,true),
-                new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
-                new Weapon(ItemName.CHAINSAW,2,5,5,0,true,false,WeaponType.MELEE,true,true),
-                new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
-                new Weapon(ItemName.KATANA,1,4,2,0,false,false,WeaponType.MELEE,false,true),
-                new Weapon(ItemName.KUKRI,2,4,2,0,false,false,WeaponType.MELEE,false,true),
-                new Weapon(ItemName.MACHETE,2,3,1,0,false,false,WeaponType.MELEE,false,true),
-                new Weapon(ItemName.MOLOTOV,-1,-1,-1,1,true,false,WeaponType.BOMB,false,false),
-                new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
-                new Weapon(ItemName.SAWEDOFF,1,3,2,1,true,true,WeaponType.RANGE,false,true),
-                new Weapon(ItemName.SHOTGUN,2,4,2,1,true,false,WeaponType.RANGE,false, true),
-                new Weapon(ItemName.SNIPERRIFLE,2,3,1,3,false,false,WeaponType.RANGE,false,false),
-                new Weapon(ItemName.SUBMG,1,5,3,1,true,false,WeaponType.RANGE,false,true),
+                new Weapon(ItemName.AXE,'N',2,4,1,0,true,false,WeaponType.MELEE,true,true),
+                new Weapon(ItemName.BASEBALLBAT,'N',1,3,2,0,false,false,WeaponType.MELEE,false,true),
+                new Weapon(ItemName.CHAINSAW,'N',2,5,5,0,true,false,WeaponType.MELEE,true,true),
+                new Weapon(ItemName.CROWBAR,'N',1,4,1,0,false,false,WeaponType.MELEE,true,true),
+                new Weapon(ItemName.KATANA,'N', 1,4,2,0,false,false,WeaponType.MELEE,false,true),
+                new Weapon(ItemName.KUKRI,'N',2,4,2,0,false,false,WeaponType.MELEE,false,true),
+                new Weapon(ItemName.MACHETE,'N',2,3,1,0,false,false,WeaponType.MELEE,false,true),
+                new Weapon(ItemName.MOLOTOV,'N',-1,-1,-1,1,true,false,WeaponType.BOMB,false,false),
+                new Weapon(ItemName.PISTOL,'B',1,3,1,1,true,false,WeaponType.RANGE,false,true),
+                new Weapon(ItemName.SAWEDOFF,'S',1,3,2,1,true,true,WeaponType.RANGE,false,true),
+                new Weapon(ItemName.SHOTGUN,'S',2,4,2,1,true,false,WeaponType.RANGE,false, true),
+                new Weapon(ItemName.SNIPERRIFLE,'B',2,3,1,3,false,false,WeaponType.RANGE,false,false),
+                new Weapon(ItemName.SUBMG,'B',1,5,3,1,true,false,WeaponType.RANGE,false,true),
                 new Consumable(ItemName.CANNEDFOOD,3),
                 new Consumable(ItemName.PLENTYOFBULLETS,0),
                 new Consumable(ItemName.PLENTYOFSHELLS,0),
@@ -84,12 +84,12 @@ namespace Model
         {
             genericWeapons = new()
             {
-             new Weapon(ItemName.AXE,2,4,1,0,true,false,WeaponType.MELEE,true,true),
-             new Weapon(ItemName.BASEBALLBAT,1,3,2,0,false,false,WeaponType.MELEE,false,true),
-             new Weapon(ItemName.CROWBAR,1,4,1,0,false,false,WeaponType.MELEE,true,true),
-             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
-             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
-             new Weapon(ItemName.PISTOL,1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.AXE,'N',2,4,1,0,true,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.BASEBALLBAT,'N',1,3,2,0,false,false,WeaponType.MELEE,false,true),
+             new Weapon(ItemName.CROWBAR,'N',1,4,1,0,false,false,WeaponType.MELEE,true,true),
+             new Weapon(ItemName.PISTOL,'B',1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,'B',1,3,1,1,true,false,WeaponType.RANGE,false,true),
+             new Weapon(ItemName.PISTOL,'B',1,3,1,1,true,false,WeaponType.RANGE,false,true),
             };
         }
         public static Weapon GetGenericWeapon()
@@ -103,10 +103,10 @@ namespace Model
         {
             switch (s)
             {
-                case ItemName.AXE:return new Weapon(ItemName.AXE, 2, 4, 1, 0, true, false, WeaponType.MELEE, true, true);
-                case ItemName.BASEBALLBAT:return new Weapon(ItemName.BASEBALLBAT, 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
-                case ItemName.CROWBAR:return new Weapon(ItemName.CROWBAR, 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
-                case ItemName.PISTOL:return new Weapon(ItemName.PISTOL, 1, 3, 1, 1, true, false, WeaponType.RANGE, false, true);
+                case ItemName.AXE:return new Weapon(ItemName.AXE, 'N', 2, 4, 1, 0, true, false, WeaponType.MELEE, true, true);
+                case ItemName.BASEBALLBAT:return new Weapon(ItemName.BASEBALLBAT, 'N', 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
+                case ItemName.CROWBAR:return new Weapon(ItemName.CROWBAR, 'N', 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
+                case ItemName.PISTOL:return new Weapon(ItemName.PISTOL, 'B', 1, 3, 1, 1, true, false, WeaponType.RANGE, false, true);
                 default: return null;
             }
         }
@@ -123,19 +123,19 @@ namespace Model
                 case ItemName.MILITARYSNIPERRIFLE: return PimpWeapon.MilitarySniperRifle.Instance;
                 case ItemName.NAILBAT: return PimpWeapon.NailBat.Instance;
                 case ItemName.ZANTETSUKEN: return PimpWeapon.Zantetsuken.Instance;
-                case ItemName.AXE : return new Weapon(ItemName.AXE, 2, 4, 1, 0, true, false, WeaponType.MELEE, true, true);
-                case ItemName.BASEBALLBAT : return new Weapon(ItemName.BASEBALLBAT, 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
-                case ItemName.CHAINSAW : return new Weapon(ItemName.CHAINSAW, 2, 5, 5, 0, true, false, WeaponType.MELEE, true, true);
-                case ItemName.CROWBAR : return new Weapon(ItemName.CROWBAR, 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
-                case ItemName.KATANA : return new Weapon(ItemName.KATANA, 1, 4, 2, 0, false, false, WeaponType.MELEE, false, true);
-                case ItemName.KUKRI : return new Weapon(ItemName.KUKRI, 2, 4, 2, 0, false, false, WeaponType.MELEE, false, true);
-                case ItemName.MACHETE : return new Weapon(ItemName.MACHETE, 2, 3, 1, 0, false, false, WeaponType.MELEE, false, true);
-                case ItemName.MOLOTOV : return new Weapon(ItemName.MOLOTOV, -1, -1, -1, 1, true, false, WeaponType.BOMB, false, false);
-                case ItemName.PISTOL : return new Weapon(ItemName.PISTOL, 1, 3, 1, 1, true, false, WeaponType.RANGE, false, true);
-                case ItemName.SAWEDOFF : return new Weapon(ItemName.SAWEDOFF, 1, 3, 2, 1, true, true, WeaponType.RANGE, false, true);
-                case ItemName.SHOTGUN : return new Weapon(ItemName.SHOTGUN, 2, 4, 2, 1, true, false, WeaponType.RANGE, false, true);
-                case ItemName.SNIPERRIFLE : return new Weapon(ItemName.SNIPERRIFLE, 2, 3, 1, 3, false, false, WeaponType.RANGE, false, false);
-                case ItemName.SUBMG: return new Weapon(ItemName.SUBMG, 1, 5, 3, 1, true, false, WeaponType.RANGE, false, true);
+                case ItemName.AXE : return new Weapon(ItemName.AXE, 'N', 2, 4, 1, 0, true, false, WeaponType.MELEE, true, true);
+                case ItemName.BASEBALLBAT : return new Weapon(ItemName.BASEBALLBAT, 'N', 1, 3, 2, 0, false, false, WeaponType.MELEE, false, true);
+                case ItemName.CHAINSAW : return new Weapon(ItemName.CHAINSAW, 'N', 2, 5, 5, 0, true, false, WeaponType.MELEE, true, true);
+                case ItemName.CROWBAR : return new Weapon(ItemName.CROWBAR, 'N', 1, 4, 1, 0, false, false, WeaponType.MELEE, true, true);
+                case ItemName.KATANA : return new Weapon(ItemName.KATANA, 'N', 1, 4, 2, 0, false, false, WeaponType.MELEE, false, true);
+                case ItemName.KUKRI : return new Weapon(ItemName.KUKRI, 'N', 2, 4, 2, 0, false, false, WeaponType.MELEE, false, true);
+                case ItemName.MACHETE : return new Weapon(ItemName.MACHETE, 'N', 2, 3, 1, 0, false, false, WeaponType.MELEE, false, true);
+                case ItemName.MOLOTOV : return new Weapon(ItemName.MOLOTOV, 'N', -1, -1, -1, 1, true, false, WeaponType.BOMB, false, false);
+                case ItemName.PISTOL : return new Weapon(ItemName.PISTOL, 'B', 1, 3, 1, 1, true, false, WeaponType.RANGE, false, true);
+                case ItemName.SAWEDOFF : return new Weapon(ItemName.SAWEDOFF, 'S', 1, 3, 2, 1, true, true, WeaponType.RANGE, false, true);
+                case ItemName.SHOTGUN : return new Weapon(ItemName.SHOTGUN, 'S', 2, 4, 2, 1, true, false, WeaponType.RANGE, false, true);
+                case ItemName.SNIPERRIFLE : return new Weapon(ItemName.SNIPERRIFLE, 'B', 2, 3, 1, 3, false, false, WeaponType.RANGE, false, false);
+                case ItemName.SUBMG: return new Weapon(ItemName.SUBMG, 'B', 1, 5, 3, 1, true, false, WeaponType.RANGE, false, true);
                 case ItemName.CANNEDFOOD : return new Consumable(ItemName.CANNEDFOOD, 3);
                 case ItemName.PLENTYOFBULLETS : return new Consumable(ItemName.PLENTYOFBULLETS, 0);
                 case ItemName.PLENTYOFSHELLS : return new Consumable(ItemName.PLENTYOFSHELLS, 0);

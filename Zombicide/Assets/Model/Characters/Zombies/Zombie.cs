@@ -1,4 +1,5 @@
 ﻿using Model.Board;
+using Model.Characters.Survivors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,19 @@ namespace Model.Characters.Zombies
         public int Priority { get; protected set; }
         public void Move()
         {
+            List<Survivor> survivors = model.GetSurvivorsOnTile(CurrentTile);
+            if (survivors != null && survivors.Count > 0)
+            {
+                Attack(survivors);
+                if (action < 2)
+                    return;
+                survivors = model.GetSurvivorsOnTile(CurrentTile);
+                if (survivors != null && survivors.Count > 0)
+                {
+                    Attack(survivors);
+                    return;
+                }
+            } 
             Dictionary<MapTile, int> priority = new Dictionary<MapTile, int>();
             //Latas
             foreach (var item in CurrentTile.Neighbours)
@@ -61,9 +75,9 @@ namespace Model.Characters.Zombies
             return seen;
         }
 
-        public void Attack()
+        public void Attack(List<Survivor> survivors)
         {
-            
+            survivors[0].TakeDamage(1);
         }
     }
 }

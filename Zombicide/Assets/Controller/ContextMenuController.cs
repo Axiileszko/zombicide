@@ -10,7 +10,7 @@ public class ContextMenuController : MonoBehaviour
     [SerializeField] private GameObject contextMenuPrefab;
     [SerializeField] private GameObject contextMenuButtonPrefab;
     [SerializeField] private GameObject gameUI;
-    private GameObject currentMenu;
+    private List<GameObject> currentMenus=new List<GameObject>();
 
     private void Awake()
     {
@@ -20,13 +20,19 @@ public class ContextMenuController : MonoBehaviour
 
     public void OpenMenu(Vector3 position, List<string> options, System.Action<string> onOptionSelected)
     {
-        // Ha már van egy nyitott menü, elõször azt töröljük
-        if (currentMenu != null) Destroy(currentMenu);
+        //// Ha már van egy nyitott menü, elõször azt töröljük
+        //if (currentMenus.Count > 0)
+        //{
+        //    var menu = currentMenus[0];
+        //    currentMenus.RemoveAt(0);
+        //    Destroy(menu);
+        //}
 
         GameController.Instance.EnableBoardInteraction(false);
         // Menü létrehozása
-        currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);
+        GameObject currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);
         currentMenu.transform.localPosition = position;
+        currentMenus.Add(currentMenu);
 
         VerticalLayoutGroup layout = null;
         foreach (Transform child in currentMenu.transform)
@@ -49,8 +55,13 @@ public class ContextMenuController : MonoBehaviour
 
     public void CloseMenu()
     {
-        GameController.Instance.EnableBoardInteraction(true);
-        if (currentMenu != null) Destroy(currentMenu);
+        if (currentMenus.Count > 0)
+        {
+            var menu = currentMenus[0];
+            currentMenus.RemoveAt(0);
+            Destroy(menu);
+            GameController.Instance.EnableBoardInteraction(currentMenus.Count==0);
+        }
     }
 }
 

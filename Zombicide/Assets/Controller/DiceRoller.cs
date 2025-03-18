@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class DiceRoller : MonoBehaviour
@@ -8,6 +9,7 @@ public class DiceRoller : MonoBehaviour
     [SerializeField] private Transform spawnPoint;   // Honnan essen le a kocka?
     [SerializeField] private GameObject dicePrefab;  // Kocka prefab
     [SerializeField] private Transform groundPlane;  // Hova essen le?
+    [SerializeField] private GameObject okBtn;
 
     private List<GameObject> spawnedDice = new List<GameObject>();
 
@@ -128,5 +130,25 @@ public class DiceRoller : MonoBehaviour
             }
         }
         yield return new WaitForSeconds(2f);
+    }
+    public void RollFinished(string data, List<int> results)
+    {
+        okBtn.gameObject.SetActive(true);
+        okBtn.GetComponent<Button>().onClick.RemoveAllListeners();
+        okBtn.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            GameController.Instance.OnOkRollDiceClicked(data, results);
+            OnOkButtonClicked();
+        });
+    }
+    public void OnOkButtonClicked()
+    {
+        foreach (var die in spawnedDice)
+        {
+            Destroy(die);
+        }
+        spawnedDice.Clear();
+        groundPlane.gameObject.SetActive(false);
+        okBtn.gameObject.SetActive(false);
     }
 }

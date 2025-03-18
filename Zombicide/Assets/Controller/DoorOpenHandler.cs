@@ -23,7 +23,6 @@ public class DoorOpenHandler : MonoBehaviour
         List<string> availableActions = GameController.Instance.GetAvailableDoorOpeners();
         if (availableActions.Count == 0) return;
         availableActions.Add("Cancel");
-        Debug.Log("actions:" + string.Join(", ", availableActions));
         ContextMenuController.Instance.OpenMenu(anchoredPosition, availableActions, OnOptionSelected);
     }
 
