@@ -25,6 +25,10 @@ namespace Model.Characters.Survivors
         public override void SetFreeActions()
         {
             FreeActions.Clear();
+            if (Traits.Contains(Trait.P1FCA))
+                FreeActions.Add("Attack", new GameAction("Attack", 0));
+            if (Traits.Contains(Trait.P1FMOA))
+                FreeActions.Add("Move", new GameAction("Move", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
@@ -69,6 +73,55 @@ namespace Model.Characters.Survivors
                 }
             }
 
+        }
+        public override void UpgradeTo(int level, int option)
+        {
+            this.level++;
+            switch (level)
+            {
+                case 0: return;
+                case 1: action++; return;
+                case 2:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DM);
+                    else
+                        Traits.Add(Trait.P1FCA);
+                    return;
+                case 3:
+                    if (option == 1)
+                        Traits.Add(Trait.P1FMOA);
+                    else if (option == 2)
+                        Traits.Add(Trait.P1TDRC);
+                    else
+                        Traits.Add(Trait.LUCKY);
+                    return;
+                default: return;
+            }
+        }
+        public override List<string> GetTraitUpgrades(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return new List<string>()
+                    {
+                        "+1 action"
+                    };
+                case 2:
+                    return new List<string>()
+                    {
+                        "+1 die: melee",
+                        "+1 free combat action"
+                    };
+                case 3:
+                    return new List<string>()
+                    {
+                        "+1 free move action",
+                        "+1 to dice roll: combat",
+                        "lucky"
+                    };
+                default: return null;
+            }
         }
     }
 }

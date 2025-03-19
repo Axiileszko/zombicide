@@ -32,6 +32,8 @@ namespace Model.Characters
         }
         public bool TakeDamage(int amount)
         {
+            if (amount<hp)
+                return false;
             hp -= amount;
             if (hp <= 0)
                 return true;//true ha meghalt a karakter

@@ -178,8 +178,8 @@ public class GameController : MonoBehaviour
             Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
             BoxCollider collider = tile.GetComponent<BoxCollider>();
             float startX = collider.transform.position.x - 0.8f;
-            float startZ = collider.transform.position.z+0.15f;
-            float startY = 1f;
+            float startZ = collider.transform.position.z+0.5f;
+            float startY = 2f;
             Vector3 newPosition = new Vector3();
             newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
             GameObject zc = Instantiate(zombieCanvasPrefab);
@@ -341,12 +341,36 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
         Destroy(door);
         EnableDoors(false);
-        EnableBoardInteraction(s == gameModel.CurrentPlayer);
+        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+        if (NetworkManager.Singleton.IsHost)
+        {
+            if (!gameModel.BuildingOpened(connection))
+                return;
+            Building building = gameModel.Board.GetBuildingByTile(connection.Destination.Id);
+            List<string> spawns = new List<string>();
+            var darkRooms = building.Rooms.Where(x => x.Type == TileType.DARKROOM).Select(x=>x.Id).ToList();
+            for (int i = 0; i < darkRooms.Count; i++)
+            {
+                (ZombieType, int, int, int, int) option = gameModel.ChooseZombieSpawnOption();
+                spawns.Add($"{option.Item1},{option.Item2},{option.Item3},{option.Item4},{option.Item5}");
+            }
+            string data = $"{string.Join(';', spawns)}:{string.Join(';',darkRooms)}";
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawnInBuilding, data);
+        }
     }
-    public void IncreaseUsedActions(string action, Survivor s)
+    public void IncreaseUsedActions(string action, Survivor s, string? isMelee)
     {
-        s.OnUsedAction(action);
+        s.OnUsedAction(action, isMelee);
         UpdatePlayerStats();
+        int level = s.CanUpgradeTo();
+        if (level > 0)
+        {
+            TraitController.Instance.OpenMenu(level, survivor.GetTraitUpgrades(level), OnTraitSelected);
+        }
+    }
+    private void OnTraitSelected(int level, int option)
+    {
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TraitUpgrade, $"{survivor.Name};{level};{option}");
     }
     public void ReceiveGenericWeapons(string data)
     {
@@ -407,9 +431,10 @@ public class GameController : MonoBehaviour
         else
         {
             int distance = 1;
-            if (survivor.CurrentTile.Type == TileType.STREET)
+            if (survivor.CurrentTile.Type == TileType.STREET && gameModel.Board.GetTileByID(int.Parse(tileID)).Type==TileType.STREET)
             {
-                distance = Math.Abs(survivor.CurrentTile.Id - int.Parse(tileID));
+                var street = gameModel.Board.GetStreetByTiles(survivor.CurrentTile.Id, int.Parse(tileID));
+                distance = Math.Abs(street.Tiles.IndexOf(survivor.CurrentTile.Id) - street.Tiles.IndexOf(int.Parse(tileID)));
             }
             if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && distance <= weapon.Range)
                 result.Add("Left Hand");
@@ -455,10 +480,20 @@ public class GameController : MonoBehaviour
         else
             weapon = (Weapon)s.LeftHand;
         int diceAmount=weapon.DiceAmount;
+
         if (strings[2]=="True" && weapon.Name==ItemName.GUNBLADE)
             diceAmount *=2;
         else if(strings[2] == "True" && weapon.Name == ItemName.MASSHOTGUN)
             diceAmount -=1;
+
+        // Dice trait
+        if (s.Traits.Contains(Trait.P1DC))
+            diceAmount++;
+        if (s.Traits.Contains(Trait.P1DM) && strings[2]=="True")
+            diceAmount++;
+        if (s.Traits.Contains(Trait.P1DR) && strings[2] == "False")
+            diceAmount++;
+
         diceRoller.RollDice(diceAmount);
         StartCoroutine(diceRoller.WaitForDiceToStop((results) => {
             OnDiceResultsReady(data, results);
@@ -498,19 +533,19 @@ public class GameController : MonoBehaviour
             case "Open Door Right Hand":
                 OpenDoor(objectName, "Right Hand", s);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Open Door", s);
+                    IncreaseUsedActions("Open Door", s, null);
                 EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
                 break;
             case "Open Door Left Hand":
                 OpenDoor(objectName, "Left Hand", s);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Open Door", s);
+                    IncreaseUsedActions("Open Door", s, null);
                 EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
                 break;
             case "Search":
                 SearchOnTile(s);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Search", s);
+                    IncreaseUsedActions("Search", s, null);
                 break;
             case "Skip":
                 s.Skip();
@@ -519,23 +554,23 @@ public class GameController : MonoBehaviour
                 s.Move(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
                 MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ",string.Empty)]);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Move", s);
+                    IncreaseUsedActions("Move", s, null);
                 break;
             case "Slippery Move":
                 s.SlipperyMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
                 MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Slippery Move", s);
+                    IncreaseUsedActions("Slippery Move", s, null);
                 break;
             case "Pick Up Pimp Weapon":
                 PickUpPimpW(s);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Pick Up Pimp Weapon", s);
+                    IncreaseUsedActions("Pick Up Pimp Weapon", s, null);
                 break;
             case "Pick Up Objective":
                 PickUpObjective(s);
                 if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Pick Up Objective", s);
+                    IncreaseUsedActions("Pick Up Objective", s, null);
                 break;
             default:
                 Debug.LogWarning("Unknown action: " + actionName);
@@ -741,6 +776,12 @@ public class GameController : MonoBehaviour
         isInventoryOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
+    public void ReceiveTraitUpgrade(string data)
+    {
+        string[] strings = data.Split(';');
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[0]);
+        s.UpgradeTo(int.Parse(strings[1]), int.Parse(strings[2]));
+    }
     public void ReceiveItemsChanged(string data)
     {
         string[] strings = data.Split(':');
@@ -775,6 +816,11 @@ public class GameController : MonoBehaviour
         ProgressBar.UpdateFill(survivor.APoints);
         UpdateItemSlots();
         UpdatePlayerStats();
+        int level = s.CanUpgradeTo();
+        if (level > 0 && s==survivor)
+        {
+            TraitController.Instance.OpenMenu(level, survivor.GetTraitUpgrades(level), OnTraitSelected);
+        }
         if (survivor.FinishedRound && survivor == gameModel.CurrentPlayer)
         {
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
@@ -796,7 +842,7 @@ public class GameController : MonoBehaviour
         s.Attack(gameModel.Board.GetTileByID(int.Parse(strings[0])), weapon, bool.Parse(strings[2]), throws, strings[3].Split(',').ToList());
         UpdateZombieCanvasOnTile(int.Parse(strings[0]));
         if (survivor.Name == s.Name)
-            IncreaseUsedActions("Attack", s);
+            IncreaseUsedActions("Attack", s, strings[2]);
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
         ProgressBar.UpdateFill(survivor.APoints);
         if (survivor.FinishedRound && survivor == gameModel.CurrentPlayer)
@@ -825,6 +871,23 @@ public class GameController : MonoBehaviour
         gameModel.ShiftPlayerOrder();
         StartNextTurn();
     }
+    public void ReceiveZombieSpawnsInBuilding(string data)
+    {
+        string[] strings = data.Split(":");
+        List<(ZombieType, int, int, int, int)> spawns = new List<(ZombieType, int, int, int, int)>();
+        foreach (string s in strings[0].Split(';'))
+        {
+            string[] spawnData = s.Split(",");
+            ZombieType type = (ZombieType)Enum.Parse(typeof(ZombieType), spawnData[0], true);
+            spawns.Add((type, int.Parse(spawnData[1]), int.Parse(spawnData[2]), int.Parse(spawnData[3]), int.Parse(spawnData[4])));
+        }
+        string[] rooms = strings[1].Split(";");
+        for (int i = 0; i<rooms.Length;i++)
+        {
+            gameModel.SpawnZombiesOnTile(spawns[i], gameModel.Board.GetTileByID(int.Parse(rooms[i])));
+            UpdateZombieCanvasOnTile(int.Parse(rooms[i]));
+        }
+    }
     public void ReceiveSearch(string data)
     {
         string[] strings = data.Split(';');
@@ -845,6 +908,7 @@ public class GameController : MonoBehaviour
             if (realItems.Count > 0)
                 OpenInventory(realItems);
         }
+        UpdateZombieCanvasOnTile(s.CurrentTile.Id);
     }
     public void PickUpObjective(Survivor s)
     {

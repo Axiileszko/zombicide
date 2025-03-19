@@ -36,6 +36,18 @@ namespace Model.Board
             }
             return null;
         }
+        public Building GetBuildingByTile(int tileID)
+        {
+            MapTile maptile = GetTileByID(tileID);
+            foreach (var item in Buildings)
+            {
+                if (item.Rooms.Contains(maptile))
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
         public MapTile GetTileByID(int tileID)
         {
             return Tiles.First(x=>x.Id==tileID);

@@ -22,7 +22,9 @@ namespace Network
         ItemsChanged,
         Search,
         Attack,
-        ZombieSpawn
+        ZombieSpawn,
+        ZombieSpawnInBuilding,
+        TraitUpgrade
     }
     public class NetworkManagerController:NetworkBehaviour
     {
@@ -290,6 +292,12 @@ namespace Network
                     break;
                 case MessageType.ZombieSpawn:
                     GameController.Instance.ReceiveZombieSpawns(data);
+                    break;
+                case MessageType.ZombieSpawnInBuilding:
+                    GameController.Instance.ReceiveZombieSpawnsInBuilding(data);
+                    break;
+                case MessageType.TraitUpgrade:
+                    GameController.Instance.ReceiveTraitUpgrade(data);
                     break;
             }
         }

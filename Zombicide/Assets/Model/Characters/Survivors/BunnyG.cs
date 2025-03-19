@@ -22,7 +22,12 @@ namespace Model.Characters.Survivors
             }
         }
         private BunnyG(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.LUCKY); }
-        public override void SetFreeActions(){ FreeActions.Clear(); }
+        public override void SetFreeActions()
+        { 
+            FreeActions.Clear(); 
+            if (Traits.Contains(Trait.P1FCA))
+                FreeActions.Add("Attack", new GameAction("Attack", 0));
+        }
         public override void SetActions(MapTile tileClicked)
         {
             Actions.Clear();
@@ -66,6 +71,55 @@ namespace Model.Characters.Survivors
                 }
             }
 
+        }
+        public override void UpgradeTo(int level, int option)
+        {
+            this.level++;
+            switch (level)
+            {
+                case 0: return;
+                case 1: action++; return;
+                case 2:
+                    if (option == 1)
+                        Traits.Add(Trait.P1TDRM);
+                    else
+                        Traits.Add(Trait.JUMP);
+                    return;
+                case 3:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DMM);
+                    else if (option == 2)
+                        Traits.Add(Trait.P1FCA);
+                    else
+                        Traits.Add(Trait.ROLL6);
+                    return;
+                default: return;
+            }
+        }
+        public override List<string> GetTraitUpgrades(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return new List<string>()
+                    {
+                        "+1 action"
+                    };
+                case 2:
+                    return new List<string>()
+                    {
+                        "+1 to dice roll: melee",
+                        "jump"
+                    };
+                case 3:
+                    return new List<string>()
+                    {
+                        "+1 damage: melee",
+                        "+1 free combat action",
+                        "roll 6: +1 die combat"
+                    };
+                default: return null;
+            }
         }
     }
 }

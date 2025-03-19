@@ -21,10 +21,12 @@ namespace Model.Characters.Survivors
                 return instance;
             }
         }
-        private Doug(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.MATHCINGSET); }
+        private Doug(string name, bool isKid) : base(name, isKid) { }
         public override void SetFreeActions()
         {
             FreeActions.Clear();
+            if (Traits.Contains(Trait.P1FCA))
+                FreeActions.Add("Attack", new GameAction("Attack", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
@@ -67,6 +69,55 @@ namespace Model.Characters.Survivors
                     if (amount + UsedAction <= action)
                         Actions.Add("Move", new GameAction("Move", amount));
                 }
+            }
+        }
+        public override void UpgradeTo(int level, int option)
+        {
+            this.level++;
+            switch (level)
+            {
+                case 0: return;
+                case 1: action++; return;
+                case 2:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DR);
+                    else
+                        Traits.Add(Trait.P1FCA);
+                    return;
+                case 3:
+                    if (option == 1)
+                        Traits.Add(Trait.P1TDRC);
+                    else if (option == 2)
+                        Traits.Add(Trait.AMBIDEXTROUS);
+                    else
+                        Traits.Add(Trait.SLIPPERY);
+                    return;
+                default: return;
+            }
+        }
+        public override List<string> GetTraitUpgrades(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return new List<string>()
+                    {
+                        "+1 action"
+                    };
+                case 2:
+                    return new List<string>()
+                    {
+                        "+1 die: ranged",
+                        "+1 free combat action"
+                    };
+                case 3:
+                    return new List<string>()
+                    {
+                        "+1 to dice roll: combat",
+                        "ambidextrous",
+                        "slippery"
+                    };
+                default: return null;
             }
         }
     }

@@ -25,6 +25,10 @@ namespace Model.Characters.Survivors
         public override void SetFreeActions()
         {
             FreeActions.Clear();
+            if (Traits.Contains(Trait.P1FMA))
+                FreeActions.Add("Melee Attack", new GameAction("Melee Attack", 0));
+            if (Traits.Contains(Trait.P1FMOA))
+                FreeActions.Add("Move", new GameAction("Move", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
@@ -70,6 +74,55 @@ namespace Model.Characters.Survivors
                         Actions.Add("Sprint Move", new GameAction("Sprint Move", amount));
                     }
                 }
+            }
+        }
+        public override void UpgradeTo(int level, int option)
+        {
+            this.level++;
+            switch (level)
+            {
+                case 0: return;
+                case 1: action++; return;
+                case 2:
+                    if (option == 1)
+                        Traits.Add(Trait.P1TDRM);
+                    else
+                        Traits.Add(Trait.SLIPPERY);
+                    return;
+                case 3:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DC);
+                    else if (option == 2)
+                        Traits.Add(Trait.P1FMA);
+                    else
+                        Traits.Add(Trait.P1FMOA);
+                    return;
+                default: return;
+            }
+        }
+        public override List<string> GetTraitUpgrades(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return new List<string>()
+                    {
+                        "+1 action"
+                    };
+                case 2:
+                    return new List<string>()
+                    {
+                        "+1 to dice roll: melee",
+                        "slippery"
+                    };
+                case 3:
+                    return new List<string>()
+                    {
+                        "+1 die: combat",
+                        "+1 free melee action",
+                        "+1 free move action"
+                    };
+                default: return null;
             }
         }
     }

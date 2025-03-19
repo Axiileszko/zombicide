@@ -20,14 +20,6 @@ public class ContextMenuController : MonoBehaviour
 
     public void OpenMenu(Vector3 position, List<string> options, System.Action<string> onOptionSelected)
     {
-        //// Ha már van egy nyitott menü, elõször azt töröljük
-        //if (currentMenus.Count > 0)
-        //{
-        //    var menu = currentMenus[0];
-        //    currentMenus.RemoveAt(0);
-        //    Destroy(menu);
-        //}
-
         GameController.Instance.EnableBoardInteraction(false);
         // Menü létrehozása
         GameObject currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);

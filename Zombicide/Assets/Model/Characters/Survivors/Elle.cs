@@ -25,6 +25,10 @@ namespace Model.Characters.Survivors
         public override void SetFreeActions()
         {
             FreeActions.Clear();
+            if (Traits.Contains(Trait.P1FRA))
+                FreeActions.Add("Range Attack", new GameAction("Range Attack", 0));
+            if (Traits.Contains(Trait.P1FCA))
+                FreeActions.Add("Attack", new GameAction("Attack", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
@@ -67,6 +71,55 @@ namespace Model.Characters.Survivors
                         Actions.Add("Move", new GameAction("Move", amount));
                     }
                 }
+            }
+        }
+        public override void UpgradeTo(int level, int option)
+        {
+            this.level++;
+            switch (level)
+            {
+                case 0: return;
+                case 1: action++; return;
+                case 2:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DC);
+                    else
+                        Traits.Add(Trait.P1FRA);
+                    return;
+                case 3:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DR);
+                    else if (option == 2)
+                        Traits.Add(Trait.P1FCA);
+                    else
+                        Traits.Add(Trait.P1TDRR);
+                    return;
+                default: return;
+            }
+        }
+        public override List<string> GetTraitUpgrades(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return new List<string>()
+                    {
+                        "+1 action"
+                    };
+                case 2:
+                    return new List<string>()
+                    {
+                        "+1 die: combat",
+                        "+1 free ranged action"
+                    };
+                case 3:
+                    return new List<string>()
+                    {
+                        "+1 die: ranged",
+                        "+1 free combat action",
+                        "+1 to dice roll: ranged"
+                    };
+                default: return null;
             }
         }
     }

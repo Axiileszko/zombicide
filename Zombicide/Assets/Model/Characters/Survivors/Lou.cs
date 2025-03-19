@@ -25,6 +25,12 @@ namespace Model.Characters.Survivors
         public override void SetFreeActions()
         {
             FreeActions.Clear();
+            if (Traits.Contains(Trait.P1FRA))
+                FreeActions.Add("Range Attack", new GameAction("Range Attack", 0));
+            if (Traits.Contains(Trait.P1FMA))
+                FreeActions.Add("Melee Attack", new GameAction("Melee Attack", 0));
+            if (Traits.Contains(Trait.P1FMOA))
+                FreeActions.Add("Move", new GameAction("Move", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
@@ -69,6 +75,55 @@ namespace Model.Characters.Survivors
                     if (amount + UsedAction <= action)
                         Actions.Add("Move", new GameAction("Move", amount));
                 }
+            }
+        }
+        public override void UpgradeTo(int level, int option)
+        {
+            this.level++;
+            switch (level)
+            {
+                case 0: return;
+                case 1: action++; return;
+                case 2:
+                    if (option == 1)
+                        Traits.Add(Trait.P1DC);
+                    else
+                        Traits.Add(Trait.P1FMA);
+                    return;
+                case 3:
+                    if (option == 1)
+                        Traits.Add(Trait.P1FMOA);
+                    else if (option == 2)
+                        Traits.Add(Trait.P1FRA);
+                    else
+                        Traits.Add(Trait.MEDIC);
+                    return;
+                default: return;
+            }
+        }
+        public override List<string> GetTraitUpgrades(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return new List<string>()
+                    {
+                        "+1 action"
+                    };
+                case 2:
+                    return new List<string>()
+                    {
+                        "+1 die: combat",
+                        "+1 free melee action"
+                    };
+                case 3:
+                    return new List<string>()
+                    {
+                        "+1 free move action",
+                        "+1 free ranged action",
+                        "medic"
+                    };
+                default: return null;
             }
         }
     }

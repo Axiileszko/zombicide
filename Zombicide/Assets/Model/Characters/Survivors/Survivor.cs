@@ -11,13 +11,28 @@ namespace Model.Characters.Survivors
 {
     public enum Trait
     {
-        SLIPPERY, MEDIC, LUCKY, MATHCINGSET, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, MULTIPLESEARCH, AMBIDEXTROUS
+        SLIPPERY, MEDIC, LUCKY, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, AMBIDEXTROUS, 
+        P1A, //+1 action
+        P1FCA,
+        P1FMA,
+        P1FRA, //+1 free combat/melee/range/move action
+        P1FMOA,
+        P1DC, //+1 die combat/range/melee
+        P1DR,
+        P1DM,
+        P1DMR,
+        P1DMM, //+1 damage melee/range
+        P1TDRC,
+        P1TDRR,
+        P1TDRM, //+1 to dice roll combat/melee/range
+        ROLL6, //roll 6 +1 die combat
     }
     public abstract class Survivor : Character
     {
         protected string name;
         protected int aPoints;
         protected bool isKid;
+        protected int level = 0;
         protected List<Item> backpack = new List<Item>();
         protected Item rightHand;
         protected Item leftHand;
@@ -40,8 +55,28 @@ namespace Model.Characters.Survivors
             this.isKid = isKid;
             Reset();
         }
+        public int CanUpgradeTo()
+        {
+            if (APoints >= 43 && level==2)
+            {
+                return 3;
+            }
+            else if (APoints >= 19 && level == 1)
+            {
+                return 2;
+            }
+            else if (APoints >= 7 && level == 0)
+            {
+                return 1;
+            }
+            else
+                return 0;
+        }
+        public abstract List<string> GetTraitUpgrades(int level);
+        public abstract void UpgradeTo(int level, int option);
         public bool CanOpenDoorOnTile()
         {
+            if(model.GetZombiesInPriorityOrderOnTile(CurrentTile).ToList().Count > 0) return false;
             if (CurrentTile.Neighbours.Count(x=>x.HasDoor && !x.IsDoorOpen)==0) return false;
             bool rightH = false;
             bool leftH = false;
@@ -107,11 +142,17 @@ namespace Model.Characters.Survivors
             if (CanTargetTile(targetTile))
             {
                 int distance = 1;
-                if (CurrentTile.Type == TileType.STREET)
+                if (CurrentTile.Type == TileType.STREET && targetTile.Type==TileType.STREET)
                 {
-                    distance = Math.Abs(CurrentTile.Id - targetTile.Id);
+                    var street = model.Board.GetStreetByTiles(CurrentTile.Id, targetTile.Id);
+                    distance = Math.Abs(street.Tiles.IndexOf(CurrentTile.Id) - street.Tiles.IndexOf(targetTile.Id));
                 }
-                if ((isLeftRange && distance <= ((Weapon)leftHand).Range) || (isRightRange && distance <= ((Weapon)leftHand).Range)) result.Add("Range");
+                if (targetTile == CurrentTile)
+                {
+                    if ((isLeftRange && ((Weapon)leftHand).CanBeUsedAsMelee || (isRightRange && ((Weapon)rightHand).CanBeUsedAsMelee))) result.Add("Range");
+                }
+                else
+                    if ((isLeftRange && distance <= ((Weapon)leftHand).Range) || (isRightRange && distance <= ((Weapon)leftHand).Range)) result.Add("Range");
             }
             return result;
         }
@@ -133,9 +174,10 @@ namespace Model.Characters.Survivors
             if (!isMelee)
             {
                 int distance = 1;
-                if (CurrentTile.Type == TileType.STREET)
+                if (CurrentTile.Type == TileType.STREET && targetTile.Type == TileType.STREET)
                 {
-                    distance = Math.Abs(CurrentTile.Id - targetTile.Id);
+                    var street = model.Board.GetStreetByTiles(CurrentTile.Id, targetTile.Id);
+                    distance = Math.Abs(street.Tiles.IndexOf(CurrentTile.Id) - street.Tiles.IndexOf(targetTile.Id));
                 }
                 if (distance > weapon.Range) return;
             }
@@ -149,6 +191,23 @@ namespace Model.Characters.Survivors
                 zombies = model.SortZombiesByNewPriority(zombies, newPriority);
 
             List<Survivor> survivors = model.GetSurvivorsOnTile(targetTile);
+
+            // Dice traits
+            if (Traits.Contains(Trait.P1TDRC))
+            {
+                for (int i = 0; i < throws.Count; i++)
+                    throws[i]++;
+            }
+            if (Traits.Contains(Trait.P1TDRM) && isMelee)
+            {
+                for (int i = 0; i < throws.Count; i++)
+                    throws[i]++;
+            }
+            if (Traits.Contains(Trait.P1TDRR) && !isMelee)
+            {
+                for (int i = 0; i < throws.Count; i++)
+                    throws[i]++;
+            }
 
             // Molotov
             if (weapon.Type == WeaponType.BOMB)
@@ -187,7 +246,15 @@ namespace Model.Characters.Survivors
             {
                 Zombie targetZombie = zombies.First();
 
-                if (targetZombie.TakeDamage(weapon.Damage))
+                int damage = weapon.Damage;
+
+                // Damage trait
+                if (Traits.Contains(Trait.P1DMM) && isMelee)
+                    damage++;
+                if (Traits.Contains(Trait.P1DMR) && !isMelee)
+                    damage++;
+
+                if (targetZombie.TakeDamage(damage))
                 {
                     // Megöljük a zombit
                     model.RemoveZombie(targetZombie);
@@ -202,26 +269,34 @@ namespace Model.Characters.Survivors
                 {
                     successfulHits--; // Elpazarolt támadás
                     // Ha volt túlélő a mezőn akkor sebződik
-                    int amount = weapon.Damage;
-                    foreach (var item in survivors)
+                    if (!isMelee && weapon.Name!=ItemName.MILITARYSNIPERRIFLE && weapon.Name!=ItemName.SNIPERRIFLE && !Traits.Contains(Trait.SNIPER))
                     {
-                        item.TakeDamage(1);
-                        amount--;
-                        if (amount == 0) break;
+                        int amount = weapon.Damage;
+                        foreach (var item in survivors)
+                        {
+                            if (item.Name != Name)
+                            {
+                                item.TakeDamage(1);
+                                amount--;
+                                if (amount == 0) break;
+                            }
+                        }
                     }
                 }
             }
         }
         private bool CanTargetTile(MapTile targetTile)
         {
-            if (CurrentTile.Type == TileType.STREET)
+            if(CurrentTile.Id == targetTile.Id)
+                return true;
+            if (CurrentTile.Type == TileType.STREET && targetTile.Type == TileType.STREET)
             {
                 var street=model.Board.GetStreetByTiles(CurrentTile.Id, targetTile.Id);
                 if (street == null) return false;
             }
-            else if(CurrentTile.Type==TileType.DARKROOM || CurrentTile.Type == TileType.ROOM)
-            {
-                if(!CurrentTile.Neighbours.Select(x=>x.Destination).Contains(targetTile)) return false;
+            else 
+            { 
+                if(!CurrentTile.Neighbours.Select(x=>x.Destination.Id).Contains(targetTile.Id)) return false;
                 if(!model.Board.CanMove(CurrentTile, targetTile)) return false;
             }
             return true;
@@ -245,6 +320,7 @@ namespace Model.Characters.Survivors
             SearchedAlready = false;
             SlipperyMovedAlready = false;
             UsedAction = 0;
+            level = 0;
             aPoints = 0;
             backpack = new List<Item>();
             //Traits.Clear(); valamikor kéne clearelni
@@ -310,9 +386,18 @@ namespace Model.Characters.Survivors
             rightHand = weapon;
         }
 
-        public void OnUsedAction(string action)
+        public void OnUsedAction(string action, string? isMelee)
         {
-            if (FreeActions.Keys.Contains(action))
+            if(isMelee!= null)
+            {
+                if (isMelee=="True" && FreeActions.Keys.Contains("Melee Attack"))
+                    FreeActions.Remove("Melee Attack");
+                else if (isMelee == "False" && FreeActions.Keys.Contains("Range Attack"))
+                    FreeActions.Remove("Range Attack");
+                else
+                    FreeActions.Remove("Attack");
+            }
+            else if (FreeActions.Keys.Contains(action))
                 FreeActions.Remove(action);
             else
                 UsedAction += Actions[action].Cost;

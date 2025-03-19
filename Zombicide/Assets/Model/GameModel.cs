@@ -4,9 +4,6 @@ using Model.Characters.Zombies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.Tilemaps;
-using static UnityEngine.Rendering.DebugUI;
 using Model.Board;
 
 namespace Model
@@ -70,6 +67,28 @@ namespace Model
             //jatekosok itt jonnek
             MoveZombies();
             ClearNoiseCounters();
+            UpdateDangerLevel();
+        }
+
+        private void UpdateDangerLevel()
+        {
+            if (survivors.Any(x => x.APoints >= 43))
+            {
+                dangerLevel = 3;
+                return;
+            }
+            else if (survivors.Any(x => x.APoints >= 19))
+            {
+                dangerLevel = 2;
+                return;
+            }
+            else if (survivors.Any(x => x.APoints >= 7))
+            {
+                dangerLevel = 1;
+                return;
+            }
+            else
+                dangerLevel = 0;
         }
 
         private void ClearNoiseCounters()
@@ -87,6 +106,16 @@ namespace Model
                 survivors[i].PickGenericWeapon(ItemFactory.GetGenericWeaponByName(weapons[i]));
             }
         }
+        public bool BuildingOpened(TileConnection connection)
+        {
+            Building building = board.GetBuildingByTile(connection.Destination.Id);
+            if (building != null && !building.IsOpened)
+            {
+                building.OpenBuilding();
+                return true;
+            }
+            return false;
+        }
         public Survivor GetSurvivorByName(string name)
         {
             return survivors.First(x => x.Name == name);
@@ -99,7 +128,7 @@ namespace Model
                 if(item.CurrentTile==mapTile)
                     zombiesOnTile.Add(item);
             }
-            return zombiesOnTile.OrderByDescending(x => x.Priority).ToList();
+            return zombiesOnTile.OrderBy(x => x.Priority).ToList();
         }
         public List<Zombie> SortZombiesByNewPriority(List<Zombie> zombies,List<string> order)
         {
@@ -151,6 +180,9 @@ namespace Model
             {
                 item.MoveTo(startTile);
             }
+            Building building = board.GetBuildingByTile(startTile.Id);
+            if (building != null)
+                building.OpenBuilding();
         }
         private void GenerateItems()
         {
@@ -235,7 +267,7 @@ namespace Model
             else
             {
                 int roll = random.Next(0, items.Count()+3);
-                if (roll > items.Count)
+                if (roll >= items.Count)
                 {
                     return null;
                 }
@@ -268,7 +300,7 @@ namespace Model
                 i++;
             }
         }
-        private void SpawnZombiesOnTile((ZombieType, int, int, int, int) spawn, MapTile tile)
+        public void SpawnZombiesOnTile((ZombieType, int, int, int, int) spawn, MapTile tile)
         {
             switch (dangerLevel)
             {
@@ -387,7 +419,6 @@ namespace Model
                 int index=playerOrder.IndexOf(currentPlayer);
                 index++;
                 currentPlayer = playerOrder[index];
-                Debug.Log("uj currentplayer:" + currentPlayer);
             }
         }
         public int NumberOfPlayersOnTile(int tileID)
