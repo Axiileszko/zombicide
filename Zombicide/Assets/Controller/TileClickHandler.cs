@@ -20,9 +20,8 @@ public class TileClickHandler : MonoBehaviour
             out anchoredPosition
         );
         anchoredPosition.x += 107;
-        anchoredPosition.y -= 140;
+        anchoredPosition.y -= 180;
         List<string> availableActions = GameController.Instance.GetAvailableActionsOnTile(gameObject.name);
-        if (availableActions.Count == 0) return;
         availableActions.Add("Skip");
         availableActions.Add("Cancel");
         ContextMenuController.Instance.OpenMenu(anchoredPosition, availableActions, OnOptionSelected);

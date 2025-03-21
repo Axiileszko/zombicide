@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Services.Matchmaker.Models;
 
 namespace Model.Characters.Survivors
 {
@@ -36,10 +37,12 @@ namespace Model.Characters.Survivors
         protected List<Item> backpack = new List<Item>();
         protected Item rightHand;
         protected Item leftHand;
+        public int ObjectiveCount {  get; protected set; }
         public bool FinishedRound { get; set; }
         public bool StartedRound { get; set; }
         public bool SearchedAlready { get; set; }
         public bool SlipperyMovedAlready { get; set; }
+        public bool LeftExit {  get; private set; }
         public List<Trait> Traits { get; protected set; } = new List<Trait>();
         public bool IsDead { get; set; }
         public int APoints { get {  return aPoints; } }
@@ -228,7 +231,7 @@ namespace Model.Characters.Survivors
                 }
                 foreach (var item in survivors)
                 {
-                    item.IsDead=true;
+                    SurvivorFactory.GetSurvivorByName(item.name);IsDead =true;
                 }
                 return;
             }
@@ -240,6 +243,7 @@ namespace Model.Characters.Survivors
                 if (throws[i] >= weapon.Accuracy)
                     successfulHits++;
             }
+            int damageAmount = throws.Count - successfulHits;
 
             // Zombik támadása prioritási sorrendben
             while (successfulHits > 0 && zombies.Count > 0)
@@ -268,22 +272,32 @@ namespace Model.Characters.Survivors
                 else
                 {
                     successfulHits--; // Elpazarolt támadás
-                    // Ha volt túlélő a mezőn akkor sebződik
-                    if (!isMelee && weapon.Name!=ItemName.MILITARYSNIPERRIFLE && weapon.Name!=ItemName.SNIPERRIFLE && !Traits.Contains(Trait.SNIPER))
+                }
+            }
+            // Ha volt túlélő a mezőn akkor sebződik
+            if (damageAmount>0 && survivors.Count>0 && !isMelee && weapon.Name != ItemName.MILITARYSNIPERRIFLE && weapon.Name != ItemName.SNIPERRIFLE && !Traits.Contains(Trait.SNIPER))
+            {
+                while (damageAmount>0)
+                {
+                    foreach (var item in survivors)
                     {
-                        int amount = weapon.Damage;
-                        foreach (var item in survivors)
+                        if (item.Name != Name)
                         {
-                            if (item.Name != Name)
-                            {
-                                item.TakeDamage(1);
-                                amount--;
-                                if (amount == 0) break;
-                            }
+                            Survivor s = SurvivorFactory.GetSurvivorByName(item.name);
+                            s.TakeDamage(1);//ha true akkor meghalt
+                            damageAmount--;
+                            if (damageAmount == 0) break;
                         }
                     }
                 }
             }
+        }
+        public override bool TakeDamage(int amount)
+        {
+            hp -= amount;
+            if (hp <= 0)
+                return true;//true ha meghalt a karakter
+            return false;
         }
         private bool CanTargetTile(MapTile targetTile)
         {
@@ -305,6 +319,7 @@ namespace Model.Characters.Survivors
         { 
             CurrentTile.PickUpObjective();//lehet kezdünk még valamit az object refel amit visszaadna
             aPoints += 5;
+            ObjectiveCount++;
         }
         public void ThrowAway(Item item)
         {
@@ -319,11 +334,12 @@ namespace Model.Characters.Survivors
             FinishedRound = false;
             SearchedAlready = false;
             SlipperyMovedAlready = false;
+            LeftExit=false;
             UsedAction = 0;
+            ObjectiveCount = 0;
             level = 0;
             aPoints = 0;
             backpack = new List<Item>();
-            //Traits.Clear(); valamikor kéne clearelni
             if (isKid)
                 Traits.Add(Trait.SLIPPERY);
             rightHand = null;
@@ -388,7 +404,7 @@ namespace Model.Characters.Survivors
 
         public void OnUsedAction(string action, string? isMelee)
         {
-            if(isMelee!= null)
+            if(isMelee!= null && FreeActions.Keys.Any(x=>x.EndsWith("Attack")))
             {
                 if (isMelee=="True" && FreeActions.Keys.Contains("Melee Attack"))
                     FreeActions.Remove("Melee Attack");

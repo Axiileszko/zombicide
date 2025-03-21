@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,12 +20,26 @@ public class ContextMenuController : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    public void OpenMenu(Vector3 position, List<string> options, System.Action<string> onOptionSelected)
+    public void OpenMenu(Vector2 position, List<string> options, System.Action<string> onOptionSelected)
     {
         GameController.Instance.EnableBoardInteraction(false);
+
         // Menü létrehozása
         GameObject currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);
         currentMenu.transform.localPosition = position;
+
+        // Ellenõrizzük a menü magasságát
+        float menuHeight = 380;
+        float menuTop = position.y;
+        float screenHeight = Screen.height;
+
+        float difference = (screenHeight - menuHeight) - (Math.Abs(menuTop) + menuHeight);
+        if (difference < 0)
+        {
+            position.y +=Math.Abs(difference);
+            currentMenu.transform.localPosition = position;
+        }
+
         currentMenus.Add(currentMenu);
 
         VerticalLayoutGroup layout = null;

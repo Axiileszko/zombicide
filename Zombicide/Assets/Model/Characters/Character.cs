@@ -30,7 +30,7 @@ namespace Model.Characters
             }
             return false;
         }
-        public bool TakeDamage(int amount)
+        public virtual bool TakeDamage(int amount)
         {
             if (amount<hp)
                 return false;

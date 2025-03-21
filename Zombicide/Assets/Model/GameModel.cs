@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Model.Board;
+using static UnityEditor.Progress;
 
 namespace Model
 {
@@ -31,6 +32,8 @@ namespace Model
         public List<Survivor> PlayerOrder { get { return playerOrder; } }
         public Survivor CurrentPlayer { get { return currentPlayer; } }
         public MapTile StartTile { get { return startTile; } }
+        public delegate bool WinningConditionDelegate();
+        public WinningConditionDelegate CheckWinningCondition;
         public List<int> SurvivorLocations {  get 
             {
                 List<int> locations = new List<int>();
@@ -59,8 +62,43 @@ namespace Model
             dangerLevel = 0;
             this.survivors = SpawnSurvivors(survivors);
             LoadGame(mapID);
+            SetWinningCondition(mapID);
             FindSpawns();
             MovePlayersToSpawn();
+        }
+        public void SetWinningCondition(int mapID)
+        {
+            // Térkép azonosítótól függõen beállítjuk a megfelelõ metódust
+            switch (mapID)
+            {
+                case 0:
+                    CheckWinningCondition = WinningCondition_Map0;
+                    break;
+            }
+        }
+        private bool WinningCondition_Map0()
+        {
+            bool everyoneHasObjective=true;
+
+            if(survivors.Any(x=>x.IsDead)) return false;
+            int foods = 0;
+            foreach (var s in survivors)
+            {
+                if(s.ObjectiveCount==0) everyoneHasObjective = false;
+                foreach (var item in s.BackPack)
+                {
+                    if(item.Name==ItemName.CANNEDFOOD || item.Name==ItemName.RICE || item.Name==ItemName.WATER) foods++;
+                }
+                if (s.LeftHand != null && (s.LeftHand.Name == ItemName.CANNEDFOOD || s.LeftHand.Name == ItemName.RICE || s.LeftHand.Name == ItemName.WATER)) foods++;
+                if (s.RightHand != null && (s.RightHand.Name == ItemName.CANNEDFOOD || s.RightHand.Name == ItemName.RICE || s.RightHand.Name == ItemName.WATER)) foods++;
+            }
+            if(everyoneHasObjective && foods >= 3)
+            {
+                if(survivors.Any(x=>!x.LeftExit)) return false;
+                return true;
+            }
+            else
+                return false;
         }
         public void EndRound()
         {
@@ -163,6 +201,8 @@ namespace Model
             foreach (var item in zombies)
             {
                 item.Move();
+                if(item is RunnerZombie)
+                    item.Move();
             }
         }
 
@@ -274,9 +314,9 @@ namespace Model
                 return new List<Item>() { items.ElementAt(roll) };
             }
         }
-        public (ZombieType, int, int, int, int) ChooseZombieSpawnOption()
+        public (ZombieType, int, int, int, int, bool) ChooseZombieSpawnOption()
         {
-            (ZombieType, int, int, int, int) spawn;
+            (ZombieType, int, int, int, int, bool) spawn;
             if (hasAbomination)
             {
                 do
@@ -290,7 +330,7 @@ namespace Model
             }
             return spawn;
         }
-        public void SpawnZombies(List<(ZombieType, int, int, int, int)> spawns)
+        public void SpawnZombies(List<(ZombieType, int, int, int, int, bool)> spawns)
         {
             SpawnZombiesOnTile(spawns[0], firstSpawn);
             int i = 1;
@@ -300,27 +340,30 @@ namespace Model
                 i++;
             }
         }
-        public void SpawnZombiesOnTile((ZombieType, int, int, int, int) spawn, MapTile tile)
+        public void SpawnZombiesOnTile((ZombieType, int, int, int, int, bool) spawn, MapTile tile)
         {
             switch (dangerLevel)
             {
                 case 0:
-                    SpawnZombie(spawn.Item1,spawn.Item2,tile); break;
+                    SpawnZombie(spawn.Item1,spawn.Item2,tile,spawn.Item6); break;
                 case 1:
-                    SpawnZombie(spawn.Item1, spawn.Item3, tile); break;
+                    SpawnZombie(spawn.Item1, spawn.Item3, tile, spawn.Item6); break;
                 case 2:
-                    SpawnZombie(spawn.Item1, spawn.Item4, tile); break;
+                    SpawnZombie(spawn.Item1, spawn.Item4, tile, spawn.Item6); break;
                 case 3:
-                    SpawnZombie(spawn.Item1, spawn.Item5, tile); break;
+                    SpawnZombie(spawn.Item1, spawn.Item5, tile, spawn.Item6); break;
                 default:
-                    SpawnZombie(spawn.Item1, spawn.Item5, tile); break;
+                    SpawnZombie(spawn.Item1, spawn.Item5, tile, spawn.Item6); break;
             }
         }
-        public void SpawnZombie(ZombieType type, int amount, MapTile tile)
+        public void SpawnZombie(ZombieType type, int amount, MapTile tile, bool moveThem)
         {
             if (type == ZombieType.ABOMINAWILD || type == ZombieType.ABOMINACOP || type== ZombieType.HOBOMINATION || type ==ZombieType.PATIENTZERO)
             {
-                hasAbomination = true;
+                if (hasAbomination)
+                    MoveAbomination();
+                else
+                    hasAbomination = true;
             }
             for (int i = 0; i < amount; i++)
             {
@@ -328,9 +371,15 @@ namespace Model
                 zombie.SetReference(this);
                 zombie.MoveTo(tile);
                 zombies.Add(zombie);
+                if (moveThem)
+                    zombie.Move();
             }
         }
-
+        private void MoveAbomination()
+        {
+            Zombie abo = zombies.First(x => x is AbominationZombie);
+            abo.Move();
+        }
         private void FindSpawns()
         {
             foreach (var item in board.Tiles)

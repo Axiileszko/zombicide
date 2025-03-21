@@ -111,23 +111,26 @@ public class DiceRoller : MonoBehaviour
     }
     IEnumerator RerollDiceCoroutine(int rerollThreshold, List<int> results)
     {
+        List<GameObject> reRolledDice = new List<GameObject>();
         for (int i = 0; i < spawnedDice.Count; i++)
         {
             if (results[i] < rerollThreshold)
-            {
-                var die = spawnedDice[i];
-                spawnedDice.RemoveAt(i);
-                Destroy(die);
+                reRolledDice.Add(spawnedDice[i]);
+        }
+        for (int i = 0; i < reRolledDice.Count; i++)
+        {
+            var die = reRolledDice[i];
+            spawnedDice.Remove(reRolledDice[i]);
+            Destroy(die);
 
-                GameObject newDie = Instantiate(dicePrefab, spawnPoint.position + new Vector3(i * 1.5f, 0, 0), Random.rotation);
-                Rigidbody rb = newDie.GetComponent<Rigidbody>();
+            GameObject newDie = Instantiate(dicePrefab, spawnPoint.position + new Vector3(i * 1.5f, 0, 0), Random.rotation);
+            Rigidbody rb = newDie.GetComponent<Rigidbody>();
 
-                // Egy véletlenszerû erõt adunk neki, hogy dobásnak tûnjön
-                rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
-                rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
+            // Egy véletlenszerû erõt adunk neki, hogy dobásnak tûnjön
+            rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+            rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
 
-                spawnedDice.Add(newDie);
-            }
+            spawnedDice.Add(newDie);
         }
         yield return new WaitForSeconds(2f);
     }

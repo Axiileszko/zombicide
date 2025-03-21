@@ -17,14 +17,7 @@ namespace Model.Characters.Zombies
             if (survivors != null && survivors.Count > 0)
             {
                 Attack(survivors);
-                if (action < 2)
-                    return;
-                survivors = model.GetSurvivorsOnTile(CurrentTile);
-                if (survivors != null && survivors.Count > 0)
-                {
-                    Attack(survivors);
-                    return;
-                }
+                return;
             } 
             Dictionary<MapTile, int> priority = new Dictionary<MapTile, int>();
             //Latas
