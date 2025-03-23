@@ -1,17 +1,25 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraDrag : MonoBehaviour
 {
     private Vector3 dragOrigin;
     private float dragSpeed = 20f;
+    private float timer = 0f;
     private Vector2 panLimitX = new Vector2(-20f, 20f);
     private Vector2 panLimitZ = new Vector2(-40f, 0f);
     private Vector3 resetCameraPosition;
     private bool isDragging = false;
-
+    public static HoverClickHandlerForPanel PanelHoverScript;
+    [SerializeField] private List<GameObject> colliders = new List<GameObject>();
+    private List<HoverClickHandlerForItem> itemHoverScripts = new List<HoverClickHandlerForItem>();
     void Start()
     {
         resetCameraPosition = Camera.main.transform.position;
+        foreach (var item in colliders)
+        {
+            itemHoverScripts.Add(item.GetComponent<HoverClickHandlerForItem>());
+        }
     }
     void Update()
     {
@@ -25,8 +33,9 @@ public class CameraDrag : MonoBehaviour
             dragOrigin = Input.mousePosition;
             isDragging = true;
         }
-        if (Input.GetMouseButton(1) && isDragging)
+        if (Input.GetMouseButton(1) && isDragging && !HoverClickHandlerForItem.IsHovering && !HoverClickHandlerForPanel.IsHovering)
         {
+            ToggleHoverScripts(false);
             Vector3 difference = dragOrigin - Input.mousePosition;
             dragOrigin = Input.mousePosition;
 
@@ -36,11 +45,17 @@ public class CameraDrag : MonoBehaviour
         if (Input.GetMouseButtonUp(1))
         {
             isDragging = false;
+            timer += Time.deltaTime;
+            if (timer > 10)
+            {
+                timer = 0f;
+                ToggleHoverScripts(true);
+            }
         }
     }
     void HandleResetCamera()
     {
-        if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Space))
+        if ((Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Space)) && !HoverClickHandlerForItem.IsHovering && !HoverClickHandlerForPanel.IsHovering)
         {
             Camera.main.transform.position = resetCameraPosition;
         }
@@ -52,5 +67,13 @@ public class CameraDrag : MonoBehaviour
         newPosition.z = Mathf.Clamp(newPosition.z, panLimitZ.x, panLimitZ.y);
         Camera.main.transform.position = newPosition;
     }
-
+    private void ToggleHoverScripts(bool state)
+    {
+        foreach (var script in itemHoverScripts)
+        {
+            script.enabled = state; // Engedélyezzük vagy tiltjuk a hover scripteket
+        }
+        if (PanelHoverScript != null)
+            PanelHoverScript.enabled = state;
+    }
 }

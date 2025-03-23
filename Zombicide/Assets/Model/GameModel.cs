@@ -477,9 +477,9 @@ namespace Model
                 int index=playerOrder.IndexOf(currentPlayer);
                 index++;
                 currentPlayer = playerOrder[index];
+                if(currentPlayer.IsDead || currentPlayer.LeftExit)
+                    NextPlayer();
             }
-            if(currentPlayer.IsDead || currentPlayer.LeftExit)
-                NextPlayer();
         }
         public int NumberOfPlayersOnTile(int tileID)
         {

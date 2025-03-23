@@ -94,6 +94,7 @@ public class GameController : MonoBehaviour
             if (component != null)
             {
                 CameraZoom.PanelHoverScript=component;
+                CameraDrag.PanelHoverScript =component;
             }
         }
         GameObject player = Instantiate(panelPrefab,ui.transform);
