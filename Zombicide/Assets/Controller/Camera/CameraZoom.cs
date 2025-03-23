@@ -7,6 +7,8 @@ public class CameraZoom : MonoBehaviour
     [SerializeField] private List<GameObject> colliders = new List<GameObject>();
     private List<HoverClickHandlerForItem> itemHoverScripts=new List<HoverClickHandlerForItem>();
     private float timer = 0f;
+    private float minZoom = 20f;
+    private float maxZoom = 40f;
     public static HoverClickHandlerForPanel PanelHoverScript;
     private void Start()
     {
@@ -32,7 +34,15 @@ public class CameraZoom : MonoBehaviour
             float CamX = Camera.main.transform.position.x;
             float CamY = Camera.main.transform.position.y;
             float CamZ = Camera.main.transform.position.z;
-            Camera.main.transform.position = new Vector3(CamX + X, CamY + Y, CamZ + Z);
+            //Camera.main.transform.position = new Vector3(CamX + X, CamY + Y, CamZ + Z);
+            Vector3 newPosition = Camera.main.transform.position + new Vector3(X, Y, Z);
+
+            // Ellenõrizzük, hogy az új pozíció a minimum és maximum között van-e
+            float distance = Vector3.Distance(newPosition, Vector3.zero);
+            if (distance >= minZoom && distance <= maxZoom)
+            {
+                Camera.main.transform.position = newPosition;
+            }
         }
         else 
         {

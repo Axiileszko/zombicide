@@ -161,7 +161,7 @@ namespace Model.Characters.Survivors
         }
         public abstract void SetActions(MapTile tileClicked);
         public abstract void SetFreeActions();
-        public virtual void Move(MapTile targetTile)
+        public void Move(MapTile targetTile)
         {
             MoveTo(targetTile);
         }
@@ -171,7 +171,7 @@ namespace Model.Characters.Survivors
                 MoveTo(targetTile);
             SlipperyMovedAlready=true;
         }
-        public virtual void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws, List<string>? newPriority)
+        public void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws, List<string>? newPriority)
         {
             if (weapon == null || !CanTargetTile(targetTile)) return;
             if (!isMelee)
@@ -421,6 +421,10 @@ namespace Model.Characters.Survivors
                 FinishedRound = true;
             }
         }
-        
+        public void LeaveThroughExit()
+        {
+            LeftExit = true;
+            FinishedRound= true;
+        }
     }
 }

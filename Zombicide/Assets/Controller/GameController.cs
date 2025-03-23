@@ -584,6 +584,10 @@ public class GameController : MonoBehaviour
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Pick Up Objective", s, null);
                 break;
+            case "Leave Through Exit":
+                s.LeaveThroughExit();
+                RemovePlayer(s.Name);
+                break;
             default:
                 Debug.LogWarning("Unknown action: " + actionName);
                 break;
@@ -596,6 +600,12 @@ public class GameController : MonoBehaviour
         {
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
         }
+    }
+    private void RemovePlayer(string playerName)
+    {
+        GameObject player = playerPrefabs[playerName];
+        playerPrefabs.Remove(playerName);
+        Destroy(player);
     }
     public void SearchOnTile(Survivor s)
     {

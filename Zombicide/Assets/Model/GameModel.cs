@@ -18,6 +18,7 @@ namespace Model
         private Survivor currentPlayer;
         private List<Survivor> playerOrder = new List<Survivor>();
         private MapTile firstSpawn=null;
+        private MapTile exitTile=null;
         private List<MapTile> zSpawns=new List<MapTile>();
         private MapTile startTile=null;
         private int dangerLevel;
@@ -30,6 +31,7 @@ namespace Model
         public bool IsPlayerRoundOver=false;
         public Zombie Abomination { get {  return abomination; } }
         public int SpawnCount { get {  return zSpawns.Count+1; } }
+        public MapTile ExitTile { get { return exitTile; } }
         public Board.Board Board { get { return board; } }
         public List<Survivor> PlayerOrder { get { return playerOrder; } }
         public Survivor CurrentPlayer { get { return currentPlayer; } }
@@ -397,20 +399,15 @@ namespace Model
             foreach (var item in board.Tiles)
             {
                 if (item.SpawnType==ZombieSpawnType.FIRST)
-                {
                     firstSpawn = item;
-                }
                 else if (item.SpawnType==ZombieSpawnType.RED || item.SpawnType == ZombieSpawnType.GREEN|| item.SpawnType == ZombieSpawnType.BLUE)
-                {
                     zSpawns.Add(item);
-                }
                 else if (item.IsStart)
-                {
                     startTile = item;
-                }
+                else if(item.IsExit)
+                    exitTile = item;
             }
         }
-
         private List<Survivor> SpawnSurvivors(List<string> survivors)
         {
             List<Survivor> sList= new List<Survivor>();
@@ -481,6 +478,8 @@ namespace Model
                 index++;
                 currentPlayer = playerOrder[index];
             }
+            if(currentPlayer.IsDead || currentPlayer.LeftExit)
+                NextPlayer();
         }
         public int NumberOfPlayersOnTile(int tileID)
         {
