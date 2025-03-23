@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Model.Board;
-using static UnityEditor.Progress;
+using System.Diagnostics;
 
 namespace Model
 {
@@ -22,11 +22,13 @@ namespace Model
         private MapTile startTile=null;
         private int dangerLevel;
         private bool hasAbomination;
+        private Zombie abomination = null;
 
         private System.Random random=new System.Random();
 
         private MapLoader mapLoader;
         public bool IsPlayerRoundOver=false;
+        public Zombie Abomination { get {  return abomination; } }
         public int SpawnCount { get {  return zSpawns.Count+1; } }
         public Board.Board Board { get { return board; } }
         public List<Survivor> PlayerOrder { get { return playerOrder; } }
@@ -59,6 +61,7 @@ namespace Model
             IsPlayerRoundOver = false;
             GenerateItems();
             hasAbomination = false;
+            abomination = null;
             dangerLevel = 0;
             this.survivors = SpawnSurvivors(survivors);
             LoadGame(mapID);
@@ -193,6 +196,8 @@ namespace Model
         }
         public void RemoveZombie(Zombie zombie)
         {
+            if(zombie==abomination)
+                abomination = null;
             zombies.Remove(zombie);
         }
         private void MoveZombies()
@@ -322,11 +327,13 @@ namespace Model
                 do
                 {
                     spawn = ZombieFactory.GetSpawnOption();
-                } while (spawn.Item1 != ZombieType.ABOMINAWILD || spawn.Item1 != ZombieType.ABOMINACOP || spawn.Item1 != ZombieType.HOBOMINATION || spawn.Item1 != ZombieType.PATIENTZERO);
+                } while (spawn.Item1 == ZombieType.ABOMINAWILD || spawn.Item1 == ZombieType.ABOMINACOP || spawn.Item1 == ZombieType.HOBOMINATION || spawn.Item1 == ZombieType.PATIENTZERO);
             }
             else
             {
                 spawn = ZombieFactory.GetSpawnOption();
+                if(spawn.Item1== ZombieType.ABOMINAWILD || spawn.Item1 == ZombieType.ABOMINACOP || spawn.Item1 == ZombieType.HOBOMINATION || spawn.Item1 == ZombieType.PATIENTZERO)
+                    hasAbomination = true;
             }
             return spawn;
         }
@@ -358,12 +365,18 @@ namespace Model
         }
         public void SpawnZombie(ZombieType type, int amount, MapTile tile, bool moveThem)
         {
-            if (type == ZombieType.ABOMINAWILD || type == ZombieType.ABOMINACOP || type== ZombieType.HOBOMINATION || type ==ZombieType.PATIENTZERO)
+            if ((type == ZombieType.ABOMINAWILD || type == ZombieType.ABOMINACOP || type== ZombieType.HOBOMINATION || type ==ZombieType.PATIENTZERO)&& amount>0)
             {
-                if (hasAbomination)
+                if (abomination!=null)
                     MoveAbomination();
-                else
-                    hasAbomination = true;
+                else if(abomination == null)
+                {
+                    abomination = ZombieFactory.CreateZombie(type);
+                    abomination.SetReference(this);
+                    abomination.MoveTo(tile);
+                    zombies.Add(abomination);
+                }   
+                return;
             }
             for (int i = 0; i < amount; i++)
             {
@@ -377,8 +390,7 @@ namespace Model
         }
         private void MoveAbomination()
         {
-            Zombie abo = zombies.First(x => x is AbominationZombie);
-            abo.Move();
+            abomination.Move();
         }
         private void FindSpawns()
         {

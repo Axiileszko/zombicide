@@ -215,10 +215,9 @@ namespace Model.Characters.Survivors
             // Molotov
             if (weapon.Type == WeaponType.BOMB)
             {
-                var abomina = zombies.First(x => x is Abominawild);
-                if (abomina != null)
+                if (model.Abomination!=null && model.Abomination is Abominawild && model.Abomination.CurrentTile==targetTile)
                 {
-                    model.RemoveZombie(abomina);
+                    model.RemoveZombie(model.Abomination);
                     return;
                 }
                 foreach (var item in zombies)

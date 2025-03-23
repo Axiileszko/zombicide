@@ -23,7 +23,8 @@ namespace Model.Characters.Zombies
             //Latas
             foreach (var item in CurrentTile.Neighbours)
             {
-                priority.Add(item.Destination, 1);
+                if(model.Board.CanMove(CurrentTile,item.Destination))
+                    priority.Add(item.Destination, 1);
 
                 if (CurrentTile.Type==Board.TileType.STREET)
                 {

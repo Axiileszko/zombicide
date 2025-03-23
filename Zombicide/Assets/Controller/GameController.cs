@@ -178,8 +178,8 @@ public class GameController : MonoBehaviour
             Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
             BoxCollider collider = tile.GetComponent<BoxCollider>();
             float startX = collider.transform.position.x - 0.8f;
-            float startZ = collider.transform.position.z+0.5f;
-            float startY = 2f;
+            float startZ = collider.transform.position.z-1f;
+            float startY = 1.5f;
             Vector3 newPosition = new Vector3();
             newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
             GameObject zc = Instantiate(zombieCanvasPrefab);
