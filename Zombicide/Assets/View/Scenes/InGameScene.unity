@@ -1631,7 +1631,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1383997564}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1797451694}
+        m_TargetAssemblyTypeName: GameController, Assembly-CSharp
+        m_MethodName: OnOkEndGameClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1383997564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1905,7 +1917,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnPoint: {fileID: 131139447}
   dicePrefab: {fileID: 6801955793903224657, guid: 0d2b9188252a78b4298fb8e34d9229ee, type: 3}
-  groundPlane: {fileID: 1926486567}
+  groundPlane: {fileID: 6532160523763493865}
   okBtn: {fileID: 1219771124}
 --- !u!4 &1846492359
 Transform:
@@ -1922,88 +1934,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1926486566
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 2.4613085
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 2.4613085
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 2.4613085
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.2737328
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 6.72
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -9.17
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1113347581371501527, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_Name
-      value: DicePlate
-      objectReference: {fileID: 0}
-    - target: {fileID: 1113347581371501527, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5652598221044999016, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 970521e844e0f3e4e90bc3d91cdf77e1, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
---- !u!4 &1926486567 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 567531071419114793, guid: 2166a0c7cd0b3594f81e46736803e387, type: 3}
-  m_PrefabInstance: {fileID: 1926486566}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1964602097
 GameObject:
   m_ObjectHideFlags: 0
@@ -2239,6 +2169,72 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2125540007}
   m_CullTransparentMesh: 1
+--- !u!1001 &6532160523763493864
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.3185
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.72
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -9.2389
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7452154294436166898, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_Name
+      value: DicePlate
+      objectReference: {fileID: 0}
+    - target: {fileID: 7452154294436166898, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+--- !u!4 &6532160523763493865 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1631590613106095571, guid: 3083080c103c49c449b720597ddd3246, type: 3}
+  m_PrefabInstance: {fileID: 6532160523763493864}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2252,8 +2248,8 @@ SceneRoots:
   - {fileID: 1964602099}
   - {fileID: 206697890}
   - {fileID: 620390910}
-  - {fileID: 1926486566}
   - {fileID: 1846492359}
   - {fileID: 131139447}
   - {fileID: 519946065}
   - {fileID: 1991163523}
+  - {fileID: 6532160523763493864}

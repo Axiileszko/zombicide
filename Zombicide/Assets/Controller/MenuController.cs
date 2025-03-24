@@ -44,7 +44,7 @@ public class MenuController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Ezt akkor használd, ha a scene váltás miatt veszhet el
+            //DontDestroyOnLoad(gameObject); // Ezt akkor használd, ha a scene váltás miatt veszhet el
         }
         else
         {

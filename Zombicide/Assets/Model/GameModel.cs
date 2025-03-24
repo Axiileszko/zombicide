@@ -28,7 +28,8 @@ namespace Model
         private System.Random random=new System.Random();
 
         private MapLoader mapLoader;
-        public bool IsPlayerRoundOver=false;
+        public event EventHandler<bool> GameEnded;
+        public bool IsPlayerRoundOver { get; set; } = false;
         public Zombie Abomination { get {  return abomination; } }
         public int SpawnCount { get {  return zSpawns.Count+1; } }
         public MapTile ExitTile { get { return exitTile; } }
@@ -492,6 +493,18 @@ namespace Model
             playerOrder.Add(starter);
             currentPlayer = playerOrder[0];
         }
-
+        private bool AreThereSurvivorsLeft()
+        {
+            return survivors.Any(x => !x.IsDead);
+        }
+        public void CheckWin()
+        {
+            if (CheckWinningCondition != null && CheckWinningCondition())
+                GameEnded.Invoke(this, true);
+            else if(exitTile!=null && CheckWinningCondition != null && !CheckWinningCondition() && survivors.All(x=>x.LeftExit))
+                GameEnded.Invoke(this, false);
+            else if(!AreThereSurvivorsLeft())
+                GameEnded.Invoke(this, false);
+        }
     }
 }

@@ -37,6 +37,8 @@ namespace Model.Characters.Survivors
         protected List<Item> backpack = new List<Item>();
         protected Item rightHand;
         protected Item leftHand;
+        protected bool isDead;
+        public event EventHandler<string> SurvivorDied;
         public int ObjectiveCount {  get; protected set; }
         public bool FinishedRound { get; set; }
         public bool StartedRound { get; set; }
@@ -44,7 +46,7 @@ namespace Model.Characters.Survivors
         public bool SlipperyMovedAlready { get; set; }
         public bool LeftExit {  get; private set; }
         public List<Trait> Traits { get; protected set; } = new List<Trait>();
-        public bool IsDead { get; set; }
+        public bool IsDead { get { return isDead; } set { isDead = value; if (value) OnSurvivorDied(); } }
         public int APoints { get {  return aPoints; } }
         public string Name { get { return name; } }
         public Item RightHand { get { return rightHand; } }
@@ -283,7 +285,7 @@ namespace Model.Characters.Survivors
                         if (item.Name != Name)
                         {
                             Survivor s = SurvivorFactory.GetSurvivorByName(item.name);
-                            s.TakeDamage(1);//ha true akkor meghalt
+                            s.TakeDamage(1);
                             damageAmount--;
                             if (damageAmount == 0) break;
                         }
@@ -293,9 +295,12 @@ namespace Model.Characters.Survivors
         }
         public override bool TakeDamage(int amount)
         {
-            hp -= amount;
+            hp =Math.Max(0,hp-amount);
             if (hp <= 0)
+            {
+                IsDead = true;
                 return true;//true ha meghalt a karakter
+            }
             return false;
         }
         private bool CanTargetTile(MapTile targetTile)
@@ -391,7 +396,6 @@ namespace Model.Characters.Survivors
         {
             FinishedRound=true;
         }
-
         public bool HasFlashLight()
         {
             return (rightHand != null && rightHand.Name == ItemName.FLASHLIGHT) || (leftHand != null && leftHand.Name == ItemName.FLASHLIGHT) || backpack.Any(x => x.Name == ItemName.FLASHLIGHT);
@@ -400,7 +404,6 @@ namespace Model.Characters.Survivors
         {
             rightHand = weapon;
         }
-
         public void OnUsedAction(string action, string? isMelee)
         {
             if(isMelee!= null && FreeActions.Keys.Any(x=>x.EndsWith("Attack")))
@@ -425,6 +428,10 @@ namespace Model.Characters.Survivors
         {
             LeftExit = true;
             FinishedRound= true;
+        }
+        private void OnSurvivorDied()
+        {
+            SurvivorDied.Invoke(this, name);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Network
 {
@@ -24,7 +25,9 @@ namespace Network
         Attack,
         ZombieSpawn,
         ZombieSpawnInBuilding,
-        TraitUpgrade
+        TraitUpgrade,
+        GameEnded,
+        SurvivorDied
     }
     public class NetworkManagerController:NetworkBehaviour
     {
@@ -203,7 +206,7 @@ namespace Network
             if (clientId == NetworkManager.Singleton.LocalClientId)
             {
                 Debug.Log("A kapcsolat megszakadt. Visszatérés a főmenübe...");
-                MenuController.Instance.ShowMainMenu();
+                //MenuController.Instance.ShowMainMenu();
             }
         }
 
@@ -298,6 +301,13 @@ namespace Network
                     break;
                 case MessageType.TraitUpgrade:
                     GameController.Instance.ReceiveTraitUpgrade(data);
+                    break;
+                case MessageType.GameEnded:
+                    NetworkManager.Singleton.Shutdown();
+                    SceneManager.LoadScene("MenuScene");
+                    break;
+                case MessageType.SurvivorDied:
+                    GameController.Instance.RemovePlayer(data);
                     break;
             }
         }

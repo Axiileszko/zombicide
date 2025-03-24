@@ -36,6 +36,7 @@ public class GameController : MonoBehaviour
     private GameObject? inventoryForS;
     private GameObject? sniperMenuForS;
     private bool isMenuOpen=false;
+    private bool isSurvivorDead=false;
     private Dictionary<int, GameObject> zombieCanvases = new Dictionary<int, GameObject>();
     public string AttackFlag {  get; set; }
     public static GameController Instance { get; private set; }
@@ -62,6 +63,7 @@ public class GameController : MonoBehaviour
     {
         gameModel = new GameModel();
         gameModel.StartGame(playerSelections.Values.ToList(),mapID);
+        gameModel.GameEnded += GameModel_GameEnded;
         GenerateBoard(mapID);
         GeneratePlayersOnBoard();
         survivor = gameModel.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]);
@@ -82,6 +84,54 @@ public class GameController : MonoBehaviour
             StartNextTurn();
         }
         ShowPlayerUI();
+        foreach (var item in playerSelections.Values)
+        {
+            SurvivorFactory.GetSurvivorByName(item).SurvivorDied += GameController_SurvivorDied;
+        }
+    }
+    private void GameController_SurvivorDied(object sender, string e)
+    {
+        if (isSurvivorDead) return;
+        if (e == survivor.Name)
+        {
+            isSurvivorDead = true;
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.SurvivorDied, e);
+        }
+    }
+    private void GameModel_GameEnded(object sender, bool e)
+    {
+        EnableBoardInteraction(false);
+        GameObject ui = GameObject.FindWithTag("GameUI");
+        GameObject endPanelPrefab = Resources.Load<GameObject>("Prefabs/EndPanel");
+        GameObject endPanel=Instantiate(endPanelPrefab,ui.transform);
+        var innerImg=endPanel.transform.GetChild(0).GetComponent<Image>();
+        if(e)
+            innerImg.sprite= Resources.Load<Sprite>("Menu/survivors_won");
+        else
+            innerImg.sprite = Resources.Load<Sprite>("Menu/zombies_won");
+        var okButton=endPanel.transform.GetChild(1).GetComponent<Button>();
+        okButton.onClick.AddListener(() => OnOkEndGameClicked());
+    }
+    public void OnOkEndGameClicked()
+    {
+        if (NetworkManager.Singleton.IsHost)
+        {
+            // Ha a host nyomja meg, mindenki visszakerül a főmenübe
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GameEnded, "");
+        }
+        else
+        {
+            // Ha kliens nyomja meg, csak ő lép ki
+            Survivor playerSurvivor = gameModel.GetSurvivorByName(survivor.Name);
+            if (playerSurvivor != null)
+            {
+                playerSurvivor.IsDead = true; // Karakter halottra állítása
+            }
+
+            // Kliens kilépése a főmenübe
+            NetworkManager.Singleton.Shutdown();
+            SceneManager.LoadScene("MenuScene");
+        }
     }
     private void ShowPlayerUI()
     {
@@ -361,6 +411,7 @@ public class GameController : MonoBehaviour
     }
     public void IncreaseUsedActions(string action, Survivor s, string? isMelee)
     {
+        gameModel.CheckWin();
         s.OnUsedAction(action, isMelee);
         UpdatePlayerStats();
         int level = s.CanUpgradeTo();
@@ -557,8 +608,6 @@ public class GameController : MonoBehaviour
                 break;
             case "Search":
                 SearchOnTile(s);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Search", s, null);
                 break;
             case "Skip":
                 s.Skip();
@@ -577,8 +626,6 @@ public class GameController : MonoBehaviour
                 break;
             case "Pick Up Pimp Weapon":
                 PickUpPimpW(s);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Pick Up Pimp Weapon", s, null);
                 break;
             case "Pick Up Objective":
                 PickUpObjective(s);
@@ -602,11 +649,15 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
         }
     }
-    private void RemovePlayer(string playerName)
+    public void RemovePlayer(string playerName)
     {
-        GameObject player = playerPrefabs[playerName];
-        playerPrefabs.Remove(playerName);
+        GameObject player = playerPrefabs[playerName.Replace(" ", string.Empty)];
+        playerPrefabs.Remove(playerName.Replace(" ", string.Empty));
         Destroy(player);
+        if (survivor.Name == playerName)
+            EnableBoardInteraction(false);
+        if(gameModel.CurrentPlayer==survivor)
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
     }
     public void SearchOnTile(Survivor s)
     {
@@ -865,8 +916,11 @@ public class GameController : MonoBehaviour
         else
             weapon=(Weapon)s.LeftHand;
         List<int> throws=new List<int>();
-        foreach (var item in strings[5].Split(',').ToList())
-            throws.Add(int.Parse(item));
+        if (weapon.Type != WeaponType.BOMB)
+        {
+            foreach (var item in strings[5].Split(',').ToList())
+                throws.Add(int.Parse(item));
+        }
         s.Attack(gameModel.Board.GetTileByID(int.Parse(strings[0])), weapon, bool.Parse(strings[2]), throws, strings[3].Split(',').ToList());
         UpdateZombieCanvasOnTile(int.Parse(strings[0]));
         if (survivor.Name == s.Name)
@@ -1019,4 +1073,5 @@ public class GameController : MonoBehaviour
         Survivor s = SurvivorFactory.GetSurvivorByName(strings[1]);
         PickUpPimpWLocally(s,pimp);
     }
+    
 }

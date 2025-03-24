@@ -23,27 +23,29 @@ namespace Model.Characters.Zombies
             //Latas
             foreach (var item in CurrentTile.Neighbours)
             {
-                if(model.Board.CanMove(CurrentTile,item.Destination))
+                if (model.Board.CanMove(CurrentTile, item.Destination))
+                {
                     priority.Add(item.Destination, 1);
 
-                if (CurrentTile.Type==Board.TileType.STREET)
-                {
-                    Street street = model.Board.GetStreetByTiles(CurrentTile.Id,item.Destination.Id);
-                    if (street != null)
+                    if (CurrentTile.Type == Board.TileType.STREET)
                     {
-                        int survivorsSeen = LookUpStreet(street);
-                        priority[item.Destination] += survivorsSeen;
+                        Street street = model.Board.GetStreetByTiles(CurrentTile.Id, item.Destination.Id);
+                        if (street != null)
+                        {
+                            int survivorsSeen = LookUpStreet(street);
+                            priority[item.Destination] += survivorsSeen;
+                        }
                     }
-                }
-                else
-                {
-                    int seen = 0;
-                    foreach (var location in model.SurvivorLocations)
+                    else
                     {
-                        if (location == item.Destination.Id && item.IsDoorOpen)
-                            seen++;
+                        int seen = 0;
+                        foreach (var location in model.SurvivorLocations)
+                        {
+                            if (location == item.Destination.Id && item.IsDoorOpen)
+                                seen++;
+                        }
+                        priority[item.Destination] += seen;
                     }
-                    priority[item.Destination] += seen;
                 }
             }
             //Hallas
@@ -68,7 +70,6 @@ namespace Model.Characters.Zombies
             }
             return seen;
         }
-
         public void Attack(List<Survivor> survivors)
         {
             survivors[0].TakeDamage(1);
