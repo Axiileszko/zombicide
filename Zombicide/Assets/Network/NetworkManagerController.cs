@@ -27,7 +27,8 @@ namespace Network
         ZombieSpawnInBuilding,
         TraitUpgrade,
         GameEnded,
-        SurvivorDied
+        SurvivorDied,
+        PlayerLeft
     }
     public class NetworkManagerController:NetworkBehaviour
     {
@@ -308,6 +309,9 @@ namespace Network
                     break;
                 case MessageType.SurvivorDied:
                     GameController.Instance.RemovePlayer(data);
+                    break;
+                case MessageType.PlayerLeft:
+                    GameController.Instance.PlayerLeft(data);
                     break;
             }
         }

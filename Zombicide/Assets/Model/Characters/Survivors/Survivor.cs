@@ -217,6 +217,11 @@ namespace Model.Characters.Survivors
             // Molotov
             if (weapon.Type == WeaponType.BOMB)
             {
+                if(rightHand!=null && rightHand.Name==ItemName.MOLOTOV)
+                    rightHand = null;
+                else if (leftHand != null && leftHand.Name == ItemName.MOLOTOV)
+                    leftHand = null;
+
                 if (model.Abomination!=null && model.Abomination is Abominawild && model.Abomination.CurrentTile==targetTile)
                 {
                     model.RemoveZombie(model.Abomination);
@@ -239,7 +244,7 @@ namespace Model.Characters.Survivors
 
             // Dobások végrehajtása
             int successfulHits = 0;
-            for (int i = 0; i < weapon.DiceAmount; i++)
+            for (int i = 0; i < throws.Count; i++)
             {
                 if (throws[i] >= weapon.Accuracy)
                     successfulHits++;
@@ -431,6 +436,7 @@ namespace Model.Characters.Survivors
         }
         private void OnSurvivorDied()
         {
+            FinishedRound = true;
             SurvivorDied.Invoke(this, name);
         }
     }

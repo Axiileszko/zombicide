@@ -16,11 +16,16 @@ public class ProgressBar : MonoBehaviour
     {
         if(amount==0)
             current = 0.015f;
+        else if (amount > 42)
+            current = 1f;
         else
-            current = amount * 0.015f+0.015f;
+        { 
+            if(amount<=9)
+                current = amount * 0.015f+0.015f;
+            else
+                current = (amount-9) * 0.024f + 0.150f;
+        }
         float fillAmount = current;
-        if (fillAmount > 1)
-            fillAmount = 1f;
         mask.fillAmount = fillAmount;
     }
 }

@@ -42,7 +42,7 @@ public class TraitController : MonoBehaviour
                     button.GetComponent<Button>().spriteState= spriteState;
                     break;
                 case 2:
-                    button.GetComponentInChildren<TMP_Text>().color = UnityEngine.Color.HSVToRGB(33,100,98);
+                    button.GetComponentInChildren<TMP_Text>().color = new UnityEngine.Color(255,133,17,1);
                     spriteState = button.GetComponent<Button>().spriteState;
                     spriteState.highlightedSprite = Resources.Load<Sprite>("Menu/orange_hover");
                     button.GetComponent<Button>().spriteState = spriteState;

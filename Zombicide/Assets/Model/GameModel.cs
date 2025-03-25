@@ -29,6 +29,7 @@ namespace Model
 
         private MapLoader mapLoader;
         public event EventHandler<bool> GameEnded;
+        public bool GameOver {  get; private set; }=false;
         public bool IsPlayerRoundOver { get; set; } = false;
         public Zombie Abomination { get {  return abomination; } }
         public int SpawnCount { get {  return zSpawns.Count+1; } }
@@ -417,11 +418,16 @@ namespace Model
                 Survivor survivor=SurvivorFactory.GetSurvivorByName(s);
                 survivor.SetReference(this);
                 sList.Add(survivor);
+                survivor.SurvivorDied += Survivor_SurvivorDied;
             }
             ResetSurvivors(sList);
             return sList;
         }
-
+        private void Survivor_SurvivorDied(object sender, string e)
+        {
+            Survivor s = survivors.First(x => x.Name == e);
+            survivors.Remove(s);
+        }
         private void ResetSurvivors(List<Survivor> sList)
         {
             foreach (var survivor in sList)
@@ -429,7 +435,6 @@ namespace Model
                 survivor.Reset();
             }
         }
-
         public void LoadGame(int number)
         {
             board=mapLoader.LoadMap(number);
@@ -492,6 +497,8 @@ namespace Model
             playerOrder.RemoveAt(0);
             playerOrder.Add(starter);
             currentPlayer = playerOrder[0];
+            if(currentPlayer.IsDead || currentPlayer.LeftExit)
+                NextPlayer();
         }
         private bool AreThereSurvivorsLeft()
         {
@@ -500,11 +507,16 @@ namespace Model
         public void CheckWin()
         {
             if (CheckWinningCondition != null && CheckWinningCondition())
-                GameEnded.Invoke(this, true);
-            else if(exitTile!=null && CheckWinningCondition != null && !CheckWinningCondition() && survivors.All(x=>x.LeftExit))
-                GameEnded.Invoke(this, false);
-            else if(!AreThereSurvivorsLeft())
-                GameEnded.Invoke(this, false);
+                OnGameEnded(true);
+            else if (exitTile != null && CheckWinningCondition != null && !CheckWinningCondition() && survivors.All(x => x.LeftExit))
+                OnGameEnded(false);
+            else if (!AreThereSurvivorsLeft())
+                OnGameEnded(false);
+        }
+        private void OnGameEnded(bool survivorsWon)
+        {
+            GameOver = true;
+            GameEnded.Invoke(this, survivorsWon);
         }
     }
 }

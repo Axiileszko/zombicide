@@ -73,6 +73,7 @@ namespace Model.Characters.Zombies
         public void Attack(List<Survivor> survivors)
         {
             survivors[0].TakeDamage(1);
+            model.CheckWin();
         }
     }
 }
