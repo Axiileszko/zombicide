@@ -4,7 +4,7 @@ using UnityEngine;
 public class CameraDrag : MonoBehaviour
 {
     private Vector3 dragOrigin;
-    private float dragSpeed = 20f;
+    private float dragSpeed = 10f;
     private float timer = 0f;
     private Vector2 panLimitX = new Vector2(-20f, 20f);
     private Vector2 panLimitZ = new Vector2(-40f, 0f);

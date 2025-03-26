@@ -12,7 +12,7 @@ namespace Model.Characters
         protected int hp;
         protected int action;
         protected GameModel model;
-        public MapTile CurrentTile { get; private set; }
+        public MapTile CurrentTile { get; protected set; }
         public int UsedAction {  get; set; }
         public int HP { get { return hp; } }
         protected Character() { }

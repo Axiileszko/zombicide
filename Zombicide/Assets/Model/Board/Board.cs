@@ -60,6 +60,39 @@ namespace Model.Board
             if (connection.HasDoor && !connection.IsDoorOpen) return false;
             return true;
         }
+        public static int GetShortestPath(MapTile start, MapTile goal)
+        {
+            if (start == goal) return 0;
+
+            Queue<(MapTile tile, int distance)> queue = new Queue<(MapTile, int)>();
+            HashSet<MapTile> visited = new HashSet<MapTile>();
+
+            queue.Enqueue((start, 0));
+            visited.Add(start);
+
+            while (queue.Count > 0)
+            {
+                var (currentTile, distance) = queue.Dequeue();
+
+                foreach (var connection in currentTile.Neighbours)
+                {
+                    if (connection.IsWall || (connection.HasDoor && !connection.IsDoorOpen))
+                        continue; // Nem lehet áthaladni
+
+                    MapTile nextTile = connection.Destination;
+                    if (visited.Contains(nextTile))
+                        continue; // Már meglátogattuk
+
+                    if (nextTile == goal)
+                        return distance + 1; // Cél elérése
+
+                    queue.Enqueue((nextTile, distance + 1));
+                    visited.Add(nextTile);
+                }
+            }
+
+            return -1; // Ha nincs elérhető út
+        }
     }
 
 }

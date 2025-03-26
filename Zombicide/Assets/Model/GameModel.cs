@@ -222,7 +222,6 @@ namespace Model
                 item.CurrentTile.NoiseCounter++;
             }
         }
-
         private void MovePlayersToSpawn()
         {
             foreach (var item in survivors)
@@ -426,6 +425,7 @@ namespace Model
         private void Survivor_SurvivorDied(object sender, string e)
         {
             Survivor s = survivors.First(x => x.Name == e);
+            s.SurvivorDied -= Survivor_SurvivorDied;
             survivors.Remove(s);
         }
         private void ResetSurvivors(List<Survivor> sList)

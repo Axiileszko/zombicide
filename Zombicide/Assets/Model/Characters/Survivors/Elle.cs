@@ -74,6 +74,27 @@ namespace Model.Characters.Survivors
                     }
                 }
             }
+            else if (FreeActions.Count > 0)
+            {
+                if (FreeActions.Keys.Any(x => x.EndsWith("Attack")))
+                {
+                    if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
+                    {
+                        List<string> list = GetAvailableAttacksOnTile(tileClicked);
+                        if (list != null && list.Count > 0)
+                            if (tileClicked == CurrentTile)
+                            {
+                                if (list.Contains("Melee") && FreeActions.Keys.Contains("Attack"))
+                                    Actions.Add("Attack", new GameAction("Attack", 1));
+                            }
+                            else
+                            {
+                                if (list.Contains("Range") && (FreeActions.Keys.Contains("Attack")||FreeActions.Keys.Contains("Range Attack")))
+                                    Actions.Add("Attack", new GameAction("Attack", 1));
+                            }
+                    }
+                }
+            }
         }
         public override void UpgradeTo(int level, int option)
         {

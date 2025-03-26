@@ -62,19 +62,50 @@ namespace Model.Characters.Survivors
                     Actions.Add("Pick Up Objective", new GameAction("Pick Up Objective", 1));
                 if (CurrentTile.PimpWeapon != null && tileClicked == CurrentTile)
                     Actions.Add("Pick Up Pimp Weapon", new GameAction("Pick Up Pimp Weapon", 1));
-            }
-            if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
-            {
-                if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || (!CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall && !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).HasDoor))
+
+                if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
                 {
-                    int amount = model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count + 1;
-                    if (model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0 && !SlipperyMovedAlready && Traits.Contains(Trait.SLIPPERY))
-                        Actions.Add("Slippery Move", new GameAction("Slippery Move", 1));
-                    if (amount + UsedAction <= action)
-                        Actions.Add("Move", new GameAction("Move", amount));
+                    if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || (!CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall && !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).HasDoor))
+                    {
+                        int amount = model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count + 1;
+                        if (model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0 && !SlipperyMovedAlready && Traits.Contains(Trait.SLIPPERY))
+                            Actions.Add("Slippery Move", new GameAction("Slippery Move", 1));
+                        if (amount + UsedAction <= action)
+                            Actions.Add("Move", new GameAction("Move", amount));
+                    }
                 }
             }
-
+            else if (FreeActions.Count > 0)
+            {
+                if (FreeActions.ContainsKey("Move"))
+                {
+                    if (CurrentTile.Neighbours.Select(x => x.Destination).ToList().Contains(tileClicked))
+                    {
+                        if (CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsDoorOpen || (!CurrentTile.Neighbours.First(x => x.Destination == tileClicked).IsWall && !CurrentTile.Neighbours.First(x => x.Destination == tileClicked).HasDoor))
+                        {
+                            Actions.Add("Move", new GameAction("Move", 0));
+                        }
+                    }
+                }
+                if (FreeActions.Keys.Any(x => x.EndsWith("Attack")))
+                {
+                    if (model.GetZombiesInPriorityOrderOnTile(tileClicked).Count > 0)
+                    {
+                        List<string> list = GetAvailableAttacksOnTile(tileClicked);
+                        if (list != null && list.Count > 0)
+                            if (tileClicked == CurrentTile)
+                            {
+                                if (list.Contains("Melee"))
+                                    Actions.Add("Attack", new GameAction("Attack", 1));
+                            }
+                            else
+                            {
+                                if (list.Contains("Range"))
+                                    Actions.Add("Attack", new GameAction("Attack", 1));
+                            }
+                    }
+                }
+            }
         }
         public override void UpgradeTo(int level, int option)
         {

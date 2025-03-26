@@ -51,11 +51,12 @@ namespace Network
                 Destroy(gameObject);
             }
         }
-
         public void StartHost(int playerCount, List<string> characters, string selectedCharacter, int selectedMap)
         {
+            hasSentPlayerSelections = false;
             SelectedMapID = selectedMap;
             expectedPlayerCount = playerCount;
+            selectedCharacters.Clear();
             selectedCharacters[NetworkManager.Singleton.LocalClientId] = selectedCharacter;
             availableCharacters = new List<string>(characters);
             MenuController.Instance.UpdateLobbyDisplay(selectedCharacters);

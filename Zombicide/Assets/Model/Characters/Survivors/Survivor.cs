@@ -44,6 +44,9 @@ namespace Model.Characters.Survivors
         public bool StartedRound { get; set; }
         public bool SearchedAlready { get; set; }
         public bool SlipperyMovedAlready { get; set; }
+        public bool ChargeMovedAlready { get; set; }
+        public bool JumpMovedAlready { get; set; }
+        public bool SprintMovedAlready { get; set; }
         public bool LeftExit {  get; private set; }
         public List<Trait> Traits { get; protected set; } = new List<Trait>();
         public bool IsDead { get { return isDead; } set { isDead = value; if (value) OnSurvivorDied(); } }
@@ -123,6 +126,9 @@ namespace Model.Characters.Survivors
             SlipperyMovedAlready = false;
             SearchedAlready = false;
             FinishedRound = false;
+            SprintMovedAlready = false;
+            ChargeMovedAlready = false;
+            JumpMovedAlready = false;
         }
         public List<string> GetAvailableAttacksOnTile(MapTile targetTile)
         {
@@ -172,6 +178,28 @@ namespace Model.Characters.Survivors
             if (Traits.Contains(Trait.SLIPPERY))
                 MoveTo(targetTile);
             SlipperyMovedAlready=true;
+        }
+        public void SprintMove(MapTile targetTile)
+        {
+            if(Traits.Contains(Trait.SLIPPERY) && model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count>0 && !SlipperyMovedAlready)
+                SlipperyMovedAlready = true;
+            if (Traits.Contains(Trait.SPRINT))
+                CurrentTile = targetTile;
+            SprintMovedAlready = true;
+        }
+        public void Charge(MapTile targetTile)
+        {
+            if (Traits.Contains(Trait.CHARGE))
+                CurrentTile = targetTile;
+            ChargeMovedAlready = true;
+        }
+        public void Jump(MapTile targetTile)
+        {
+            if (Traits.Contains(Trait.SLIPPERY) && model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0 && !SlipperyMovedAlready)
+                SlipperyMovedAlready = true;
+            if (Traits.Contains(Trait.JUMP))
+                CurrentTile = targetTile;
+            JumpMovedAlready = true;
         }
         public void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws, List<string>? newPriority)
         {
@@ -339,13 +367,16 @@ namespace Model.Characters.Survivors
         }
         public void Reset()
         {
+            CurrentTile = null;
             StartedRound = false;
             FinishedRound = false;
             SearchedAlready = false;
             SlipperyMovedAlready = false;
+            SprintMovedAlready = false;
             LeftExit=false;
             UsedAction = 0;
             ObjectiveCount = 0;
+            isDead = false;
             level = 0;
             aPoints = 0;
             backpack = new List<Item>();

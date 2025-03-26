@@ -26,10 +26,12 @@ public class GameController : MonoBehaviour
     [SerializeField] private GameObject rightHand;
     [SerializeField] private GameObject leftHand;
     [SerializeField] private List<GameObject> backPack=new List<GameObject>();
-    private GameObject APointsText;
-    private GameObject HealthText;
+    private GameObject aPointsText;
+    private GameObject healthText;
+    private GameObject usedActionsText;
+    private GameObject freeActionsLayoutGroup;
     private int selectedMapID;
-    private Dictionary<ulong, string> playerSelections;
+    private Dictionary<ulong, string> playerSelections=new Dictionary<ulong, string>();
     private Dictionary<string, GameObject> playerPrefabs=new Dictionary<string, GameObject>();
     private GameObject charImagePrefab;
     private HorizontalLayoutGroup charListContainer;
@@ -44,6 +46,7 @@ public class GameController : MonoBehaviour
     {
         if (NetworkManager.Singleton != null)
         {
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnSceneLoaded;
             NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnSceneLoaded;
         }
     }
@@ -52,7 +55,7 @@ public class GameController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -92,6 +95,7 @@ public class GameController : MonoBehaviour
     private void GameController_SurvivorDied(object sender, string e)
     {
         if (isSurvivorDead) return;
+        SurvivorFactory.GetSurvivorByName(e).SurvivorDied -= GameController_SurvivorDied;
         if (e == survivor.Name)
         {
             isSurvivorDead = true;
@@ -159,12 +163,17 @@ public class GameController : MonoBehaviour
                 foreach (Transform subChild in child.transform)
                 {
                     if (subChild.name == "Health")
-                        HealthText = subChild.gameObject;
+                        healthText = subChild.gameObject;
                     else if (subChild.name == "Points")
-                        APointsText = subChild.gameObject;
+                        aPointsText = subChild.gameObject;
                 }
             }
+            if (child.name =="UsedActions")
+                usedActionsText = child.gameObject;
+            if(child.name == "FreeActions")
+                freeActionsLayoutGroup = child.gameObject;
         }
+        UpdatePlayerStats();
     }
     private void GeneratePlayersOnBoard()
     {
@@ -172,7 +181,7 @@ public class GameController : MonoBehaviour
         BoxCollider collider = tile.GetComponent<BoxCollider>();
         float startX = collider.transform.position.x - 1.5f;
         float startZ = collider.transform.position.z + 0.5f;
-        float startY = 1.631f;
+        float startY = 2f;
         Vector3 newPosition = new Vector3();
         newPosition.x = startX; newPosition.y= startY; newPosition.z = startZ;
         int multiply = 1;
@@ -202,7 +211,7 @@ public class GameController : MonoBehaviour
         BoxCollider collider = tile.GetComponent<BoxCollider>();
         float startX=collider.transform.position.x-1.5f;
         float startZ=collider.transform.position.z + 0.5f;
-        float startY = 1.631f; //ez mindig marad
+        float startY = 2f; //ez mindig marad
         int playerCount = gameModel.NumberOfPlayersOnTile(tileID);
         Vector3 newPosition = player.transform.position;
 
@@ -306,7 +315,6 @@ public class GameController : MonoBehaviour
     }
     private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
-        Debug.Log("Lefut az OnSceneLoaded");
         if (sceneName == "InGameScene")
         {
             selectedMapID = NetworkManagerController.Instance.SelectedMapID;
@@ -330,8 +338,19 @@ public class GameController : MonoBehaviour
     }
     public void UpdatePlayerStats()
     {
-        HealthText.GetComponent<TMP_Text>().text = survivor.HP.ToString();
-        APointsText.GetComponent<TMP_Text>().text=survivor.APoints.ToString();
+        healthText.GetComponent<TMP_Text>().text = survivor.HP.ToString();
+        aPointsText.GetComponent<TMP_Text>().text=survivor.APoints.ToString();
+        usedActionsText.GetComponent<TMP_Text>().text=survivor.UsedAction.ToString();
+        foreach (Transform child in freeActionsLayoutGroup.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        foreach (var item in survivor.FreeActions)
+        {
+            var prefab= Resources.Load<GameObject>($"Prefabs/Players/FreeActionLabelPrefab");
+            var newAction = Instantiate(prefab, freeActionsLayoutGroup.transform);
+            newAction.GetComponent<TMP_Text>().text = item.Key;
+        }
     }
     private void UpdateBoardForActivePlayer(ulong playerID)
     {
@@ -628,6 +647,24 @@ public class GameController : MonoBehaviour
                 if (survivor.Name == s.Name)
                     IncreaseUsedActions("Slippery Move", s, null);
                 break;
+            case "Sprint Move":
+                s.SprintMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Sprint Move", s, null);
+                break;
+            case "Jump":
+                s.Jump(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Jump", s, null);
+                break;
+            case "Charge":
+                s.Charge(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Charge", s, null);
+                break;
             case "Pick Up Pimp Weapon":
                 PickUpPimpW(s);
                 break;
@@ -710,7 +747,7 @@ public class GameController : MonoBehaviour
                     {
                         GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
                         GameObject item = Instantiate(itemPrefab, subChild.transform);
-                        if (zombieTypeList[i].StartsWith("Hobo")|| zombieTypeList[i].StartsWith("Abo"))
+                        if (zombieTypeList[i].StartsWith("Hobo")|| zombieTypeList[i].StartsWith("Abo") || zombieTypeList[i].StartsWith("Pat"))
                             item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Menu/AbominationSlot");
                         else
                             item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Menu/{zombieTypeList[i]}Slot");
@@ -729,7 +766,6 @@ public class GameController : MonoBehaviour
     }
     public void OnOkSniperMenuClicked(string data)
     {
-        cameraDrag.SetActive(true);
         List<string> newPriority = new List<string>();
         if (sniperMenuForS != null)
         {
@@ -746,6 +782,8 @@ public class GameController : MonoBehaviour
                 }
             }
         }
+        if (newPriority.Count == 0) return;
+        cameraDrag.SetActive(true);
         Destroy(sniperMenuForS);
 
         data += $":{string.Join(',', newPriority)}:{survivor.Name}";
@@ -940,6 +978,7 @@ public class GameController : MonoBehaviour
     }
     public void ReceiveZombieSpawns(string data)
     {
+        if(gameModel.GameOver) return;//gamemodel gameover ez nem lesz eleg
         string[] strings = data.Split(";");
         List<(ZombieType, int, int, int, int, bool)> spawns = new List<(ZombieType, int, int, int, int, bool)>();
         foreach (string s in strings)
