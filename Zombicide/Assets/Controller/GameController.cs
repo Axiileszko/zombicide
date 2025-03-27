@@ -683,8 +683,6 @@ public class GameController : MonoBehaviour
         }
         if (survivor == s)
             UpdatePlayerStats();
-        Debug.Log(s.Name + " used actions: " + s.UsedAction + " finished: " + s.FinishedRound + " currenttile: " + s.CurrentTile.Id);
-        Debug.Log(survivor.Name + " used actions: " + survivor.UsedAction + " finished: " + survivor.FinishedRound + " currenttile: " + survivor.CurrentTile.Id);
         if (survivor.FinishedRound && survivor==gameModel.CurrentPlayer)
         {
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
@@ -692,12 +690,14 @@ public class GameController : MonoBehaviour
     }
     public void RemovePlayer(string playerName)
     {
+        if (!playerPrefabs.ContainsKey(playerName.Replace(" ", string.Empty)))
+            return;
         GameObject player = playerPrefabs[playerName.Replace(" ", string.Empty)];
         playerPrefabs.Remove(playerName.Replace(" ", string.Empty));
         Destroy(player);
         if (survivor.Name == playerName)
             EnableBoardInteraction(false);
-        if(gameModel.CurrentPlayer==survivor && survivor.Name==playerName)
+        if(gameModel.CurrentPlayer==survivor && survivor.Name==playerName && !survivor.LeftExit)
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
     }
     public void SearchOnTile(Survivor s)
@@ -1013,8 +1013,7 @@ public class GameController : MonoBehaviour
         {
             gameModel.SpawnZombiesOnTile(spawns[i], gameModel.Board.GetTileByID(int.Parse(rooms[i])));
         }
-        var building = gameModel.Board.Buildings.First(x => x.Rooms.Select(y=>y.Id).Contains(int.Parse(rooms[0])));
-        foreach (var item in building.Rooms)
+        foreach (var item in gameModel.Board.Tiles)
         {
             UpdateZombieCanvasOnTile(item.Id);
         }
@@ -1038,6 +1037,11 @@ public class GameController : MonoBehaviour
             }
             if (realItems.Count > 0)
                 OpenInventory(realItems);
+            else
+            {
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Search", s, null);
+            }
         }
         UpdateZombieCanvasOnTile(s.CurrentTile.Id);
     }

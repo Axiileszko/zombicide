@@ -125,7 +125,8 @@ namespace Model.Characters.Survivors
             StartedRound = false;
             SlipperyMovedAlready = false;
             SearchedAlready = false;
-            FinishedRound = false;
+            if (!isDead || !LeftExit)
+                FinishedRound = false;
             SprintMovedAlready = false;
             ChargeMovedAlready = false;
             JumpMovedAlready = false;
@@ -163,7 +164,7 @@ namespace Model.Characters.Survivors
                     if ((isLeftRange && ((Weapon)leftHand).CanBeUsedAsMelee || (isRightRange && ((Weapon)rightHand).CanBeUsedAsMelee))) result.Add("Range");
                 }
                 else
-                    if ((isLeftRange && distance <= ((Weapon)leftHand).Range) || (isRightRange && distance <= ((Weapon)leftHand).Range)) result.Add("Range");
+                    if ((isLeftRange && distance <= ((Weapon)leftHand).Range) || (isRightRange && distance <= ((Weapon)rightHand).Range)) result.Add("Range");
             }
             return result;
         }
@@ -464,6 +465,7 @@ namespace Model.Characters.Survivors
         {
             LeftExit = true;
             FinishedRound= true;
+            CurrentTile = null;
         }
         private void OnSurvivorDied()
         {

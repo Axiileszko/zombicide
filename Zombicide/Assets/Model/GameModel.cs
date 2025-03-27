@@ -45,7 +45,8 @@ namespace Model
                 List<int> locations = new List<int>();
                 foreach (var item in survivors)
                 {
-                    locations.Add(item.CurrentTile.Id);
+                    if(!item.IsDead && !item.LeftExit)
+                        locations.Add(item.CurrentTile.Id);
                 }
                 return locations;
             } 
@@ -110,6 +111,7 @@ namespace Model
         public void EndRound()
         {
             //jatekosok itt jonnek
+            CheckWin();
             MoveZombies();
             ClearNoiseCounters();
             UpdateDangerLevel();
@@ -181,10 +183,10 @@ namespace Model
         }
         private static int GetPriorityIndex(Zombie z, List<string> order)
         {
-            string typeName = z.GetType().Name.ToLower();
+            string typeName = z.GetType().Name;
 
             if (z is AbominationZombie)
-                typeName = "abomination";
+                typeName = "Abomination";
 
             return order.IndexOf(typeName);
         }
@@ -219,7 +221,8 @@ namespace Model
         {
             foreach (var item in survivors)
             {
-                item.CurrentTile.NoiseCounter++;
+                if(item.CurrentTile!=null)
+                    item.CurrentTile.NoiseCounter++;
             }
         }
         private void MovePlayersToSpawn()
@@ -304,8 +307,8 @@ namespace Model
             if (useFlashlight)
             {
                 List<Item> result = new List<Item>();
-                int roll = random.Next(0, items.Count() + 3);
-                int roll2 = random.Next(0, items.Count() + 3);
+                int roll = random.Next(0, items.Count() + 2);
+                int roll2 = random.Next(0, items.Count() + 2);
                 if (roll < items.Count)
                     result.Add(items.ElementAt(roll));
                 if (roll2 < items.Count)
@@ -473,7 +476,7 @@ namespace Model
         }
         public void NextPlayer()
         {
-            if (currentPlayer==playerOrder.Last())
+            if (currentPlayer==playerOrder.Last() && currentPlayer.FinishedRound)
             {
                 IsPlayerRoundOver = true;
                 currentPlayer = null;
