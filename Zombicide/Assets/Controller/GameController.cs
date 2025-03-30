@@ -83,10 +83,10 @@ public class GameController : MonoBehaviour
             List<Weapon> genericW=gameModel.GenerateGenericWeapons();
             string serializedGenericW = string.Join(",", genericW.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GenericWeapon, serializedGenericW);
-
-            StartNextTurn();
         }
         ShowPlayerUI();
+        if(NetworkManager.Singleton.IsHost)
+            StartNextTurn();
         foreach (var item in playerSelections.Values)
         {
             SurvivorFactory.GetSurvivorByName(item).SurvivorDied += GameController_SurvivorDied;
@@ -265,7 +265,9 @@ public class GameController : MonoBehaviour
         gameModel.CurrentPlayer.StartedRound = true;
         gameModel.CurrentPlayer.SetFreeActions();
         ShowPlayerOrder();
-        // A hálózati managernek szólunk
+        if(gameModel.CurrentPlayer==survivor)
+            UpdatePlayerStats();
+
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
     }
     private void ShowPlayerOrder()
@@ -335,6 +337,11 @@ public class GameController : MonoBehaviour
     public void ReceiveTurnStart(ulong playerID)
     {
         UpdateBoardForActivePlayer(playerID);
+        if (gameModel.CurrentPlayer == survivor)
+        {
+            survivor.SetFreeActions();
+            UpdatePlayerStats();
+        }
     }
     public void UpdatePlayerStats()
     {
@@ -374,7 +381,7 @@ public class GameController : MonoBehaviour
     }
     public void EnableDoors(bool enable)
     {
-        EnableBoardInteraction(false);
+        isMenuOpen = true;
         foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
         {
             if (child.name=="Doors")
@@ -415,6 +422,7 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
         Destroy(door);
         EnableDoors(false);
+        isMenuOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
         if (NetworkManager.Singleton.IsHost)
         {
@@ -667,6 +675,8 @@ public class GameController : MonoBehaviour
                 break;
             case "Pick Up Pimp Weapon":
                 PickUpPimpW(s);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Pick Up Pimp Weapon", s, null);
                 break;
             case "Pick Up Objective":
                 PickUpObjective(s);
@@ -790,7 +800,7 @@ public class GameController : MonoBehaviour
         isMenuOpen = false;
         RollDice(data);
     }
-    public void OpenInventory(List<Item>? additionalItems)
+    public void OpenInventory(List<Item>? additionalItems, bool isSearch)
     {
         isMenuOpen = true;
         cameraDrag.SetActive(false);
@@ -853,13 +863,13 @@ public class GameController : MonoBehaviour
             else if (child.name.StartsWith("Ok"))
             {
                 child.GetComponent<Button>().onClick.AddListener(() => {
-                    OnOkInventoryClicked();
+                    OnOkInventoryClicked(isSearch);
                 });
             }
         }
         inventoryForS=inventory;
     }
-    public void OnOkInventoryClicked()
+    public void OnOkInventoryClicked(bool isSearch)
     {
         cameraDrag.SetActive(true);
         string leftH = string.Empty;string rightH = string.Empty;
@@ -887,7 +897,7 @@ public class GameController : MonoBehaviour
             }
         }
         Destroy(inventoryForS);
-        string data = $"{leftH};{rightH};{string.Join(',', backP)};{string.Join(',', throwAway)}:{survivor.Name}";
+        string data = $"{leftH};{rightH};{string.Join(',', backP)};{string.Join(',', throwAway)};{isSearch}:{survivor.Name}";
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ItemsChanged, data);
         isMenuOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
@@ -910,6 +920,7 @@ public class GameController : MonoBehaviour
         List<Item> backpackItem = new List<Item>();
         List<string> throwAway = lists[3].Split(",").ToList();
         List<Item> throwAwayItem = new List<Item>();
+        string isSearch = lists[4];
         if (rightH == string.Empty)
             s.PutIntoHand(true, null);
         else
@@ -933,7 +944,7 @@ public class GameController : MonoBehaviour
         ProgressBar.UpdateFill(survivor.APoints);
         UpdateItemSlots();
         UpdatePlayerStats();
-        if (survivor.Name == s.Name)
+        if (survivor.Name == s.Name && isSearch=="False")
             IncreaseUsedActions("Rearrange Items", s, null);
         int level = s.CanUpgradeTo();
         if (level > 0 && s==survivor)
@@ -1036,12 +1047,9 @@ public class GameController : MonoBehaviour
                     realItems.Add(ItemFactory.GetItemByName((ItemName)Enum.Parse(typeof(ItemName), item, true)));
             }
             if (realItems.Count > 0)
-                OpenInventory(realItems);
-            else
-            {
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Search", s, null);
-            }
+                OpenInventory(realItems,true);
+            if (survivor.Name == s.Name)
+                IncreaseUsedActions("Search", s, null);
         }
         UpdateZombieCanvasOnTile(s.CurrentTile.Id);
     }
@@ -1073,7 +1081,7 @@ public class GameController : MonoBehaviour
         Destroy(gObject);
         if (survivor == s)
         {
-            OpenInventory(new List<Item>() { pimp });
+            OpenInventory(new List<Item>() { pimp },true);
         }
     }
     public void PickUpPimpW(Survivor s)

@@ -456,7 +456,7 @@ namespace Model.Characters.Survivors
                 FreeActions.Remove(action);
             else
                 UsedAction += Actions[action].Cost;
-            if (UsedAction == this.action)
+            if (UsedAction == this.action && FreeActions.Count==0)
             {
                 FinishedRound = true;
             }

@@ -34,7 +34,7 @@ public class TileClickHandler : MonoBehaviour
         switch (option)
         {
             case "Cancel": ContextMenuController.Instance.CloseMenu(); return;
-            case "Rearrange Items": GameController.Instance.OpenInventory(null); return;
+            case "Rearrange Items": GameController.Instance.OpenInventory(null,false); return;
             case "Open Door": GameController.Instance.EnableDoors(true); GameController.Instance.EnableBoardInteraction(false); return;
             case "Attack":
                 GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
