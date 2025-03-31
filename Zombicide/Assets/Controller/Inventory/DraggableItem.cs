@@ -13,7 +13,6 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler,I
         transform.SetAsLastSibling();
         image.raycastTarget = false;
     }
-
     public void OnDrag(PointerEventData eventData)
     {
         GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
@@ -27,7 +26,6 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler,I
         );
         transform.localPosition = anchoredPosition;
     }
-
     public void OnEndDrag(PointerEventData eventData)
     {
         transform.SetParent(parentAfterDrag);

@@ -10,16 +10,21 @@ public class DiceRoller : MonoBehaviour
     [SerializeField] private GameObject dicePrefab;  // Kocka prefab
     [SerializeField] private Transform groundPlane;  // Hova essen le?
     [SerializeField] private GameObject okBtn;
-
+    private Vector3 resetCameraPosition;
     private List<GameObject> spawnedDice = new List<GameObject>();
-
+    private void Start()
+    {
+        resetCameraPosition = Camera.main.transform.position;
+    }
     public void RollDice(int diceNum)
     {
+        Camera.main.transform.position = resetCameraPosition;
         groundPlane.gameObject.SetActive(true);
         StartCoroutine(RollDiceCoroutine(diceNum));
     }
     public void ReRollDice(int num, List<int> results)
     {
+        Camera.main.transform.position = resetCameraPosition;
         StartCoroutine(RerollDiceCoroutine(num, results));
     }
     IEnumerator RollDiceCoroutine(int diceNum)

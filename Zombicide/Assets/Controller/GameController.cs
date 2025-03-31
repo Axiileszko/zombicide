@@ -179,11 +179,11 @@ public class GameController : MonoBehaviour
     {
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{gameModel.StartTile.Id}");
         BoxCollider collider = tile.GetComponent<BoxCollider>();
-        float startX = collider.transform.position.x - 1.5f;
+        float startX = collider.transform.position.x - 2f;
         float startZ = collider.transform.position.z + 0.5f;
         float startY = 2f;
         Vector3 newPosition = new Vector3();
-        newPosition.x = startX; newPosition.y= startY; newPosition.z = startZ;
+        newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
         int multiply = 1;
 
         foreach (var item in playerSelections.Values)
@@ -192,7 +192,7 @@ public class GameController : MonoBehaviour
             GameObject player=Instantiate(playerPrefab);
             playerPrefabs.Add(item.Replace(" ", string.Empty), player);
             player.transform.position = newPosition;
-            if (multiply < 4)
+            if (multiply < 3)
             {
                 newPosition.x = startX + (multiply * 1.5f);
                 newPosition.z = startZ;
@@ -200,7 +200,7 @@ public class GameController : MonoBehaviour
             else
             {
                 newPosition.x = startX;
-                newPosition.z = startZ + ((multiply - 3) * 0.7f);
+                newPosition.z = startZ + ((multiply - 2) * 0.7f);
             }
             multiply++;
         }
@@ -209,13 +209,13 @@ public class GameController : MonoBehaviour
     {
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
         BoxCollider collider = tile.GetComponent<BoxCollider>();
-        float startX=collider.transform.position.x-1.5f;
+        float startX=collider.transform.position.x-2f;
         float startZ=collider.transform.position.z + 0.5f;
         float startY = 2f; //ez mindig marad
         int playerCount = gameModel.NumberOfPlayersOnTile(tileID);
         Vector3 newPosition = player.transform.position;
 
-        if (playerCount < 4)
+        if (playerCount < 3)
         {
             newPosition.x = startX + (playerCount * 1.5f);
             newPosition.z = startZ;
@@ -223,7 +223,7 @@ public class GameController : MonoBehaviour
         else
         {
             newPosition.x = startX;
-            newPosition.z = startZ + ((playerCount - 3) * 0.7f);
+            newPosition.z = startZ + ((playerCount - 2) * 0.7f);
         }
         newPosition.y = startY;
         player.transform.position = newPosition;

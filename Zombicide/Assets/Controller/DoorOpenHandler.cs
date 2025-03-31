@@ -18,8 +18,8 @@ public class DoorOpenHandler : MonoBehaviour
             Camera.main,
             out anchoredPosition
         );
-        anchoredPosition.x += 107;
-        anchoredPosition.y -= 140;
+        anchoredPosition.x += 45;
+        anchoredPosition.y -= 85;
         List<string> availableActions = GameController.Instance.GetAvailableDoorOpeners();
         if (availableActions.Count == 0) return;
         availableActions.Add("Cancel");

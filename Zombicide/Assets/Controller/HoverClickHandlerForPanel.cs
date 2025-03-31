@@ -14,7 +14,7 @@ public class HoverClickHandlerForPanel : MonoBehaviour
     {
         originalPositionPanel = panel.transform.position;
         IsHovering = true;
-        panel.transform.localPosition = new Vector3(panel.transform.localPosition.x, panel.transform.localPosition.y+220f, panel.transform.localPosition.z);
+        panel.transform.localPosition = new Vector3(panel.transform.localPosition.x, panel.transform.localPosition.y+120f, panel.transform.localPosition.z);
     }
 
     void OnMouseExit()

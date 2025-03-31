@@ -18,7 +18,7 @@ public class HoverClickHandlerForItem : MonoBehaviour
     {
         originalPositionItem = item.transform.position;
         IsHovering = true;
-        item.transform.localPosition = new Vector3(item.transform.localPosition.x, item.transform.localPosition.y + 60f, item.transform.localPosition.z);
+        item.transform.localPosition = new Vector3(item.transform.localPosition.x, item.transform.localPosition.y + 30f, item.transform.localPosition.z);
     }
     void OnMouseExit()
     {
