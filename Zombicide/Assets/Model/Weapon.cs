@@ -11,6 +11,7 @@ namespace Model
 {
     public class Weapon:Item
     {
+        #region Properties
         public bool CanBeUsedAsMelee {  get; private set; }
         public int Damage { get; private set; }
         public int Accuracy { get; private set; }
@@ -21,7 +22,9 @@ namespace Model
         public bool Reloadable { get; private set; }
         public WeaponType Type { get; private set; }
         public bool CanOpenDoors { get; private set; }
-        public Weapon(ItemName name,char bulletType ,int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) :base(name)
+        public bool IsDual { get; private set; }
+        #endregion
+        public Weapon(ItemName name,char bulletType ,int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee, bool isDual) :base(name)
         {
             BulletType = bulletType;
             Damage = damage;
@@ -33,11 +36,12 @@ namespace Model
             Type = type;
             CanOpenDoors = canOpenDoors;
             CanBeUsedAsMelee = canBeMelee;
+            IsDual = isDual;
         }
     }
     public class PimpWeapon : Weapon
     {
-        public PimpWeapon(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors,canBeMelee) { }
+        public PimpWeapon(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors,canBeMelee,false) { }
         public class AutShotGun : PimpWeapon
         {
             private static AutShotGun instance;

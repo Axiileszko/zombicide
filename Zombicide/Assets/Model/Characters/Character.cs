@@ -9,13 +9,16 @@ namespace Model.Characters
 {
     public abstract class Character
     {
+        #region Fields
         protected int hp;
         protected int action;
         protected GameModel model;
+        #endregion
+        #region Properties
         public MapTile CurrentTile { get; protected set; }
         public int UsedAction {  get; set; }
         public int HP { get { return hp; } }
-        protected Character() { }
+        #endregion
         public bool MoveTo(MapTile to)
         {
             if (CurrentTile is null)

@@ -3,7 +3,6 @@ using Model.Board;
 using Model.Characters.Survivors;
 using Model.Characters.Zombies;
 using Network;
-using Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +17,7 @@ using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
+    #region Fields
     private GameModel gameModel;
     private Survivor survivor;
     private GameObject MapPrefab;
@@ -40,8 +40,12 @@ public class GameController : MonoBehaviour
     private bool isMenuOpen=false;
     private bool isSurvivorDead=false;
     private Dictionary<int, GameObject> zombieCanvases = new Dictionary<int, GameObject>();
+    #endregion
+    #region Properties
     public string AttackFlag {  get; set; }
     public static GameController Instance { get; private set; }
+    #endregion
+    #region Methods
     private void Start()
     {
         if (NetworkManager.Singleton != null)
@@ -62,7 +66,7 @@ public class GameController : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    public void Initialize(int mapID)
+    private void Initialize(int mapID)
     {
         gameModel = new GameModel();
         gameModel.StartGame(playerSelections.Values.ToList(),mapID);
@@ -92,54 +96,86 @@ public class GameController : MonoBehaviour
             SurvivorFactory.GetSurvivorByName(item).SurvivorDied += GameController_SurvivorDied;
         }
     }
-    private void GameController_SurvivorDied(object sender, string e)
+    #region Query Methods
+    public List<string> GetAvailableActionsOnTile(string tileName)
     {
-        if (isSurvivorDead) return;
-        SurvivorFactory.GetSurvivorByName(e).SurvivorDied -= GameController_SurvivorDied;
-        if (e == survivor.Name)
-        {
-            isSurvivorDead = true;
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.SurvivorDied, e);
-        }
+        SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).SetActions(gameModel.Board.GetTileByID(int.Parse(tileName.Substring(8))));
+        return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.ToList();
     }
-    private void GameModel_GameEnded(object sender, bool e)
+    public List<string> GetAvailableDoorOpeners()
     {
-        EnableBoardInteraction(false);
-        GameObject ui = GameObject.FindWithTag("GameUI");
-        GameObject endPanelPrefab = Resources.Load<GameObject>("Prefabs/EndPanel");
-        GameObject endPanel=Instantiate(endPanelPrefab,ui.transform);
-        isMenuOpen = true;
-        var innerImg=endPanel.transform.GetChild(0).GetComponent<Image>();
-        if(e)
-            innerImg.sprite= Resources.Load<Sprite>("Menu/survivors_won");
-        else
-            innerImg.sprite = Resources.Load<Sprite>("Menu/zombies_won");
-        var okButton=endPanel.transform.GetChild(1).GetComponent<Button>();
-        okButton.onClick.AddListener(() => OnOkEndGameClicked());
+        List<string> result = new List<string>();
+        if (survivor.RightHand != null && survivor.RightHand is Weapon weapon && weapon.CanOpenDoors) result.Add("Right Hand");
+        if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
+        return result;
     }
-    public void OnOkEndGameClicked()
+    public List<string> GetAvailableAttacks(string tileID)
     {
-        if (NetworkManager.Singleton.IsHost)
+        List<string> options = survivor.GetAvailableAttacksOnTile(gameModel.Board.GetTileByID(int.Parse(tileID)));
+        if (options.Contains("Melee") && survivor.CurrentTile.Id != int.Parse(tileID))
+            options.Remove("Melee");
+        return options;
+    }
+    public List<string> GetAvailableWeapons(bool isMelee, string tileID)
+    {
+        List<string> result = new List<string>();
+        if (isMelee)
         {
-            // Ha a host nyomja meg, mindenki visszakerül a főmenübe
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GameEnded, "");
+            if(survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && weapon.CanBeUsedAsMelee)
+                result.Add("Left Hand");
+            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && weapon2.CanBeUsedAsMelee)
+                result.Add("Right Hand");
         }
         else
         {
-            // Ha kliens nyomja meg, csak ő lép ki
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PlayerLeft, survivor.Name);
-            if(gameModel.CurrentPlayer==survivor)
-                NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
+            int distance = 1;
+            if (survivor.CurrentTile.Type == TileType.STREET && gameModel.Board.GetTileByID(int.Parse(tileID)).Type==TileType.STREET)
+            {
+                var street = gameModel.Board.GetStreetByTiles(survivor.CurrentTile.Id, int.Parse(tileID));
+                distance = Math.Abs(street.Tiles.IndexOf(survivor.CurrentTile.Id) - street.Tiles.IndexOf(int.Parse(tileID)));
+            }
+            if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && distance <= weapon.Range)
+                result.Add("Left Hand");
+            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && distance <= weapon2.Range)
+                result.Add("Right Hand");
+        }
+        return result;
+    }
+    #endregion
+    #region UI Methods
+    private void GenerateBoard(int mapID)
+    {
+        MapPrefab = Resources.Load<GameObject>($"Prefabs/Missions/Map_{mapID}");
+        GameObject.Instantiate(MapPrefab);
+    }
+    private void ShowPlayerOrder()
+    {
+        if(charImagePrefab==null || charListContainer == null)
+        {
+            charImagePrefab = Resources.Load<GameObject>($"Prefabs/CharImagePrefab");
+            charListContainer = GameObject.FindFirstObjectByType<HorizontalLayoutGroup>();
+        }
+        // Töröljük az elõzõ listát
+        foreach (Transform child in charListContainer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        GameObject zombieEntry = Instantiate(charImagePrefab, charListContainer.transform);
+        zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
+        Outline zoutline = zombieEntry.GetComponent<Outline>();
+        zoutline.enabled = gameModel.IsPlayerRoundOver;
+        //majd állitsuk be a zombik outlinejat is rendesen
 
-            // Kliens kilépése a főmenübe
-            NetworkManager.Singleton.Shutdown();
-            SceneManager.LoadScene("MenuScene");
+        List<Survivor> reversed = gameModel.PlayerOrder.ToList();
+        reversed.Reverse();
+        foreach (var item in reversed)
+        {
+            GameObject playerEntry = Instantiate(charImagePrefab, charListContainer.transform);
+            playerEntry.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Characters/{item.Name.ToLower().Replace(" ",string.Empty)+"_head"}");
+            Outline outline = playerEntry.GetComponent<Outline>();
+            outline.enabled = gameModel.CurrentPlayer==item;
         }
-    }
-    public void PlayerLeft(string playerName)
-    {
-        SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
-        RemovePlayer(playerName);
+        
     }
     private void ShowPlayerUI()
     {
@@ -260,90 +296,7 @@ public class GameController : MonoBehaviour
             zombieCanvases.Add(tileID, zc);
         }
     }
-    private void StartNextTurn()
-    {
-        gameModel.CurrentPlayer.StartedRound = true;
-        gameModel.CurrentPlayer.SetFreeActions();
-        ShowPlayerOrder();
-        if(gameModel.CurrentPlayer==survivor)
-            UpdatePlayerStats();
-
-        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
-    }
-    private void ShowPlayerOrder()
-    {
-        if(charImagePrefab==null || charListContainer == null)
-        {
-            charImagePrefab = Resources.Load<GameObject>($"Prefabs/CharImagePrefab");
-            charListContainer = GameObject.FindFirstObjectByType<HorizontalLayoutGroup>();
-        }
-        // Töröljük az elõzõ listát
-        foreach (Transform child in charListContainer.transform)
-        {
-            Destroy(child.gameObject);
-        }
-        GameObject zombieEntry = Instantiate(charImagePrefab, charListContainer.transform);
-        zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
-        Outline zoutline = zombieEntry.GetComponent<Outline>();
-        zoutline.enabled = gameModel.IsPlayerRoundOver;
-        //majd állitsuk be a zombik outlinejat is rendesen
-
-        List<Survivor> reversed = gameModel.PlayerOrder.ToList();
-        reversed.Reverse();
-        foreach (var item in reversed)
-        {
-            GameObject playerEntry = Instantiate(charImagePrefab, charListContainer.transform);
-            playerEntry.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Characters/{item.Name.ToLower().Replace(" ",string.Empty)+"_head"}");
-            Outline outline = playerEntry.GetComponent<Outline>();
-            outline.enabled = gameModel.CurrentPlayer==item;
-        }
-        
-    }
-    public void ReceivePlayerOrder(string serializedOrder)
-    {
-        List<string> orderedPlayers = serializedOrder.Split(',').ToList();
-        gameModel.SetPlayerOrder(orderedPlayers);
-        ShowPlayerOrder();
-    }
-    public void SetPlayerSelections(Dictionary<ulong, string> selections)
-    {
-        playerSelections = selections;
-        Initialize(selectedMapID);
-    }
-    public void GenerateBoard(int mapID)
-    {
-        MapPrefab = Resources.Load<GameObject>($"Prefabs/Missions/Map_{mapID}");
-        GameObject.Instantiate(MapPrefab);
-    }
-    private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
-    {
-        if (sceneName == "InGameScene")
-        {
-            selectedMapID = NetworkManagerController.Instance.SelectedMapID;
-            NetworkManagerController.Instance.SendPlayerSelectionsServerRpc();
-        }
-    }
-    public ulong? GetClientIdByCharacter(string characterName)
-    {
-        foreach (var entry in playerSelections)
-        {
-            if (entry.Value == characterName)
-            {
-                return entry.Key; // Megtaláltuk a karaktert, visszaadjuk a kliens ID-t
-            }
-        }
-        return null; // Ha nem található a karakter, visszatérünk null-lal
-    }
-    public void ReceiveTurnStart(ulong playerID)
-    {
-        UpdateBoardForActivePlayer(playerID);
-        if (gameModel.CurrentPlayer == survivor)
-        {
-            survivor.SetFreeActions();
-            UpdatePlayerStats();
-        }
-    }
-    public void UpdatePlayerStats()
+    private void UpdatePlayerStats()
     {
         healthText.GetComponent<TMP_Text>().text = survivor.HP.ToString();
         aPointsText.GetComponent<TMP_Text>().text=survivor.APoints.ToString();
@@ -364,6 +317,27 @@ public class GameController : MonoBehaviour
         // Itt kapcsoljuk ki/be az interakciót
         bool isActive = playerID == NetworkManager.Singleton.LocalClientId;
         EnableBoardInteraction(isActive);
+    }
+    private void UpdateItemSlots()
+    {
+        if (survivor.LeftHand == null)
+            leftHand.GetComponent<Image>().sprite= Resources.Load<Sprite>("Objects/card_lefthand");
+        else
+            leftHand.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.LeftHand.Name.ToString().ToLower()}");
+        if (survivor.RightHand == null)
+            rightHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_righthand");
+        else
+            rightHand.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.RightHand.Name.ToString().ToLower()}");
+        for (int i = 0; i < 3; i++)
+        {
+            if(survivor.BackPack.Count > i)
+            {
+                if (survivor.BackPack[i] == null)
+                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_backpack");
+                else
+                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.BackPack[i].Name.ToString().ToLower()}");
+            }
+        }
     }
     public void EnableBoardInteraction(bool enable)
     {
@@ -398,305 +372,10 @@ public class GameController : MonoBehaviour
             }
         }
     }
-    public void OpenDoor(string objectName, string weaponOption, Survivor s)
+    public void PlayerLeft(string playerName)
     {
-        GameObject door = null;
-        foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
-        {
-            if (child.name == "Doors")
-            {
-                foreach (Transform subChild in child.transform)
-                {
-                    if (subChild.name == objectName)
-                    {
-                        door = subChild.gameObject; break;
-                    }
-                }
-                break;
-            }
-        }
-        TileConnection connection = s.CurrentTile.GetTileConnectionById(int.Parse(door.gameObject.name.Substring(5).Split('_')[0]), int.Parse(door.gameObject.name.Substring(5).Split('_')[1]));
-        if (weaponOption == "Right Hand")
-            s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
-        else
-            s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
-        Destroy(door);
-        EnableDoors(false);
-        isMenuOpen = false;
-        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
-        if (NetworkManager.Singleton.IsHost)
-        {
-            if (!gameModel.BuildingOpened(connection))
-                return;
-            Building building = gameModel.Board.GetBuildingByTile(connection.Destination.Id);
-            List<string> spawns = new List<string>();
-            var darkRooms = building.Rooms.Where(x => x.Type == TileType.DARKROOM).Select(x=>x.Id).ToList();
-            for (int i = 0; i < darkRooms.Count; i++)
-            {
-                (ZombieType, int, int, int, int, bool) option = gameModel.ChooseZombieSpawnOption();
-                spawns.Add($"{option.Item1},{option.Item2},{option.Item3},{option.Item4},{option.Item5},{option.Item6}");
-            }
-            string data = $"{string.Join(';', spawns)}:{string.Join(';',darkRooms)}";
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawnInBuilding, data);
-        }
-    }
-    public void IncreaseUsedActions(string action, Survivor s, string? isMelee)
-    {
-        gameModel.CheckWin();
-        s.OnUsedAction(action, isMelee);
-        UpdatePlayerStats();
-        int level = s.CanUpgradeTo();
-        if (level > 0)
-        {
-            if(s.FinishedRound) s.FinishedRound = false;
-            isMenuOpen = true;
-            TraitController.Instance.OpenMenu(level, survivor.GetTraitUpgrades(level), OnTraitSelected);
-        }
-    }
-    private void OnTraitSelected(int level, int option)
-    {
-        isMenuOpen=false;
-        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TraitUpgrade, $"{survivor.Name};{level};{option}");
-    }
-    public void ReceiveGenericWeapons(string data)
-    {
-        List<ItemName> weapons=data.Split(',').Select(x=>(ItemName)Enum.Parse(typeof(ItemName), x.Replace("ItemName.",""),true)).ToList();
-        gameModel.GiveSurvivorsGenericWeapon(weapons);
-        UpdateItemSlots();
-    }
-    private void UpdateItemSlots()
-    {
-        if (survivor.LeftHand == null)
-            leftHand.GetComponent<Image>().sprite= Resources.Load<Sprite>("Objects/card_lefthand");
-        else
-            leftHand.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.LeftHand.Name.ToString().ToLower()}");
-        if (survivor.RightHand == null)
-            rightHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_righthand");
-        else
-            rightHand.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.RightHand.Name.ToString().ToLower()}");
-        for (int i = 0; i < 3; i++)
-        {
-            if(survivor.BackPack.Count > i)
-            {
-                if (survivor.BackPack[i] == null)
-                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_backpack");
-                else
-                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.BackPack[i].Name.ToString().ToLower()}");
-            }
-        }
-    }
-    public List<string> GetAvailableActionsOnTile(string tileName)
-    {
-        SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).SetActions(gameModel.Board.GetTileByID(int.Parse(tileName.Substring(8))));
-        return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.ToList();
-    }
-    public List<string> GetAvailableDoorOpeners()
-    {
-        List<string> result = new List<string>();
-        if (survivor.RightHand != null && survivor.RightHand is Weapon weapon && weapon.CanOpenDoors) result.Add("Right Hand");
-        if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
-        return result;
-    }
-    public List<string> GetAvailableAttacks(string tileID)
-    {
-        List<string> options = survivor.GetAvailableAttacksOnTile(gameModel.Board.GetTileByID(int.Parse(tileID)));
-        if (options.Contains("Melee") && survivor.CurrentTile.Id != int.Parse(tileID))
-            options.Remove("Melee");
-        return options;
-    }
-    public List<string> GetAvailableWeapons(bool isMelee, string tileID)
-    {
-        List<string> result = new List<string>();
-        if (isMelee)
-        {
-            if(survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && weapon.CanBeUsedAsMelee)
-                result.Add("Left Hand");
-            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && weapon2.CanBeUsedAsMelee)
-                result.Add("Right Hand");
-        }
-        else
-        {
-            int distance = 1;
-            if (survivor.CurrentTile.Type == TileType.STREET && gameModel.Board.GetTileByID(int.Parse(tileID)).Type==TileType.STREET)
-            {
-                var street = gameModel.Board.GetStreetByTiles(survivor.CurrentTile.Id, int.Parse(tileID));
-                distance = Math.Abs(street.Tiles.IndexOf(survivor.CurrentTile.Id) - street.Tiles.IndexOf(int.Parse(tileID)));
-            }
-            if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon && distance <= weapon.Range)
-                result.Add("Left Hand");
-            if (survivor.RightHand != null && survivor.RightHand is Weapon weapon2 && distance <= weapon2.Range)
-                result.Add("Right Hand");
-        }
-        return result;
-    }
-    public void StartAttack(string objectName, bool isRightHand)
-    {
-        bool isMelee = AttackFlag == "Melee";
-        Weapon weapon = null;
-        if (isRightHand)
-            weapon = (Weapon)survivor.RightHand;
-        else
-            weapon = (Weapon)survivor.LeftHand;
-
-        string data = $"{objectName.Substring(8)}:{isRightHand}:{isMelee}";
-
-        if (weapon.Type == WeaponType.BOMB)
-        {
-            data += $"::{survivor.Name}";
-            OnOkRollDiceClicked(data, new List<int>());
-            return;
-        }
-
-        if (isMelee)
-        {
-            OpenSniperMenu(data);
-            return;
-        }
-        else if((!isMelee && survivor.Traits.Contains(Trait.SNIPER))||((!isMelee)&& (weapon.Name==ItemName.SNIPERRIFLE || weapon.Name==ItemName.MILITARYSNIPERRIFLE)))
-        {
-            OpenSniperMenu(data);
-            return;
-        }
-        else 
-        { 
-            data += $"::{survivor.Name}";
-            RollDice(data);
-        }
-    }
-    public void RollDice(string data)
-    {
-        string[] strings = data.Split(':');
-        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
-        Weapon weapon = null;
-        if (strings[1] == "True")
-            weapon = (Weapon)s.RightHand;
-        else
-            weapon = (Weapon)s.LeftHand;
-        int diceAmount=weapon.DiceAmount;
-
-        if (strings[2]=="True" && weapon.Name==ItemName.GUNBLADE)
-            diceAmount *=2;
-        else if(strings[2] == "True" && weapon.Name == ItemName.MASSHOTGUN)
-            diceAmount -=1;
-
-        // Dice trait
-        if (s.Traits.Contains(Trait.P1DC))
-            diceAmount++;
-        if (s.Traits.Contains(Trait.P1DM) && strings[2]=="True")
-            diceAmount++;
-        if (s.Traits.Contains(Trait.P1DR) && strings[2] == "False")
-            diceAmount++;
-
-        isMenuOpen = true;
-        diceRoller.RollDice(diceAmount);
-        StartCoroutine(diceRoller.WaitForDiceToStop((results) => {
-            OnDiceResultsReady(data, results);
-        }));
-    }
-    private void OnDiceResultsReady(string data, List<int> results)
-    {
-        string[] strings = data.Split(':');
-        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
-        Weapon weapon = null;
-        if (strings[1] == "True")
-            weapon = (Weapon)s.RightHand;
-        else
-            weapon = (Weapon)s.LeftHand;
-        bool isLucky = s.Traits.Contains(Trait.LUCKY) || (s.HasPlentyOfBullets()&&weapon.BulletType=='B')|| (s.HasPlentyOfShells() && weapon.BulletType == 'S');
-        if (isLucky)
-        {
-            diceRoller.ReRollDice(weapon.Accuracy, results);
-            StartCoroutine(diceRoller.WaitForDiceToStop((newResults) => {
-                diceRoller.RollFinished(data, newResults);
-            }));
-        }
-        else
-        {
-            diceRoller.RollFinished(data, results);
-        }
-    }
-    public void OnOkRollDiceClicked(string data, List<int> results)
-    {
-        isMenuOpen = false;
-        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data += $":{string.Join(',', results)}");
-    }
-    public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
-    {
-        Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[playerID]);
-        switch (actionName)
-        {
-            case "Open Door Right Hand":
-                OpenDoor(objectName, "Right Hand", s);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Open Door", s, null);
-                EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
-                break;
-            case "Open Door Left Hand":
-                OpenDoor(objectName, "Left Hand", s);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Open Door", s, null);
-                EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
-                break;
-            case "Search":
-                SearchOnTile(s);
-                break;
-            case "Skip":
-                s.Skip();
-                break;
-            case "Move":
-                s.Move(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ",string.Empty)]);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Move", s, null);
-                break;
-            case "Slippery Move":
-                s.SlipperyMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Slippery Move", s, null);
-                break;
-            case "Sprint Move":
-                s.SprintMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Sprint Move", s, null);
-                break;
-            case "Jump":
-                s.Jump(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Jump", s, null);
-                break;
-            case "Charge":
-                s.Charge(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Charge", s, null);
-                break;
-            case "Pick Up Pimp Weapon":
-                PickUpPimpW(s);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Pick Up Pimp Weapon", s, null);
-                break;
-            case "Pick Up Objective":
-                PickUpObjective(s);
-                if (survivor.Name == s.Name)
-                    IncreaseUsedActions("Pick Up Objective", s, null);
-                break;
-            case "Leave Through Exit":
-                s.LeaveThroughExit();
-                RemovePlayer(s.Name);
-                break;
-            default:
-                Debug.LogWarning("Unknown action: " + actionName);
-                break;
-        }
-        if (survivor == s)
-            UpdatePlayerStats();
-        if (survivor.FinishedRound && survivor==gameModel.CurrentPlayer)
-        {
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
-        }
+        SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
+        RemovePlayer(playerName);
     }
     public void RemovePlayer(string playerName)
     {
@@ -710,31 +389,7 @@ public class GameController : MonoBehaviour
         if(gameModel.CurrentPlayer==survivor && survivor.Name==playerName && !survivor.LeftExit)
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
     }
-    public void SearchOnTile(Survivor s)
-    {
-        if (NetworkManager.Singleton.IsHost)
-        {
-            List<Item> items = gameModel.Search(s.CurrentTile, s.HasFlashLight());
-            //zombieamount;items;survivor
-            string data = string.Empty;
-            if(s.HasFlashLight())
-            {
-                if (items.Count == 0)
-                    data = "2;;"+s.Name;
-                else
-                    data = $"{2-items.Count};{string.Join(',', items.Select(x => x.Name))};{s.Name}";
-            }
-            else
-            {
-                if (items == null)
-                    data = "1;;" + s.Name;
-                else
-                    data = $"0;{string.Join(',', items.Select(x => x.Name))};{s.Name}";
-            }
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
-        }
-    }
-    public void OpenSniperMenu(string data)
+    private void OpenSniperMenu(string data)
     {
         List<Zombie> zombies = gameModel.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(data.Split(':')[0])));
         isMenuOpen = true;
@@ -773,32 +428,6 @@ public class GameController : MonoBehaviour
             }
         }
         sniperMenuForS = sniper;
-    }
-    public void OnOkSniperMenuClicked(string data)
-    {
-        List<string> newPriority = new List<string>();
-        if (sniperMenuForS != null)
-        {
-            foreach (Transform child in sniperMenuForS.transform)
-            {
-                foreach (Transform subChild in child.transform)
-                {
-                    if (subChild.transform.childCount > 0)
-                    {
-                        Transform item = subChild.transform.GetChild(0);
-                        if (child.name.StartsWith("Priority"))
-                            newPriority.Add(item.GetComponent<Image>().sprite.name.TrimEnd("Slot"));
-                    }
-                }
-            }
-        }
-        if (newPriority.Count == 0) return;
-        cameraDrag.SetActive(true);
-        Destroy(sniperMenuForS);
-
-        data += $":{string.Join(',', newPriority)}:{survivor.Name}";
-        isMenuOpen = false;
-        RollDice(data);
     }
     public void OpenInventory(List<Item>? additionalItems, bool isSearch)
     {
@@ -869,38 +498,44 @@ public class GameController : MonoBehaviour
         }
         inventoryForS=inventory;
     }
-    public void OnOkInventoryClicked(bool isSearch)
+    #endregion
+    #region NetworkManager Methods
+    private ulong? GetClientIdByCharacter(string characterName)
     {
-        cameraDrag.SetActive(true);
-        string leftH = string.Empty;string rightH = string.Empty;
-        List<string> backP = new List<string>();
-        List<string> throwAway = new List<string>();
-        if (inventoryForS!=null)
+        foreach (var entry in playerSelections)
         {
-            foreach (Transform child in inventoryForS.transform)
+            if (entry.Value == characterName)
             {
-                foreach (Transform subChild in child.transform)
-                {
-                    if (subChild.transform.childCount > 0)
-                    {
-                        Transform item = subChild.transform.GetChild(0);
-                        if (child.name.StartsWith("Hand")&& subChild.name.Substring(14)=="Left")
-                            leftH= item.GetComponent<Image>().sprite.name;
-                        if (child.name.StartsWith("Hand") && subChild.name.Substring(14) == "Right")
-                            rightH = item.GetComponent<Image>().sprite.name;
-                        if (child.name.StartsWith("Back"))
-                            backP.Add(item.GetComponent<Image>().sprite.name);
-                        if (child.name.StartsWith("Throw"))
-                            throwAway.Add(item.GetComponent<Image>().sprite.name);
-                    } 
-                }
+                return entry.Key; // Megtaláltuk a karaktert, visszaadjuk a kliens ID-t
             }
         }
-        Destroy(inventoryForS);
-        string data = $"{leftH};{rightH};{string.Join(',', backP)};{string.Join(',', throwAway)};{isSearch}:{survivor.Name}";
-        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ItemsChanged, data);
-        isMenuOpen = false;
-        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+        return null; // Ha nem található a karakter, visszatérünk null-lal
+    }
+    public void SetPlayerSelections(Dictionary<ulong, string> selections)
+    {
+        playerSelections = selections;
+        Initialize(selectedMapID);
+    }
+    public void ReceivePlayerOrder(string serializedOrder)
+    {
+        List<string> orderedPlayers = serializedOrder.Split(',').ToList();
+        gameModel.SetPlayerOrder(orderedPlayers);
+        ShowPlayerOrder();
+    }
+    public void ReceiveTurnStart(ulong playerID)
+    {
+        UpdateBoardForActivePlayer(playerID);
+        if (gameModel.CurrentPlayer == survivor)
+        {
+            survivor.SetFreeActions();
+            UpdatePlayerStats();
+        }
+    }
+    public void ReceiveGenericWeapons(string data)
+    {
+        List<ItemName> weapons=data.Split(',').Select(x=>(ItemName)Enum.Parse(typeof(ItemName), x.Replace("ItemName.",""),true)).ToList();
+        gameModel.GiveSurvivorsGenericWeapon(weapons);
+        UpdateItemSlots();
     }
     public void ReceiveTraitUpgrade(string data)
     {
@@ -1053,7 +688,265 @@ public class GameController : MonoBehaviour
         }
         UpdateZombieCanvasOnTile(s.CurrentTile.Id);
     }
-    public void PickUpObjective(Survivor s)
+    public void ReceivePimpWeapon(string data)
+    {
+        string[] strings=data.Split(':');
+        PimpWeapon pimp = (PimpWeapon)ItemFactory.GetItemByName((ItemName)Enum.Parse(typeof(ItemName), strings[0].Replace("ItemName.", ""), true));
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[1]);
+        PickUpPimpWLocally(s,pimp);
+    }
+    public void PlayerFinishedRound(string data)
+    {
+        SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;//beállitani a használt képességeket falsera
+        gameModel.NextPlayer();
+        if(gameModel.IsPlayerRoundOver)
+        {
+            ShowPlayerOrder();
+            ZombieRound();
+        }
+        else
+            StartNextTurn();
+    }
+    #endregion
+    #region Game Methods
+    private void StartNextTurn()
+    {
+        gameModel.CurrentPlayer.StartedRound = true;
+        gameModel.CurrentPlayer.SetFreeActions();
+        ShowPlayerOrder();
+        if(gameModel.CurrentPlayer==survivor)
+            UpdatePlayerStats();
+
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
+    }
+    private void OpenDoor(string objectName, string weaponOption, Survivor s)
+    {
+        GameObject door = null;
+        foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
+        {
+            if (child.name == "Doors")
+            {
+                foreach (Transform subChild in child.transform)
+                {
+                    if (subChild.name == objectName)
+                    {
+                        door = subChild.gameObject; break;
+                    }
+                }
+                break;
+            }
+        }
+        TileConnection connection = s.CurrentTile.GetTileConnectionById(int.Parse(door.gameObject.name.Substring(5).Split('_')[0]), int.Parse(door.gameObject.name.Substring(5).Split('_')[1]));
+        if (weaponOption == "Right Hand")
+            s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
+        else
+            s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
+        Destroy(door);
+        EnableDoors(false);
+        isMenuOpen = false;
+        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+        if (NetworkManager.Singleton.IsHost)
+        {
+            if (!gameModel.BuildingOpened(connection))
+                return;
+            Building building = gameModel.Board.GetBuildingByTile(connection.Destination.Id);
+            List<string> spawns = new List<string>();
+            var darkRooms = building.Rooms.Where(x => x.Type == TileType.DARKROOM).Select(x=>x.Id).ToList();
+            for (int i = 0; i < darkRooms.Count; i++)
+            {
+                (ZombieType, int, int, int, int, bool) option = gameModel.ChooseZombieSpawnOption();
+                spawns.Add($"{option.Item1},{option.Item2},{option.Item3},{option.Item4},{option.Item5},{option.Item6}");
+            }
+            string data = $"{string.Join(';', spawns)}:{string.Join(';',darkRooms)}";
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawnInBuilding, data);
+        }
+    }
+    private void IncreaseUsedActions(string action, Survivor s, string? isMelee)
+    {
+        gameModel.CheckWin();
+        s.OnUsedAction(action, isMelee);
+        UpdatePlayerStats();
+        int level = s.CanUpgradeTo();
+        if (level > 0)
+        {
+            if(s.FinishedRound) s.FinishedRound = false;
+            isMenuOpen = true;
+            TraitController.Instance.OpenMenu(level, survivor.GetTraitUpgrades(level), OnTraitSelected);
+        }
+    }
+    public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
+    {
+        Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[playerID]);
+        switch (actionName)
+        {
+            case "Open Door Right Hand":
+                OpenDoor(objectName, "Right Hand", s);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Open Door", s, null);
+                EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
+                break;
+            case "Open Door Left Hand":
+                OpenDoor(objectName, "Left Hand", s);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Open Door", s, null);
+                EnableBoardInteraction(gameModel.CurrentPlayer == survivor);
+                break;
+            case "Search":
+                SearchOnTile(s);
+                break;
+            case "Skip":
+                s.Skip();
+                break;
+            case "Move":
+                s.Move(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ",string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Move", s, null);
+                break;
+            case "Slippery Move":
+                s.SlipperyMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Slippery Move", s, null);
+                break;
+            case "Sprint Move":
+                s.SprintMove(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Sprint Move", s, null);
+                break;
+            case "Jump":
+                s.Jump(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Jump", s, null);
+                break;
+            case "Charge":
+                s.Charge(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8))));
+                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Charge", s, null);
+                break;
+            case "Pick Up Pimp Weapon":
+                PickUpPimpW(s);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Pick Up Pimp Weapon", s, null);
+                break;
+            case "Pick Up Objective":
+                PickUpObjective(s);
+                if (survivor.Name == s.Name)
+                    IncreaseUsedActions("Pick Up Objective", s, null);
+                break;
+            case "Leave Through Exit":
+                s.LeaveThroughExit();
+                RemovePlayer(s.Name);
+                break;
+            default:
+                Debug.LogWarning("Unknown action: " + actionName);
+                break;
+        }
+        if (survivor == s)
+            UpdatePlayerStats();
+        if (survivor.FinishedRound && survivor==gameModel.CurrentPlayer)
+        {
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
+        }
+    }
+    public void StartAttack(string objectName, bool isRightHand)
+    {
+        bool isMelee = AttackFlag == "Melee";
+        Weapon weapon = null;
+        if (isRightHand)
+            weapon = (Weapon)survivor.RightHand;
+        else
+            weapon = (Weapon)survivor.LeftHand;
+
+        string data = $"{objectName.Substring(8)}:{isRightHand}:{isMelee}";
+
+        if (weapon.Type == WeaponType.BOMB)
+        {
+            data += $"::{survivor.Name}";
+            OnOkRollDiceClicked(data, new List<int>());
+            return;
+        }
+
+        if (isMelee)
+        {
+            OpenSniperMenu(data);
+            return;
+        }
+        else if((!isMelee && survivor.Traits.Contains(Trait.SNIPER))||((!isMelee)&& (weapon.Name==ItemName.SNIPERRIFLE || weapon.Name==ItemName.MILITARYSNIPERRIFLE)))
+        {
+            OpenSniperMenu(data);
+            return;
+        }
+        else 
+        { 
+            data += $"::{survivor.Name}";
+            RollDice(data);
+        }
+    }
+    private void RollDice(string data)
+    {
+        string[] strings = data.Split(':');
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
+        bool isDual=s.LeftHand !=null && s.RightHand != null&&s.LeftHand.Name==s.RightHand.Name;
+        Weapon weapon = null;
+        if (strings[1] == "True")
+            weapon = (Weapon)s.RightHand;
+        else
+            weapon = (Weapon)s.LeftHand;
+        int diceAmount=weapon.DiceAmount;
+
+        if (s.Traits.Contains(Trait.AMBIDEXTROUS) || (weapon.IsDual && isDual))
+            diceAmount *= 2;
+
+        if (strings[2]=="True" && weapon.Name==ItemName.GUNBLADE)
+            diceAmount *=2;
+        else if(strings[2] == "True" && weapon.Name == ItemName.MASSHOTGUN)
+            diceAmount -=1;
+
+        // Dice trait
+        if (s.Traits.Contains(Trait.P1DC))
+            diceAmount++;
+        if (s.Traits.Contains(Trait.P1DM) && strings[2]=="True")
+            diceAmount++;
+        if (s.Traits.Contains(Trait.P1DR) && strings[2] == "False")
+            diceAmount++;
+
+        isMenuOpen = true;
+        diceRoller.RollDice(diceAmount);
+        StartCoroutine(diceRoller.WaitForDiceToStop((results) => {
+            OnDiceResultsReady(data, results);
+        }));
+    }
+    private void SearchOnTile(Survivor s)
+    {
+        if (NetworkManager.Singleton.IsHost)
+        {
+            List<Item> items = gameModel.Search(s.CurrentTile, s.HasFlashLight(), s.Traits.Contains(Trait.MATCHINGSET));
+            //zombieamount;items;survivor
+            string data = string.Empty;
+            if(s.HasFlashLight())
+            {
+                if (items.Count == 0)
+                    data = "2;;"+s.Name;
+                else if(items.Count == 3)
+                    data = $"0;{string.Join(',', items.Select(x => x.Name))};{s.Name}";
+                else
+                    data = $"{2 - items.Count};{string.Join(',', items.Select(x => x.Name))};{s.Name}";
+            }
+            else
+            {
+                if (items == null)
+                    data = "1;;" + s.Name;
+                else
+                    data = $"0;{string.Join(',', items.Select(x => x.Name))};{s.Name}";
+            }
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
+        }
+    }
+    private void PickUpObjective(Survivor s)
     {
         GameObject gObject = null;
         foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
@@ -1067,7 +960,7 @@ public class GameController : MonoBehaviour
         Destroy(gObject);
         ProgressBar.UpdateFill(survivor.APoints);
     }
-    public void PickUpPimpWLocally(Survivor s, PimpWeapon pimp)
+    private void PickUpPimpWLocally(Survivor s, PimpWeapon pimp)
     {
         GameObject gObject = null;
         foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
@@ -1084,7 +977,7 @@ public class GameController : MonoBehaviour
             OpenInventory(new List<Item>() { pimp },true);
         }
     }
-    public void PickUpPimpW(Survivor s)
+    private void PickUpPimpW(Survivor s)
     {
         if (NetworkManager.Singleton.IsHost)
         {
@@ -1092,17 +985,13 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PimpWeapon, $"{pimp.Name.ToString()}:{s.Name}");
         }
     }
-    public void PlayerFinishedRound(string data)
+    private void NewRoundForPlayers()
     {
-        SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;//beállitani a használt képességeket falsera
-        gameModel.NextPlayer();
-        if(gameModel.IsPlayerRoundOver)
+        foreach(var s in playerSelections.Values)
         {
-            ShowPlayerOrder();
-            ZombieRound();
+            if(!SurvivorFactory.GetSurvivorByName(s).IsDead)
+                SurvivorFactory.GetSurvivorByName(s).NewRound();
         }
-        else
-            StartNextTurn();
     }
     private void ZombieRound()
     {
@@ -1121,19 +1010,151 @@ public class GameController : MonoBehaviour
         }
         UpdatePlayerStats();
     }
-    private void NewRoundForPlayers()
+    #endregion
+    #region Event Handlers
+    private void GameController_SurvivorDied(object sender, string e)
     {
-        foreach(var s in playerSelections.Values)
+        if (isSurvivorDead) return;
+        SurvivorFactory.GetSurvivorByName(e).SurvivorDied -= GameController_SurvivorDied;
+        if (e == survivor.Name)
         {
-            if(!SurvivorFactory.GetSurvivorByName(s).IsDead)
-                SurvivorFactory.GetSurvivorByName(s).NewRound();
+            isSurvivorDead = true;
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.SurvivorDied, e);
         }
     }
-    public void ReceivePimpWeapon(string data)
+    private void GameModel_GameEnded(object sender, bool e)
     {
-        string[] strings=data.Split(':');
-        PimpWeapon pimp = (PimpWeapon)ItemFactory.GetItemByName((ItemName)Enum.Parse(typeof(ItemName), strings[0].Replace("ItemName.", ""), true));
-        Survivor s = SurvivorFactory.GetSurvivorByName(strings[1]);
-        PickUpPimpWLocally(s,pimp);
+        EnableBoardInteraction(false);
+        GameObject ui = GameObject.FindWithTag("GameUI");
+        GameObject endPanelPrefab = Resources.Load<GameObject>("Prefabs/EndPanel");
+        GameObject endPanel=Instantiate(endPanelPrefab,ui.transform);
+        isMenuOpen = true;
+        var innerImg=endPanel.transform.GetChild(0).GetComponent<Image>();
+        if(e)
+            innerImg.sprite= Resources.Load<Sprite>("Menu/survivors_won");
+        else
+            innerImg.sprite = Resources.Load<Sprite>("Menu/zombies_won");
+        var okButton=endPanel.transform.GetChild(1).GetComponent<Button>();
+        okButton.onClick.AddListener(() => OnOkEndGameClicked());
     }
+    private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        if (sceneName == "InGameScene")
+        {
+            selectedMapID = NetworkManagerController.Instance.SelectedMapID;
+            NetworkManagerController.Instance.SendPlayerSelectionsServerRpc();
+        }
+    }
+    private void OnDiceResultsReady(string data, List<int> results)
+    {
+        string[] strings = data.Split(':');
+        Survivor s = SurvivorFactory.GetSurvivorByName(strings[4]);
+        Weapon weapon = null;
+        if (strings[1] == "True")
+            weapon = (Weapon)s.RightHand;
+        else
+            weapon = (Weapon)s.LeftHand;
+        bool isLucky = s.Traits.Contains(Trait.LUCKY) || (s.HasPlentyOfBullets()&&weapon.BulletType=='B')|| (s.HasPlentyOfShells() && weapon.BulletType == 'S');
+        if (isLucky)
+        {
+            diceRoller.ReRollDice(weapon.Accuracy, results);
+            StartCoroutine(diceRoller.WaitForDiceToStop((newResults) => {
+                diceRoller.RollFinished(data, newResults);
+            }));
+        }
+        else
+        {
+            diceRoller.RollFinished(data, results);
+        }
+    }
+    public void OnOkRollDiceClicked(string data, List<int> results)
+    {
+        isMenuOpen = false;
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data += $":{string.Join(',', results)}");
+    }
+    private void OnOkSniperMenuClicked(string data)
+    {
+        List<string> newPriority = new List<string>();
+        if (sniperMenuForS != null)
+        {
+            foreach (Transform child in sniperMenuForS.transform)
+            {
+                foreach (Transform subChild in child.transform)
+                {
+                    if (subChild.transform.childCount > 0)
+                    {
+                        Transform item = subChild.transform.GetChild(0);
+                        if (child.name.StartsWith("Priority"))
+                            newPriority.Add(item.GetComponent<Image>().sprite.name.TrimEnd("Slot"));
+                    }
+                }
+            }
+        }
+        if (newPriority.Count == 0) return;
+        cameraDrag.SetActive(true);
+        Destroy(sniperMenuForS);
+
+        data += $":{string.Join(',', newPriority)}:{survivor.Name}";
+        isMenuOpen = false;
+        RollDice(data);
+    }
+    private void OnOkInventoryClicked(bool isSearch)
+    {
+        cameraDrag.SetActive(true);
+        string leftH = string.Empty;string rightH = string.Empty;
+        List<string> backP = new List<string>();
+        List<string> throwAway = new List<string>();
+        if (inventoryForS!=null)
+        {
+            foreach (Transform child in inventoryForS.transform)
+            {
+                foreach (Transform subChild in child.transform)
+                {
+                    if (subChild.transform.childCount > 0)
+                    {
+                        Transform item = subChild.transform.GetChild(0);
+                        if (child.name.StartsWith("Hand")&& subChild.name.Substring(14)=="Left")
+                            leftH= item.GetComponent<Image>().sprite.name;
+                        if (child.name.StartsWith("Hand") && subChild.name.Substring(14) == "Right")
+                            rightH = item.GetComponent<Image>().sprite.name;
+                        if (child.name.StartsWith("Back"))
+                            backP.Add(item.GetComponent<Image>().sprite.name);
+                        if (child.name.StartsWith("Throw"))
+                            throwAway.Add(item.GetComponent<Image>().sprite.name);
+                    } 
+                }
+            }
+        }
+        Destroy(inventoryForS);
+        string data = $"{leftH};{rightH};{string.Join(',', backP)};{string.Join(',', throwAway)};{isSearch}:{survivor.Name}";
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ItemsChanged, data);
+        isMenuOpen = false;
+        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+    }
+    private void OnTraitSelected(int level, int option)
+    {
+        isMenuOpen=false;
+        NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TraitUpgrade, $"{survivor.Name};{level};{option}");
+    }
+    public void OnOkEndGameClicked()
+    {
+        if (NetworkManager.Singleton.IsHost)
+        {
+            // Ha a host nyomja meg, mindenki visszakerül a főmenübe
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GameEnded, "");
+        }
+        else
+        {
+            // Ha kliens nyomja meg, csak ő lép ki
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PlayerLeft, survivor.Name);
+            if(gameModel.CurrentPlayer==survivor)
+                NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
+
+            // Kliens kilépése a főmenübe
+            NetworkManager.Singleton.Shutdown();
+            SceneManager.LoadScene("MenuScene");
+        }
+    }
+    #endregion
+    #endregion
 }

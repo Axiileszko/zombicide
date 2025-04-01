@@ -12,7 +12,7 @@
         "id": 1,
         "name": "Y-Zone",
         "image": "y_zone",
-        "objectives": "Armed escape. Accomplish the Objectives in this order to win the game: 1– Arm the team. Provide the team with as many Epic Weapons as there are Survivors (up to the number of available Epic Weapons). 2– Reach the Exit with all Survivors. Any Survivor may escape through this Zone at the end of their Turn as long as there are no Zombies in it",
+        "objectives": "Armed escape. Accomplish the Objectives in this order to win the game: Arm the team. Provide the team with as many Epic Weapons as there are on the map. Reach the Exit with all Survivors. Any Survivor may escape through this Zone at the end of their Turn as long as there are no Zombies in it",
         "difficulty": "Hard",
         "rules": "There are no special rules."
       }

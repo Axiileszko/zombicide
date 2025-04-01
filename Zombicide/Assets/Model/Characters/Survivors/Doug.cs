@@ -21,7 +21,7 @@ namespace Model.Characters.Survivors
                 return instance;
             }
         }
-        private Doug(string name, bool isKid) : base(name, isKid) { }
+        private Doug(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.MATCHINGSET); }
         public override void SetFreeActions()
         {
             FreeActions.Clear();
@@ -35,7 +35,7 @@ namespace Model.Characters.Survivors
             if (l)
             {
                 Actions.Add("Rearrange Items", new GameAction("Rearrange Items", 1));
-                if (tileClicked == CurrentTile && CurrentTile.IsExit)
+                if (tileClicked == CurrentTile && CurrentTile.IsExit && model.GetZombiesInPriorityOrderOnTile(tileClicked).Count == 0)
                     Actions.Add("Leave Through Exit", new GameAction("Leave Through Exit", 1));
                 if (tileClicked == CurrentTile && CanOpenDoorOnTile())
                     Actions.Add("Open Door", new GameAction("Open Door", 1));

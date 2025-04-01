@@ -12,7 +12,7 @@ namespace Model.Characters.Survivors
 {
     public enum Trait
     {
-        SLIPPERY, MEDIC, LUCKY, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, AMBIDEXTROUS, 
+        SLIPPERY, MEDIC, LUCKY, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, AMBIDEXTROUS, MATCHINGSET,
         P1A, //+1 action
         P1FCA,
         P1FMA,
@@ -30,6 +30,7 @@ namespace Model.Characters.Survivors
     }
     public abstract class Survivor : Character
     {
+        #region Fields
         protected string name;
         protected int aPoints;
         protected bool isKid;
@@ -39,6 +40,8 @@ namespace Model.Characters.Survivors
         protected Item leftHand;
         protected bool isDead;
         public event EventHandler<string> SurvivorDied;
+        #endregion
+        #region Properties
         public int ObjectiveCount {  get; protected set; }
         public bool FinishedRound { get; set; }
         public bool StartedRound { get; set; }
@@ -57,12 +60,23 @@ namespace Model.Characters.Survivors
         public List<Item> BackPack { get { return backpack; } }
         public Dictionary<string, GameAction> Actions { get; protected set; } = new Dictionary<string, GameAction>();
         public Dictionary<string, GameAction> FreeActions { get; protected set; } = new Dictionary<string, GameAction>();
+        #endregion
+        #region Constructors
         public Survivor(string name, bool isKid)
         {
             this.name = name;
             this.isKid = isKid;
             Reset();
         }
+        #endregion
+        #region Methods
+        #region Abstract Methods
+        public abstract List<string> GetTraitUpgrades(int level);
+        public abstract void UpgradeTo(int level, int option);
+        public abstract void SetActions(MapTile tileClicked);
+        public abstract void SetFreeActions();
+        #endregion
+        #region Query Methods
         public int CanUpgradeTo()
         {
             if (APoints >= 43 && level==2)
@@ -80,8 +94,6 @@ namespace Model.Characters.Survivors
             else
                 return 0;
         }
-        public abstract List<string> GetTraitUpgrades(int level);
-        public abstract void UpgradeTo(int level, int option);
         public bool CanOpenDoorOnTile()
         {
             if(model.GetZombiesInPriorityOrderOnTile(CurrentTile).ToList().Count > 0) return false;
@@ -118,18 +130,6 @@ namespace Model.Characters.Survivors
                 if (item.Name == ItemName.PLENTYOFBULLETS) l = true;
             }
             return l;
-        }
-        public void NewRound()
-        {
-            UsedAction = 0;
-            StartedRound = false;
-            SlipperyMovedAlready = false;
-            SearchedAlready = false;
-            if (!isDead || !LeftExit)
-                FinishedRound = false;
-            SprintMovedAlready = false;
-            ChargeMovedAlready = false;
-            JumpMovedAlready = false;
         }
         public List<string> GetAvailableAttacksOnTile(MapTile targetTile)
         {
@@ -168,8 +168,28 @@ namespace Model.Characters.Survivors
             }
             return result;
         }
-        public abstract void SetActions(MapTile tileClicked);
-        public abstract void SetFreeActions();
+        private bool CanTargetTile(MapTile targetTile)
+        {
+            if(CurrentTile.Id == targetTile.Id)
+                return true;
+            if (CurrentTile.Type == TileType.STREET && targetTile.Type == TileType.STREET)
+            {
+                var street=model.Board.GetStreetByTiles(CurrentTile.Id, targetTile.Id);
+                if (street == null) return false;
+            }
+            else 
+            { 
+                if(!CurrentTile.Neighbours.Select(x=>x.Destination.Id).Contains(targetTile.Id)) return false;
+                if(!model.Board.CanMove(CurrentTile, targetTile)) return false;
+            }
+            return true;
+        }
+        public bool HasFlashLight()
+        {
+            return (rightHand != null && rightHand.Name == ItemName.FLASHLIGHT) || (leftHand != null && leftHand.Name == ItemName.FLASHLIGHT) || backpack.Any(x => x.Name == ItemName.FLASHLIGHT);
+        }
+        #endregion
+        #region Action Methods
         public void Move(MapTile targetTile)
         {
             MoveTo(targetTile);
@@ -327,32 +347,6 @@ namespace Model.Characters.Survivors
                 }
             }
         }
-        public override bool TakeDamage(int amount)
-        {
-            hp =Math.Max(0,hp-amount);
-            if (hp <= 0)
-            {
-                IsDead = true;
-                return true;//true ha meghalt a karakter
-            }
-            return false;
-        }
-        private bool CanTargetTile(MapTile targetTile)
-        {
-            if(CurrentTile.Id == targetTile.Id)
-                return true;
-            if (CurrentTile.Type == TileType.STREET && targetTile.Type == TileType.STREET)
-            {
-                var street=model.Board.GetStreetByTiles(CurrentTile.Id, targetTile.Id);
-                if (street == null) return false;
-            }
-            else 
-            { 
-                if(!CurrentTile.Neighbours.Select(x=>x.Destination.Id).Contains(targetTile.Id)) return false;
-                if(!model.Board.CanMove(CurrentTile, targetTile)) return false;
-            }
-            return true;
-        }
         public void PickUpObjective() 
         { 
             CurrentTile.PickUpObjective();//lehet kezdünk még valamit az object refel amit visszaadna
@@ -365,6 +359,44 @@ namespace Model.Characters.Survivors
             {
                 aPoints += 3;
             }
+        }
+        public void Skip()
+        {
+            FinishedRound=true;
+        }
+        public void PickGenericWeapon(Weapon weapon)
+        {
+            rightHand = weapon;
+        }
+        public void LeaveThroughExit()
+        {
+            LeftExit = true;
+            FinishedRound= true;
+            CurrentTile = null;
+        }
+        #endregion
+        #region Modifier Methods
+        public void NewRound()
+        {
+            UsedAction = 0;
+            StartedRound = false;
+            SlipperyMovedAlready = false;
+            SearchedAlready = false;
+            if (!isDead || !LeftExit)
+                FinishedRound = false;
+            SprintMovedAlready = false;
+            ChargeMovedAlready = false;
+            JumpMovedAlready = false;
+        }
+        public override bool TakeDamage(int amount)
+        {
+            hp =Math.Max(0,hp-amount);
+            if (hp <= 0)
+            {
+                IsDead = true;
+                return true;//true ha meghalt a karakter
+            }
+            return false;
         }
         public void Reset()
         {
@@ -391,26 +423,6 @@ namespace Model.Characters.Survivors
                 hp = 3;
             action = 3;
         }
-        //public void SwitchItems(Survivor survivor, Item item, bool gives)
-        //{
-        //    //másiknak adunk vagy másiktól kérünk
-        //    if (survivor.CurrentTile == CurrentTile)
-        //    {
-        //        if(gives)
-        //        {
-        //            //mi adunk
-        //            var itemToGive = ThrowAway(item);
-        //            survivor.RecieveItem(itemToGive);
-        //        }
-        //        else
-        //        {
-        //            //mi kapunk
-        //            var itemToGet = survivor.ThrowAway(item);
-        //            RecieveItem(itemToGet);
-        //        }
-        //    }
-        //}
-
         public void PutIntoBackpack(List<Item> items)
         {
             if (items.Count <= 3)
@@ -429,18 +441,8 @@ namespace Model.Characters.Survivors
                 leftHand = item;
             }
         }
-        public void Skip()
-        {
-            FinishedRound=true;
-        }
-        public bool HasFlashLight()
-        {
-            return (rightHand != null && rightHand.Name == ItemName.FLASHLIGHT) || (leftHand != null && leftHand.Name == ItemName.FLASHLIGHT) || backpack.Any(x => x.Name == ItemName.FLASHLIGHT);
-        }
-        public void PickGenericWeapon(Weapon weapon)
-        {
-            rightHand = weapon;
-        }
+        #endregion
+        #region Event Handlers
         public void OnUsedAction(string action, string? isMelee)
         {
             if(isMelee!= null && FreeActions.Keys.Any(x=>x.EndsWith("Attack")))
@@ -461,16 +463,12 @@ namespace Model.Characters.Survivors
                 FinishedRound = true;
             }
         }
-        public void LeaveThroughExit()
-        {
-            LeftExit = true;
-            FinishedRound= true;
-            CurrentTile = null;
-        }
         private void OnSurvivorDied()
         {
             FinishedRound = true;
             SurvivorDied.Invoke(this, name);
         }
+        #endregion
+        #endregion
     }
 }

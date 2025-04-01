@@ -41,7 +41,7 @@ namespace Model.Characters.Survivors
             if (l)
             {
                 Actions.Add("Rearrange Items", new GameAction("Rearrange Items", 1));
-                if (tileClicked == CurrentTile && CurrentTile.IsExit)
+                if (tileClicked == CurrentTile && CurrentTile.IsExit && model.GetZombiesInPriorityOrderOnTile(tileClicked).Count == 0)
                     Actions.Add("Leave Through Exit", new GameAction("Leave Through Exit", 1));
                 if (tileClicked == CurrentTile && CanOpenDoorOnTile())
                     Actions.Add("Open Door", new GameAction("Open Door", 1));

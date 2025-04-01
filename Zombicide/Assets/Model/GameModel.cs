@@ -11,6 +11,7 @@ namespace Model
 {
     public class GameModel
     {
+        #region Fields
         private Board.Board board;
         private List<Survivor> survivors = new List<Survivor>();
         private List<Zombie> zombies = new List<Zombie>();
@@ -24,10 +25,10 @@ namespace Model
         private int dangerLevel;
         private bool hasAbomination;
         private Zombie abomination = null;
-
         private System.Random random=new System.Random();
-
         private MapLoader mapLoader;
+        #endregion
+        #region Properties
         public event EventHandler<bool> GameEnded;
         public bool GameOver {  get; private set; }=false;
         public bool IsPlayerRoundOver { get; set; } = false;
@@ -51,7 +52,8 @@ namespace Model
                 return locations;
             } 
         }
-
+        #endregion
+        #region Constructors
         public GameModel()
         {
             mapLoader=new MapLoader();
@@ -60,7 +62,48 @@ namespace Model
         {
             this.mapLoader = mapLoader;
         }
+        #endregion
+        #region Methods
+        #region Query Methods
+        public int NumberOfPlayersOnTile(int tileID)
+        {
+            return SurvivorLocations.Count(x=>x==tileID);
+        }
+        public Survivor GetSurvivorByName(string name)
+        {
+            return survivors.First(x => x.Name == name);
+        }
+        public List<Zombie> GetZombiesInPriorityOrderOnTile(MapTile mapTile)
+        {
+            List<Zombie> zombiesOnTile = new List<Zombie>();
+            foreach (var item in zombies)
+            {
+                if(item.CurrentTile==mapTile)
+                    zombiesOnTile.Add(item);
+            }
+            return zombiesOnTile.OrderBy(x => x.Priority).ToList();
+        }
+        private static int GetPriorityIndex(Zombie z, List<string> order)
+        {
+            string typeName = z.GetType().Name;
 
+            if (z is AbominationZombie)
+                typeName = "Abomination";
+
+            return order.IndexOf(typeName);
+        }
+        public List<Survivor> GetSurvivorsOnTile(MapTile mapTile)
+        {
+            List<Survivor> survivorsOnTile = new List<Survivor>();
+            foreach (var item in survivors)
+            {
+                if (item.CurrentTile == mapTile)
+                    survivorsOnTile.Add(item);
+            }
+            return survivorsOnTile;
+        }
+        #endregion
+        #region New Game Methods
         public void StartGame(List<string> survivors, int mapID)
         {
             IsPlayerRoundOver = false;
@@ -74,13 +117,190 @@ namespace Model
             FindSpawns();
             MovePlayersToSpawn();
         }
-        public void SetWinningCondition(int mapID)
+        public void LoadGame(int number)
+        {
+            board=mapLoader.LoadMap(number);
+        }
+        public void EndRound()
+        {
+            //jatekosok itt jonnek
+            CheckWin();
+            MoveZombies();
+            ClearNoiseCounters();
+            UpdateDangerLevel();
+        }
+        public void GiveSurvivorsGenericWeapon(List<ItemName> weapons)
+        {
+            if(survivors.Count != weapons.Count) return;
+            for (int i = 0; i < survivors.Count; i++)
+            {
+                survivors[i].PickGenericWeapon(ItemFactory.GetGenericWeaponByName(weapons[i]));
+            }
+        }
+        private void MovePlayersToSpawn()
+        {
+            foreach (var item in survivors)
+            {
+                item.MoveTo(startTile);
+            }
+            Building building = board.GetBuildingByTile(startTile.Id);
+            if (building != null)
+                building.OpenBuilding();
+        }
+        private void GenerateItems()
+        {
+            items = ItemFactory.CreateItems();
+            ItemFactory.CreatePimpWeapons();
+            ItemFactory.CreateGenericWeapons();
+        }
+        private void FindSpawns()
+        {
+            foreach (var item in board.Tiles)
+            {
+                if (item.SpawnType==ZombieSpawnType.FIRST)
+                    firstSpawn = item;
+                else if (item.SpawnType==ZombieSpawnType.RED || item.SpawnType == ZombieSpawnType.GREEN|| item.SpawnType == ZombieSpawnType.BLUE)
+                    zSpawns.Add(item);
+                else if (item.IsStart)
+                    startTile = item;
+                else if(item.IsExit)
+                    exitTile = item;
+            }
+        }
+        private List<Survivor> SpawnSurvivors(List<string> survivors)
+        {
+            List<Survivor> sList= new List<Survivor>();
+            foreach (string s in survivors)
+            {
+                Survivor survivor=SurvivorFactory.GetSurvivorByName(s);
+                survivor.SetReference(this);
+                sList.Add(survivor);
+                survivor.SurvivorDied += Survivor_SurvivorDied;
+            }
+            ResetSurvivors(sList);
+            return sList;
+        }
+        private void ResetSurvivors(List<Survivor> sList)
+        {
+            foreach (var survivor in sList)
+            {
+                survivor.Reset();
+            }
+        }
+        public List<Weapon> GenerateGenericWeapons()
+        {
+            List<Weapon> weapons = new List<Weapon>
+            {
+                ItemFactory.GetGenericWeaponByName(ItemName.AXE)
+            };
+            for (int i = 0; i < survivors.Count-1; i++)
+            {
+                weapons.Add(ItemFactory.GetGenericWeapon());
+            }
+            return weapons;
+        }
+        public void DecidePlayerOrder()
+        {
+            playerOrder = survivors.OrderBy(x => random.Next()).ToList();
+            currentPlayer = playerOrder[0];
+        }
+        public void SetPlayerOrder(List<string>? survivorOrder)
+        {
+            if (playerOrder.Count==0)
+            {
+                List<Survivor> newOrder = new List<Survivor>();
+                foreach (var item in survivorOrder)
+                {
+                    newOrder.Add(survivors.First(x => x.Name == item));
+                }
+                playerOrder = newOrder;
+                currentPlayer = playerOrder[0];
+            }
+        }
+        #endregion
+        #region New Round Methods
+        public bool BuildingOpened(TileConnection connection)
+        {
+            Building building = board.GetBuildingByTile(connection.Destination.Id);
+            if (building != null && !building.IsOpened)
+            {
+                building.OpenBuilding();
+                return true;
+            }
+            return false;
+        }
+        private void UpdateDangerLevel()
+        {
+            if (survivors.Any(x => x.APoints >= 43))
+            {
+                dangerLevel = 3;
+                return;
+            }
+            else if (survivors.Any(x => x.APoints >= 19))
+            {
+                dangerLevel = 2;
+                return;
+            }
+            else if (survivors.Any(x => x.APoints >= 7))
+            {
+                dangerLevel = 1;
+                return;
+            }
+            else
+                dangerLevel = 0;
+        }
+        private void ClearNoiseCounters()
+        {
+            foreach (var item in board.Tiles)
+            {
+                item.NoiseCounter = 0;
+            }
+        }
+        private void UpdateNoiseCounters()
+        {
+            foreach (var item in survivors)
+            {
+                if(item.CurrentTile!=null)
+                    item.CurrentTile.NoiseCounter++;
+            }
+        }
+        public void NextPlayer()
+        {
+            if (currentPlayer==playerOrder.Last() && currentPlayer.FinishedRound)
+            {
+                IsPlayerRoundOver = true;
+                currentPlayer = null;
+            }
+            else
+            {
+                int index=playerOrder.IndexOf(currentPlayer);
+                index++;
+                currentPlayer = playerOrder[index];
+                if(currentPlayer.IsDead || currentPlayer.LeftExit)
+                    NextPlayer();
+            }
+        }
+        public void ShiftPlayerOrder()
+        {
+            var starter = playerOrder[0];
+            playerOrder.RemoveAt(0);
+            playerOrder.Add(starter);
+            currentPlayer = playerOrder[0];
+            if(currentPlayer.IsDead || currentPlayer.LeftExit)
+                NextPlayer();
+        }
+        #endregion
+        #region WinningCondition Methods
+        private void SetWinningCondition(int mapID)
         {
             // Térkép azonosítótól függõen beállítjuk a megfelelõ metódust
             switch (mapID)
             {
                 case 0:
                     CheckWinningCondition = WinningCondition_Map0;
+                    break;
+                case 1:
+                    CheckWinningCondition = WinningCondition_Map1;
                     break;
             }
         }
@@ -108,97 +328,45 @@ namespace Model
             else
                 return false;
         }
-        public void EndRound()
+        private bool WinningCondition_Map1()
         {
-            //jatekosok itt jonnek
-            CheckWin();
-            MoveZombies();
-            ClearNoiseCounters();
-            UpdateDangerLevel();
-        }
-
-        private void UpdateDangerLevel()
-        {
-            if (survivors.Any(x => x.APoints >= 43))
+            if (survivors.Any(x => x.IsDead)) return false;
+            int pimpW = 0;
+            foreach (var s in survivors)
             {
-                dangerLevel = 3;
-                return;
+                foreach (var item in s.BackPack)
+                {
+                    if (item is PimpWeapon) pimpW++;
+                }
+                if (s.LeftHand != null && s.LeftHand is PimpWeapon) pimpW++;
+                if (s.RightHand != null && s.RightHand is PimpWeapon) pimpW++;
             }
-            else if (survivors.Any(x => x.APoints >= 19))
+            if (pimpW == 9)
             {
-                dangerLevel = 2;
-                return;
-            }
-            else if (survivors.Any(x => x.APoints >= 7))
-            {
-                dangerLevel = 1;
-                return;
-            }
-            else
-                dangerLevel = 0;
-        }
-
-        private void ClearNoiseCounters()
-        {
-            foreach (var item in board.Tiles)
-            {
-                item.NoiseCounter = 0;
-            }
-        }
-        public void GiveSurvivorsGenericWeapon(List<ItemName> weapons)
-        {
-            if(survivors.Count != weapons.Count) return;
-            for (int i = 0; i < survivors.Count; i++)
-            {
-                survivors[i].PickGenericWeapon(ItemFactory.GetGenericWeaponByName(weapons[i]));
-            }
-        }
-        public bool BuildingOpened(TileConnection connection)
-        {
-            Building building = board.GetBuildingByTile(connection.Destination.Id);
-            if (building != null && !building.IsOpened)
-            {
-                building.OpenBuilding();
+                if (survivors.Any(x => !x.LeftExit)) return false;
                 return true;
             }
-            return false;
+            else
+                return false;
         }
-        public Survivor GetSurvivorByName(string name)
+        private bool AreThereSurvivorsLeft()
         {
-            return survivors.First(x => x.Name == name);
+            return survivors.Any(x => !x.IsDead);
         }
-        public List<Zombie> GetZombiesInPriorityOrderOnTile(MapTile mapTile)
+        public void CheckWin()
         {
-            List<Zombie> zombiesOnTile = new List<Zombie>();
-            foreach (var item in zombies)
-            {
-                if(item.CurrentTile==mapTile)
-                    zombiesOnTile.Add(item);
-            }
-            return zombiesOnTile.OrderBy(x => x.Priority).ToList();
+            if (CheckWinningCondition != null && CheckWinningCondition())
+                OnGameEnded(true);
+            else if (exitTile != null && CheckWinningCondition != null && !CheckWinningCondition() && survivors.All(x => x.LeftExit))
+                OnGameEnded(false);
+            else if (!AreThereSurvivorsLeft())
+                OnGameEnded(false);
         }
+        #endregion
+        #region Zombie Methods
         public List<Zombie> SortZombiesByNewPriority(List<Zombie> zombies,List<string> order)
         {
             return zombies.OrderBy(z => GetPriorityIndex(z, order)).ToList();
-        }
-        private static int GetPriorityIndex(Zombie z, List<string> order)
-        {
-            string typeName = z.GetType().Name;
-
-            if (z is AbominationZombie)
-                typeName = "Abomination";
-
-            return order.IndexOf(typeName);
-        }
-        public List<Survivor> GetSurvivorsOnTile(MapTile mapTile)
-        {
-            List<Survivor> survivorsOnTile = new List<Survivor>();
-            foreach (var item in survivors)
-            {
-                if (item.CurrentTile == mapTile)
-                    survivorsOnTile.Add(item);
-            }
-            return survivorsOnTile;
         }
         public void RemoveZombie(Zombie zombie)
         {
@@ -215,31 +383,6 @@ namespace Model
                 if(item is RunnerZombie)
                     item.Move();
             }
-        }
-
-        private void UpdateNoiseCounters()
-        {
-            foreach (var item in survivors)
-            {
-                if(item.CurrentTile!=null)
-                    item.CurrentTile.NoiseCounter++;
-            }
-        }
-        private void MovePlayersToSpawn()
-        {
-            foreach (var item in survivors)
-            {
-                item.MoveTo(startTile);
-            }
-            Building building = board.GetBuildingByTile(startTile.Id);
-            if (building != null)
-                building.OpenBuilding();
-        }
-        private void GenerateItems()
-        {
-            items = ItemFactory.CreateItems();
-            ItemFactory.CreatePimpWeapons();
-            ItemFactory.CreateGenericWeapons();
         }
         public MapTile FindNextStepToNoisiest(MapTile start)
         {
@@ -285,24 +428,7 @@ namespace Model
 
             return step; // Az elsõ lépés a start mezõ szomszédja
         }
-        public List<int> DiceRoll(int diceAmount, int accuracy)
-        {
-            List<int> result = new List<int>();
-            for (int i = 0; i < diceAmount; i++)
-            {
-                result.Add(random.Next(1, 7)); // 1-6 között
-            }
-            return result;
-        }
-        public void ReRoll(ref List<int> before, int accuracy)
-        {
-            for (int i = 0; i < before.Count; i++)
-            {
-                if (before[i]<accuracy)
-                    before[i]=random.Next(1, 7); // 1-6 között
-            }
-        }
-        public List<Item> Search(MapTile tile, bool useFlashlight)
+        public List<Item> Search(MapTile tile, bool useFlashlight, bool matchingSet)
         {
             if (useFlashlight)
             {
@@ -313,6 +439,9 @@ namespace Model
                     result.Add(items.ElementAt(roll));
                 if (roll2 < items.Count)
                     result.Add(items.ElementAt(roll2));
+                Item? dualItem = result.FirstOrDefault(x => x is Weapon w && w.IsDual);
+                if (dualItem != null && matchingSet)
+                    result.Add(dualItem);
                 return result;
             }
             else
@@ -322,7 +451,14 @@ namespace Model
                 {
                     return null;
                 }
-                return new List<Item>() { items.ElementAt(roll) };
+                List<Item> result = new List<Item>
+                {
+                    items.ElementAt(roll)
+                };
+                Item? dualItem = result.FirstOrDefault(x => x is Weapon w && w.IsDual);
+                if (dualItem != null && matchingSet)
+                    result.Add(dualItem);
+                return result;
             }
         }
         public (ZombieType, int, int, int, int, bool) ChooseZombieSpawnOption()
@@ -398,128 +534,20 @@ namespace Model
         {
             abomination.Move();
         }
-        private void FindSpawns()
-        {
-            foreach (var item in board.Tiles)
-            {
-                if (item.SpawnType==ZombieSpawnType.FIRST)
-                    firstSpawn = item;
-                else if (item.SpawnType==ZombieSpawnType.RED || item.SpawnType == ZombieSpawnType.GREEN|| item.SpawnType == ZombieSpawnType.BLUE)
-                    zSpawns.Add(item);
-                else if (item.IsStart)
-                    startTile = item;
-                else if(item.IsExit)
-                    exitTile = item;
-            }
-        }
-        private List<Survivor> SpawnSurvivors(List<string> survivors)
-        {
-            List<Survivor> sList= new List<Survivor>();
-            foreach (string s in survivors)
-            {
-                Survivor survivor=SurvivorFactory.GetSurvivorByName(s);
-                survivor.SetReference(this);
-                sList.Add(survivor);
-                survivor.SurvivorDied += Survivor_SurvivorDied;
-            }
-            ResetSurvivors(sList);
-            return sList;
-        }
+        #endregion
+        #region Event Handlers
         private void Survivor_SurvivorDied(object sender, string e)
         {
             Survivor s = survivors.First(x => x.Name == e);
             s.SurvivorDied -= Survivor_SurvivorDied;
             survivors.Remove(s);
         }
-        private void ResetSurvivors(List<Survivor> sList)
-        {
-            foreach (var survivor in sList)
-            {
-                survivor.Reset();
-            }
-        }
-        public void LoadGame(int number)
-        {
-            board=mapLoader.LoadMap(number);
-        }
-
-        public List<Weapon> GenerateGenericWeapons()
-        {
-            List<Weapon> weapons = new List<Weapon>
-            {
-                ItemFactory.GetGenericWeaponByName(ItemName.AXE)
-            };
-            for (int i = 0; i < survivors.Count-1; i++)
-            {
-                weapons.Add(ItemFactory.GetGenericWeapon());
-            }
-            return weapons;
-        }
-        public void DecidePlayerOrder()
-        {
-            playerOrder = survivors.OrderBy(x => random.Next()).ToList();
-            currentPlayer = playerOrder[0];
-        }
-
-        public void SetPlayerOrder(List<string>? survivorOrder)
-        {
-            if (playerOrder.Count==0)
-            {
-                List<Survivor> newOrder = new List<Survivor>();
-                foreach (var item in survivorOrder)
-                {
-                    newOrder.Add(survivors.First(x => x.Name == item));
-                }
-                playerOrder = newOrder;
-                currentPlayer = playerOrder[0];
-            }
-        }
-        public void NextPlayer()
-        {
-            if (currentPlayer==playerOrder.Last() && currentPlayer.FinishedRound)
-            {
-                IsPlayerRoundOver = true;
-                currentPlayer = null;
-            }
-            else
-            {
-                int index=playerOrder.IndexOf(currentPlayer);
-                index++;
-                currentPlayer = playerOrder[index];
-                if(currentPlayer.IsDead || currentPlayer.LeftExit)
-                    NextPlayer();
-            }
-        }
-        public int NumberOfPlayersOnTile(int tileID)
-        {
-            return SurvivorLocations.Count(x=>x==tileID);
-        }
-        public void ShiftPlayerOrder()
-        {
-            var starter = playerOrder[0];
-            playerOrder.RemoveAt(0);
-            playerOrder.Add(starter);
-            currentPlayer = playerOrder[0];
-            if(currentPlayer.IsDead || currentPlayer.LeftExit)
-                NextPlayer();
-        }
-        private bool AreThereSurvivorsLeft()
-        {
-            return survivors.Any(x => !x.IsDead);
-        }
-        public void CheckWin()
-        {
-            if (CheckWinningCondition != null && CheckWinningCondition())
-                OnGameEnded(true);
-            else if (exitTile != null && CheckWinningCondition != null && !CheckWinningCondition() && survivors.All(x => x.LeftExit))
-                OnGameEnded(false);
-            else if (!AreThereSurvivorsLeft())
-                OnGameEnded(false);
-        }
         private void OnGameEnded(bool survivorsWon)
         {
             GameOver = true;
             GameEnded.Invoke(this, survivorsWon);
         }
+        #endregion
+        #endregion
     }
 }

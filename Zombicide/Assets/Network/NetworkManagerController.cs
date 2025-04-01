@@ -1,11 +1,5 @@
-﻿using Model;
-using Model.Characters.Survivors;
-using Persistence;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -99,6 +93,8 @@ namespace Network
             // Ha minden játékos csatlakozott, indítsuk a játékot!
             if (selectedCharacters.Count == expectedPlayerCount)
             {
+                if(NetworkManager.Singleton.IsHost)
+                    UpdateSelectedMapIDClientRpc(SelectedMapID.ToString());
                 StartGameClientRpc();
             }
 
@@ -109,6 +105,12 @@ namespace Network
             // Frissítjük az összes kliens lobby képernyőjét
             string selectedCharactersString = string.Join(";", selectedCharacters.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
             UpdateLobbyClientRpc(selectedCharactersString);
+        }
+
+        [ClientRpc]
+        private void UpdateSelectedMapIDClientRpc(string mapId)
+        {
+            SelectedMapID = int.Parse(mapId);
         }
 
         [ClientRpc]

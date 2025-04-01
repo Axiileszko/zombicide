@@ -35,7 +35,7 @@ namespace Model.Characters.Survivors
             if (l)
             {
                 Actions.Add("Rearrange Items", new GameAction("Rearrange Items", 1));
-                if (tileClicked == CurrentTile && CurrentTile.IsExit)
+                if (tileClicked == CurrentTile && CurrentTile.IsExit && model.GetZombiesInPriorityOrderOnTile(tileClicked).Count == 0)
                     Actions.Add("Leave Through Exit", new GameAction("Leave Through Exit", 1));
                 if (tileClicked == CurrentTile && CanOpenDoorOnTile())
                     Actions.Add("Open Door", new GameAction("Open Door", 1));
@@ -73,7 +73,7 @@ namespace Model.Characters.Survivors
                     }
                 }
                 int distance = Board.Board.GetShortestPath(CurrentTile, tileClicked);
-                if (distance!=-1&&distance <= 2 && tileClicked!=CurrentTile && !JumpMovedAlready)
+                if (distance!=-1&&distance <= 2 && tileClicked!=CurrentTile && !JumpMovedAlready && Traits.Contains(Trait.JUMP))
                 {
                     if(SlipperyMovedAlready)
                         Actions.Add("Jump", new GameAction("Jump", amount));

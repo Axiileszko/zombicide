@@ -57,6 +57,11 @@ namespace Model.Characters.Zombies
             var destination = priority.First(x => x.Value == priority.Values.Max());
             MoveTo(destination.Key);
         }
+        public void Attack(List<Survivor> survivors)
+        {
+            survivors[0].TakeDamage(1);
+            model.CheckWin();
+        }
         private int LookUpStreet(Street street)
         {
             int seen = 0;
@@ -69,11 +74,6 @@ namespace Model.Characters.Zombies
                 }
             }
             return seen;
-        }
-        public void Attack(List<Survivor> survivors)
-        {
-            survivors[0].TakeDamage(1);
-            model.CheckWin();
         }
     }
 }
