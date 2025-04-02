@@ -4072,7 +4072,7 @@ GameObject:
   - component: {fileID: 3875134019644519388}
   - component: {fileID: 5585146322122359464}
   m_Layer: 0
-  m_Name: Door_33_24
+  m_Name: Door_32_24
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5621,7 +5621,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8290749135296145673}
   m_Layer: 0
-  m_Name: PimpW_9
+  m_Name: PimpW_13
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

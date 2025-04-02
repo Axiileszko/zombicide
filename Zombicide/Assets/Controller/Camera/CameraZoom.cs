@@ -19,6 +19,7 @@ public class CameraZoom : MonoBehaviour
     }
     void Update()
     {
+        if (CameraDrag.IsDragging) return;
         float ScrollWheelChange = Input.GetAxis("Mouse ScrollWheel");
         if (ScrollWheelChange != 0 && !HoverClickHandlerForItem.IsHovering && !HoverClickHandlerForPanel.IsHovering)
         {

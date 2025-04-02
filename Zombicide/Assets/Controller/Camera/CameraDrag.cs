@@ -9,10 +9,10 @@ public class CameraDrag : MonoBehaviour
     private Vector2 panLimitX = new Vector2(-20f, 20f);
     private Vector2 panLimitZ = new Vector2(-40f, 0f);
     private Vector3 resetCameraPosition;
-    private bool isDragging = false;
     public static HoverClickHandlerForPanel PanelHoverScript;
     [SerializeField] private List<GameObject> colliders = new List<GameObject>();
     private List<HoverClickHandlerForItem> itemHoverScripts = new List<HoverClickHandlerForItem>();
+    public static bool IsDragging { get; private set; } = false;
     void Start()
     {
         resetCameraPosition = Camera.main.transform.position;
@@ -31,9 +31,9 @@ public class CameraDrag : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             dragOrigin = Input.mousePosition;
-            isDragging = true;
+            IsDragging = true;
         }
-        if (Input.GetMouseButton(1) && isDragging && !HoverClickHandlerForItem.IsHovering && !HoverClickHandlerForPanel.IsHovering)
+        if (Input.GetMouseButton(1) && IsDragging && !HoverClickHandlerForItem.IsHovering && !HoverClickHandlerForPanel.IsHovering)
         {
             ToggleHoverScripts(false);
             Vector3 difference = dragOrigin - Input.mousePosition;
@@ -44,7 +44,7 @@ public class CameraDrag : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(1))
         {
-            isDragging = false;
+            IsDragging = false;
             timer += Time.deltaTime;
             if (timer > 10)
             {

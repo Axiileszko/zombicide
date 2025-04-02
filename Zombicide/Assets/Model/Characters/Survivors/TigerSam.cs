@@ -116,7 +116,10 @@ namespace Model.Characters.Survivors
                 case 1: action++; return;
                 case 2:
                     if (option == 1)
+                    {
                         Traits.Add(Trait.P1FMOA);
+                        FreeActions.Add("Move", new GameAction("Move", 0));
+                    }
                     else
                         Traits.Add(Trait.SNIPER);
                     return;
@@ -124,7 +127,10 @@ namespace Model.Characters.Survivors
                     if (option == 1)
                         Traits.Add(Trait.P1DMR);
                     else if (option == 2)
+                    {
                         Traits.Add(Trait.P1FCA);
+                        FreeActions.Add("Attack", new GameAction("Attack", 0));
+                    }
                     else
                         Traits.Add(Trait.SHOVE);
                     return;

@@ -118,9 +118,15 @@ namespace Model.Characters.Survivors
                 case 1: action++; return;
                 case 2:
                     if (option == 1)
+                    {
                         Traits.Add(Trait.P1FMA);
+                        FreeActions.Add("Melee Attack", new GameAction("Melee Attack", 0));
+                    }
                     else
+                    {
                         Traits.Add(Trait.P1FMOA);
+                        FreeActions.Add("Move", new GameAction("Move", 0));
+                    }
                     return;
                 case 3:
                     if (option == 1)
@@ -128,7 +134,10 @@ namespace Model.Characters.Survivors
                     else if (option == 2)
                         Traits.Add(Trait.P1DR);
                     else
+                    {
                         Traits.Add(Trait.P1FCA);
+                        FreeActions.Add("Attack", new GameAction("Attack", 0));
+                    }
                     return;
                 default: return;
             }

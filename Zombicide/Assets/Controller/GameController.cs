@@ -233,10 +233,15 @@ public class GameController : MonoBehaviour
                 newPosition.x = startX + (multiply * 1.5f);
                 newPosition.z = startZ;
             }
+            else if(multiply<5)
+            {
+                newPosition.x = startX + ((multiply - 3) * 1.5f);
+                newPosition.z = startZ - 0.7f;
+            }
             else
             {
-                newPosition.x = startX;
-                newPosition.z = startZ + ((multiply - 2) * 0.7f);
+                newPosition.x = startX + ((multiply - 5) * 1.5f);
+                newPosition.z = startZ - (2 * 0.7f);
             }
             multiply++;
         }
@@ -256,10 +261,15 @@ public class GameController : MonoBehaviour
             newPosition.x = startX + (playerCount * 1.5f);
             newPosition.z = startZ;
         }
+        else if (playerCount < 5)
+        {
+            newPosition.x = startX + ((playerCount - 3) * 1.5f);
+            newPosition.z = startZ - 0.7f;
+        }
         else
         {
-            newPosition.x = startX;
-            newPosition.z = startZ + ((playerCount - 2) * 0.7f);
+            newPosition.x = startX + ((playerCount - 5) * 1.5f);
+            newPosition.z = startZ - (2 * 0.7f);
         }
         newPosition.y = startY;
         player.transform.position = newPosition;
@@ -542,6 +552,8 @@ public class GameController : MonoBehaviour
         string[] strings = data.Split(';');
         Survivor s = SurvivorFactory.GetSurvivorByName(strings[0]);
         s.UpgradeTo(int.Parse(strings[1]), int.Parse(strings[2])+1);
+        if (s == survivor)
+            UpdatePlayerStats();
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
     public void ReceiveItemsChanged(string data)

@@ -447,12 +447,24 @@ namespace Model.Characters.Survivors
         {
             if(isMelee!= null && FreeActions.Keys.Any(x=>x.EndsWith("Attack")))
             {
-                if (isMelee=="True" && FreeActions.Keys.Contains("Melee Attack"))
-                    FreeActions.Remove("Melee Attack");
-                else if (isMelee == "False" && FreeActions.Keys.Contains("Range Attack"))
-                    FreeActions.Remove("Range Attack");
+                if (isMelee == "True")
+                {
+                    if (FreeActions.Keys.Contains("Melee Attack"))
+                        FreeActions.Remove("Melee Attack");
+                    else if (FreeActions.Keys.Contains("Attack"))
+                        FreeActions.Remove("Attack");
+                    else
+                        UsedAction += Actions[action].Cost;
+                }
                 else
-                    FreeActions.Remove("Attack");
+                {
+                    if (FreeActions.Keys.Contains("Range Attack"))
+                        FreeActions.Remove("Range Attack");
+                    else if (FreeActions.Keys.Contains("Attack"))
+                        FreeActions.Remove("Attack");
+                    else
+                        UsedAction += Actions[action].Cost;
+                }
             }
             else if (FreeActions.Keys.Contains(action))
                 FreeActions.Remove(action);

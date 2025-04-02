@@ -107,13 +107,19 @@ namespace Model.Characters.Survivors
                     if (option == 1)
                         Traits.Add(Trait.P1DC);
                     else
+                    {
                         Traits.Add(Trait.P1FRA);
+                        FreeActions.Add("Range Attack", new GameAction("Range Attack", 0));
+                    }
                     return;
                 case 3:
                     if (option == 1)
                         Traits.Add(Trait.P1DR);
                     else if (option == 2)
+                    {
                         Traits.Add(Trait.P1FCA);
+                        FreeActions.Add("Attack", new GameAction("Attack", 0));
+                    }
                     else
                         Traits.Add(Trait.P1TDRR);
                     return;

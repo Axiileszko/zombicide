@@ -118,9 +118,15 @@ namespace Model.Characters.Survivors
                 case 1: action++; return;
                 case 2:
                     if (option == 1)
+                    {
                         Traits.Add(Trait.P1FMA);
+                        FreeActions.Add("Melee Attack", new GameAction("Melee Attack", 0));
+                    }
                     else
+                    {
                         Traits.Add(Trait.P1FRA);
+                        FreeActions.Add("Range Attack", new GameAction("Range Attack", 0));
+                    }
                     return;
                 case 3:
                     if (option == 1)

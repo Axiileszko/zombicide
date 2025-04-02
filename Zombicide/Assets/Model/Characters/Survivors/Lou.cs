@@ -31,8 +31,7 @@ namespace Model.Characters.Survivors
                 FreeActions.Add("Melee Attack", new GameAction("Melee Attack", 0));
             if (Traits.Contains(Trait.P1FMOA))
                 FreeActions.Add("Move", new GameAction("Move", 0));
-            if (Traits.Contains(Trait.CHARGE))
-                FreeActions.Add("Charge", new GameAction("Charge", 0));
+            FreeActions.Add("Charge", new GameAction("Charge", 0));
         }
         public override void SetActions(MapTile tileClicked)
         {
@@ -125,13 +124,22 @@ namespace Model.Characters.Survivors
                     if (option == 1)
                         Traits.Add(Trait.P1DC);
                     else
+                    {
                         Traits.Add(Trait.P1FMA);
+                        FreeActions.Add("Melee Attack", new GameAction("Melee Attack", 0));
+                    }
                     return;
                 case 3:
                     if (option == 1)
+                    {
                         Traits.Add(Trait.P1FMOA);
+                        FreeActions.Add("Move", new GameAction("Move", 0));
+                    }
                     else if (option == 2)
+                    {
                         Traits.Add(Trait.P1FRA);
+                        FreeActions.Add("Range Attack", new GameAction("Range Attack", 0));
+                    }
                     else
                         Traits.Add(Trait.MEDIC);
                     return;

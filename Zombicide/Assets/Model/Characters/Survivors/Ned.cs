@@ -112,7 +112,10 @@ namespace Model.Characters.Survivors
                     if (option == 1)
                         Traits.Add(Trait.P1DR);
                     else
+                    {
                         Traits.Add(Trait.P1FCA);
+                        FreeActions.Add("Attack", new GameAction("Attack", 0));
+                    }
                     return;
                 case 3:
                     if (option == 1)
