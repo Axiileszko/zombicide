@@ -71,9 +71,26 @@ namespace Model.Characters.Survivors
         #endregion
         #region Methods
         #region Abstract Methods
+        /// <summary>
+        /// Returns the character's traits corresponding to the given level
+        /// </summary>
+        /// <param name="level">Number of the level</param>
+        /// <returns>List of traits</returns>
         public abstract List<string> GetTraitUpgrades(int level);
+        /// <summary>
+        /// Upgrades the character to the given level with the selected trait
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="option"></param>
         public abstract void UpgradeTo(int level, int option);
+        /// <summary>
+        /// Sets the actions that the player can perform on the given tile.
+        /// </summary>
+        /// <param name="tileClicked">Tile the player clicked</param>
         public abstract void SetActions(MapTile tileClicked);
+        /// <summary>
+        /// Sets the free actions that the player can preform.
+        /// </summary>
         public abstract void SetFreeActions();
         #endregion
         #region Query Methods
@@ -190,16 +207,28 @@ namespace Model.Characters.Survivors
         }
         #endregion
         #region Action Methods
+        /// <summary>
+        /// Moves the player to the given tile with a simple movement.
+        /// </summary>
+        /// <param name="targetTile">Tile the player wants to move to</param>
         public void Move(MapTile targetTile)
         {
             MoveTo(targetTile);
         }
+        /// <summary>
+        /// Moves the player to the given tile with a slippery movement.
+        /// </summary>
+        /// <param name="targetTile">Tile the player wants to move to</param>
         public void SlipperyMove(MapTile targetTile)
         {
             if (Traits.Contains(Trait.SLIPPERY))
                 MoveTo(targetTile);
             SlipperyMovedAlready=true;
         }
+        /// <summary>
+        /// Moves the player to the given tile with a sprint movement.
+        /// </summary>
+        /// <param name="targetTile">Tile the player wants to move to</param>
         public void SprintMove(MapTile targetTile)
         {
             if(Traits.Contains(Trait.SLIPPERY) && model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count>0 && !SlipperyMovedAlready)
@@ -208,12 +237,20 @@ namespace Model.Characters.Survivors
                 CurrentTile = targetTile;
             SprintMovedAlready = true;
         }
+        /// <summary>
+        /// Moves the player to the given tile with a charge movement.
+        /// </summary>
+        /// <param name="targetTile">Tile the player wants to move to</param>
         public void Charge(MapTile targetTile)
         {
             if (Traits.Contains(Trait.CHARGE))
                 CurrentTile = targetTile;
             ChargeMovedAlready = true;
         }
+        /// <summary>
+        /// Moves the player to the given tile with a jump movement.
+        /// </summary>
+        /// <param name="targetTile">Tile the player wants to move to</param>
         public void Jump(MapTile targetTile)
         {
             if (Traits.Contains(Trait.SLIPPERY) && model.GetZombiesInPriorityOrderOnTile(CurrentTile).Count > 0 && !SlipperyMovedAlready)
@@ -222,6 +259,14 @@ namespace Model.Characters.Survivors
                 CurrentTile = targetTile;
             JumpMovedAlready = true;
         }
+        /// <summary>
+        /// Performs an attack on the given tile.
+        /// </summary>
+        /// <param name="targetTile">Attacked tile</param>
+        /// <param name="weapon">Choice of weapon</param>
+        /// <param name="isMelee">True - Melee attack, False - Range attack</param>
+        /// <param name="throws">Dice results</param>
+        /// <param name="newPriority">If not null then the zombie priority order</param>
         public void Attack(MapTile targetTile, Weapon weapon, bool isMelee, List<int> throws, List<string>? newPriority)
         {
             if (weapon == null || !CanTargetTile(targetTile)) return;
@@ -347,12 +392,19 @@ namespace Model.Characters.Survivors
                 }
             }
         }
+        /// <summary>
+        /// The player picks up the objective.
+        /// </summary>
         public void PickUpObjective() 
         { 
             CurrentTile.PickUpObjective();//lehet kezdünk még valamit az object refel amit visszaadna
             aPoints += 5;
             ObjectiveCount++;
         }
+        /// <summary>
+        /// The player drops the given items.
+        /// </summary>
+        /// <param name="item">List of items to throw away</param>
         public void ThrowAway(Item item)
         {
             if (item.Name==ItemName.RICE || item.Name == ItemName.WATER || item.Name == ItemName.CANNEDFOOD)
@@ -360,14 +412,24 @@ namespace Model.Characters.Survivors
                 aPoints += 3;
             }
         }
+        /// <summary>
+        /// The player skips their turn.
+        /// </summary>
         public void Skip()
         {
             FinishedRound=true;
         }
+        /// <summary>
+        /// Sets the starting weapon.
+        /// </summary>
+        /// <param name="weapon">Weapon to set</param>
         public void PickGenericWeapon(Weapon weapon)
         {
             rightHand = weapon;
         }
+        /// <summary>
+        /// The player leaves the board through the exit.
+        /// </summary>
         public void LeaveThroughExit()
         {
             LeftExit = true;
@@ -376,6 +438,9 @@ namespace Model.Characters.Survivors
         }
         #endregion
         #region Modifier Methods
+        /// <summary>
+        /// Resets the data needed for the new round.
+        /// </summary>
         public void NewRound()
         {
             UsedAction = 0;
@@ -388,6 +453,11 @@ namespace Model.Characters.Survivors
             ChargeMovedAlready = false;
             JumpMovedAlready = false;
         }
+        /// <summary>
+        /// Subtracts the damage taken from the HP.
+        /// </summary>
+        /// <param name="amount">Amount of damage</param>
+        /// <returns></returns>
         public override bool TakeDamage(int amount)
         {
             hp =Math.Max(0,hp-amount);
@@ -398,6 +468,9 @@ namespace Model.Characters.Survivors
             }
             return false;
         }
+        /// <summary>
+        /// Resets the player's data to the starting state.
+        /// </summary>
         public void Reset()
         {
             CurrentTile = null;
@@ -423,6 +496,10 @@ namespace Model.Characters.Survivors
                 hp = 3;
             action = 3;
         }
+        /// <summary>
+        /// Puts the obtained items into the backpack.
+        /// </summary>
+        /// <param name="items">Recieved items</param>
         public void PutIntoBackpack(List<Item> items)
         {
             if (items.Count <= 3)
@@ -430,6 +507,11 @@ namespace Model.Characters.Survivors
                 backpack = items;
             }
         }
+        /// <summary>
+        /// Puts the obtained item into the left or right hand.
+        /// </summary>
+        /// <param name="isRightHand">True - put into right hand, False - put into left hand</param>
+        /// <param name="item"></param>
         public void PutIntoHand(bool isRightHand, Item item)
         {
             if (isRightHand)
@@ -443,6 +525,9 @@ namespace Model.Characters.Survivors
         }
         #endregion
         #region Event Handlers
+        /// <summary>
+        /// Handles the action the player performed.
+        /// </summary>
         public void OnUsedAction(string action, string? isMelee)
         {
             if(isMelee!= null && FreeActions.Keys.Any(x=>x.EndsWith("Attack")))
@@ -475,6 +560,11 @@ namespace Model.Characters.Survivors
                 FinishedRound = true;
             }
         }
+        #endregion
+        #region Invoke methods
+        /// <summary>
+        /// Invokes the player's death event.
+        /// </summary>
         private void OnSurvivorDied()
         {
             FinishedRound = true;

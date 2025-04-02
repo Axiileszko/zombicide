@@ -46,6 +46,9 @@ public class GameController : MonoBehaviour
     public static GameController Instance { get; private set; }
     #endregion
     #region Methods
+    /// <summary>
+    /// When the object is created, we subscribe and unsubscribe to the scene loading event.
+    /// </summary>
     private void Start()
     {
         if (NetworkManager.Singleton != null)
@@ -59,13 +62,16 @@ public class GameController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            //DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
     }
+    /// <summary>
+    /// Instantiate the model and load all UI elements to start the game.
+    /// </summary>
+    /// <param name="mapID">ID of the map selected by the host</param>
     private void Initialize(int mapID)
     {
         gameModel = new GameModel();
@@ -79,11 +85,11 @@ public class GameController : MonoBehaviour
         {
             gameModel.DecidePlayerOrder();
 
-            // Küldjük a sorrendet a klienseknek
+            // The host sends the predetermined player order
             string serializedOrder = string.Join(',', gameModel.PlayerOrder.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PlayerOrder, serializedOrder);
 
-            // Kezdő fegyverek küldése 
+            // The host sends the starting weapons to the players
             List<Weapon> genericW=gameModel.GenerateGenericWeapons();
             string serializedGenericW = string.Join(",", genericW.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GenericWeapon, serializedGenericW);
@@ -91,17 +97,27 @@ public class GameController : MonoBehaviour
         ShowPlayerUI();
         if(NetworkManager.Singleton.IsHost)
             StartNextTurn();
+        // Subscribe to the death event of all characters in the game
         foreach (var item in playerSelections.Values)
         {
             SurvivorFactory.GetSurvivorByName(item).SurvivorDied += GameController_SurvivorDied;
         }
     }
     #region Query Methods
+    /// <summary>
+    /// Returns the actions that the player can perform on the given tile.
+    /// </summary>
+    /// <param name="tileName">Name of the tile object the player clicked</param>
+    /// <returns>String list of the actions</returns>
     public List<string> GetAvailableActionsOnTile(string tileName)
     {
         SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).SetActions(gameModel.Board.GetTileByID(int.Parse(tileName.Substring(8))));
         return SurvivorFactory.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]).Actions.Keys.ToList();
     }
+    /// <summary>
+    /// Returns the items the player is holding that can be used to open doors.
+    /// </summary>
+    /// <returns>String list of the items</returns>
     public List<string> GetAvailableDoorOpeners()
     {
         List<string> result = new List<string>();
@@ -109,6 +125,11 @@ public class GameController : MonoBehaviour
         if (survivor.LeftHand != null && survivor.LeftHand is Weapon weapon2 && weapon2.CanOpenDoors) result.Add("Left Hand");
         return result;
     }
+    /// <summary>
+    /// Returns the attacks the player can perform on the given tile.
+    /// </summary>
+    /// <param name="tileID">ID of the tile the player clicked</param>
+    /// <returns>String list of the attacks</returns>
     public List<string> GetAvailableAttacks(string tileID)
     {
         List<string> options = survivor.GetAvailableAttacksOnTile(gameModel.Board.GetTileByID(int.Parse(tileID)));
@@ -116,6 +137,12 @@ public class GameController : MonoBehaviour
             options.Remove("Melee");
         return options;
     }
+    /// <summary>
+    /// Returns the weapons in the player's hands that match the given parameters.
+    /// </summary>
+    /// <param name="isMelee">Is the attack melee or range</param>
+    /// <param name="tileID">ID of the tile the player clicked</param>
+    /// <returns>String list of the weapons</returns>
     public List<string> GetAvailableWeapons(bool isMelee, string tileID)
     {
         List<string> result = new List<string>();
@@ -143,11 +170,18 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region UI Methods
+    /// <summary>
+    /// Loads the map prefab corresponding to the given ID.
+    /// </summary>
+    /// <param name="mapID">ID of the map that needs to be loaded</param>
     private void GenerateBoard(int mapID)
     {
         MapPrefab = Resources.Load<GameObject>($"Prefabs/Missions/Map_{mapID}");
         GameObject.Instantiate(MapPrefab);
     }
+    /// <summary>
+    /// Displays the player order for the current round.
+    /// </summary>
     private void ShowPlayerOrder()
     {
         if(charImagePrefab==null || charListContainer == null)
@@ -177,6 +211,9 @@ public class GameController : MonoBehaviour
         }
         
     }
+    /// <summary>
+    /// Displays the panel associated with the selected character.
+    /// </summary>
     private void ShowPlayerUI()
     {
         string name = playerSelections[NetworkManager.Singleton.LocalClientId];
@@ -211,6 +248,9 @@ public class GameController : MonoBehaviour
         }
         UpdatePlayerStats();
     }
+    /// <summary>
+    /// Generates the players' figurines on the starting tile.
+    /// </summary>
     private void GeneratePlayersOnBoard()
     {
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{gameModel.StartTile.Id}");
@@ -246,6 +286,11 @@ public class GameController : MonoBehaviour
             multiply++;
         }
     }
+    /// <summary>
+    /// Moves the given player's figurine to the specified tile.
+    /// </summary>
+    /// <param name="tileID">ID of the tile the object should be put to</param>
+    /// <param name="player">Object that needs to be moved</param>
     private void MovePlayerToTile(int tileID, GameObject player)
     {
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
@@ -274,6 +319,10 @@ public class GameController : MonoBehaviour
         newPosition.y = startY;
         player.transform.position = newPosition;
     }
+    /// <summary>
+    /// Updates the number and type of zombies on the given tile.
+    /// </summary>
+    /// <param name="tileID">ID of the tile the zombies should be updated on</param>
     private void UpdateZombieCanvasOnTile(int tileID)
     {
         if(zombieCanvases.ContainsKey(tileID))
@@ -306,6 +355,9 @@ public class GameController : MonoBehaviour
             zombieCanvases.Add(tileID, zc);
         }
     }
+    /// <summary>
+    /// Updates the player's data on the panel.
+    /// </summary>
     private void UpdatePlayerStats()
     {
         healthText.GetComponent<TMP_Text>().text = survivor.HP.ToString();
@@ -322,12 +374,18 @@ public class GameController : MonoBehaviour
             newAction.GetComponent<TMP_Text>().text = item.Key;
         }
     }
+    /// <summary>
+    /// Updates the map interaction lock for the current player.
+    /// </summary>
+    /// <param name="playerID">ID of the player</param>
     private void UpdateBoardForActivePlayer(ulong playerID)
     {
-        // Itt kapcsoljuk ki/be az interakciót
         bool isActive = playerID == NetworkManager.Singleton.LocalClientId;
         EnableBoardInteraction(isActive);
     }
+    /// <summary>
+    /// Updates the player's inventory.
+    /// </summary>
     private void UpdateItemSlots()
     {
         if (survivor.LeftHand == null)
@@ -349,6 +407,10 @@ public class GameController : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// Locks or unlocks map interaction based on the parameter.
+    /// </summary>
+    /// <param name="enable">If true then enable otherwise disable</param>
     public void EnableBoardInteraction(bool enable)
     {
         if (enable && isMenuOpen) return; 
@@ -363,6 +425,10 @@ public class GameController : MonoBehaviour
             }   
         }
     }
+    /// <summary>
+    /// Enables or disables clicking on doors on the map based on the parameter.
+    /// </summary>
+    /// <param name="enable">If true then enable otherwise disable</param>
     public void EnableDoors(bool enable)
     {
         isMenuOpen = true;
@@ -382,11 +448,19 @@ public class GameController : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// Handles the character of the player who has left the game.
+    /// </summary>
+    /// <param name="playerName">Name of the player who left the game</param>
     public void PlayerLeft(string playerName)
     {
         SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
         RemovePlayer(playerName);
     }
+    /// <summary>
+    /// Deletes the figurine of the given player.
+    /// </summary>
+    /// <param name="playerName">Name of the player who should be removed</param>
     public void RemovePlayer(string playerName)
     {
         if (!playerPrefabs.ContainsKey(playerName.Replace(" ", string.Empty)))
@@ -399,7 +473,11 @@ public class GameController : MonoBehaviour
         if(gameModel.CurrentPlayer==survivor && survivor.Name==playerName && !survivor.LeftExit)
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
     }
-    private void OpenSniperMenu(string data)
+    /// <summary>
+    /// Displays the priority selection window.
+    /// </summary>
+    /// <param name="data">Contains the list of zombies</param>
+    private void OpenPriorityMenu(string data)
     {
         List<Zombie> zombies = gameModel.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(data.Split(':')[0])));
         isMenuOpen = true;
@@ -433,12 +511,17 @@ public class GameController : MonoBehaviour
             else if (child.name.StartsWith("Ok"))
             {
                 child.GetComponent<Button>().onClick.AddListener(() => {
-                    OnOkSniperMenuClicked(data);
+                    OnOkPriorityMenuClicked(data);
                 });
             }
         }
         sniperMenuForS = sniper;
     }
+    /// <summary>
+    /// Displays the inventory window.
+    /// </summary>
+    /// <param name="additionalItems">New items the player got</param>
+    /// <param name="isSearch">Was the method called from a search</param>
     public void OpenInventory(List<Item>? additionalItems, bool isSearch)
     {
         isMenuOpen = true;
@@ -510,6 +593,11 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region NetworkManager Methods
+    /// <summary>
+    /// Returns the client ID associated with the given character.
+    /// </summary>
+    /// <param name="characterName">Name of the character</param>
+    /// <returns>Client ID</returns>
     private ulong? GetClientIdByCharacter(string characterName)
     {
         foreach (var entry in playerSelections)
@@ -521,17 +609,29 @@ public class GameController : MonoBehaviour
         }
         return null; // Ha nem található a karakter, visszatérünk null-lal
     }
+    /// <summary>
+    /// The client sets up the characters in the game and assigns their corresponding client IDs.
+    /// </summary>
+    /// <param name="selections">Character names and their client IDs</param>
     public void SetPlayerSelections(Dictionary<ulong, string> selections)
     {
         playerSelections = selections;
         Initialize(selectedMapID);
     }
+    /// <summary>
+    /// Sets and displays the given player order.
+    /// </summary>
+    /// <param name="serializedOrder">Player order</param>
     public void ReceivePlayerOrder(string serializedOrder)
     {
         List<string> orderedPlayers = serializedOrder.Split(',').ToList();
         gameModel.SetPlayerOrder(orderedPlayers);
         ShowPlayerOrder();
     }
+    /// <summary>
+    /// Starts the turn for the specified player.
+    /// </summary>
+    /// <param name="playerID">ID of the player</param>
     public void ReceiveTurnStart(ulong playerID)
     {
         UpdateBoardForActivePlayer(playerID);
@@ -541,12 +641,20 @@ public class GameController : MonoBehaviour
             UpdatePlayerStats();
         }
     }
+    /// <summary>
+    /// Assigns the given starting weapons to the players.
+    /// </summary>
+    /// <param name="data">Contains the list of weapons</param>
     public void ReceiveGenericWeapons(string data)
     {
         List<ItemName> weapons=data.Split(',').Select(x=>(ItemName)Enum.Parse(typeof(ItemName), x.Replace("ItemName.",""),true)).ToList();
         gameModel.GiveSurvivorsGenericWeapon(weapons);
         UpdateItemSlots();
     }
+    /// <summary>
+    /// Grants the specified trait to the given player.
+    /// </summary>
+    /// <param name="data">Contains the name of the player and the trait</param>
     public void ReceiveTraitUpgrade(string data)
     {
         string[] strings = data.Split(';');
@@ -556,6 +664,10 @@ public class GameController : MonoBehaviour
             UpdatePlayerStats();
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
+    /// <summary>
+    /// Rearranges the received items for the player given.
+    /// </summary>
+    /// <param name="data">Contains the list of items</param>
     public void ReceiveItemsChanged(string data)
     {
         string[] strings = data.Split(':');
@@ -605,6 +717,10 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
         }
     }
+    /// <summary>
+    /// Executes the specified attack.
+    /// </summary>
+    /// <param name="data">Contains the specifications of the attack</param>
     public void ReceiveAttack(string data)
     {
         //tileid:isrighthand:ismelee:prioritylist(,):survivorname:results(,)
@@ -634,9 +750,13 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
         }
     }
+    /// <summary>
+    /// Spawns the given zombies on the specified tiles.
+    /// </summary>
+    /// <param name="data">Contains the list of zombies</param>
     public void ReceiveZombieSpawns(string data)
     {
-        if(gameModel.GameOver) return;//gamemodel gameover ez nem lesz eleg
+        if(gameModel.GameOver) return;
         string[] strings = data.Split(";");
         List<(ZombieType, int, int, int, int, bool)> spawns = new List<(ZombieType, int, int, int, int, bool)>();
         foreach (string s in strings)
@@ -656,6 +776,10 @@ public class GameController : MonoBehaviour
         gameModel.ShiftPlayerOrder();
         StartNextTurn();
     }
+    /// <summary>
+    /// Spawns the given zombies inside the specified building.
+    /// </summary>
+    /// <param name="data">Contains the list of zombies and the building</param>
     public void ReceiveZombieSpawnsInBuilding(string data)
     {
         string[] strings = data.Split(":");
@@ -676,6 +800,10 @@ public class GameController : MonoBehaviour
             UpdateZombieCanvasOnTile(item.Id);
         }
     }
+    /// <summary>
+    /// Opens the inventory for given player with the recieved items or spawns walker zombies.
+    /// </summary>
+    /// <param name="data">Contains list of items and number of zombies that should be spawned</param>
     public void ReceiveSearch(string data)
     {
         string[] strings = data.Split(';');
@@ -700,6 +828,10 @@ public class GameController : MonoBehaviour
         }
         UpdateZombieCanvasOnTile(s.CurrentTile.Id);
     }
+    /// <summary>
+    /// The given player picks up the specified pimp weapon.
+    /// </summary>
+    /// <param name="data">Contains the name of the player and name of the weapon</param>
     public void ReceivePimpWeapon(string data)
     {
         string[] strings=data.Split(':');
@@ -707,6 +839,10 @@ public class GameController : MonoBehaviour
         Survivor s = SurvivorFactory.GetSurvivorByName(strings[1]);
         PickUpPimpWLocally(s,pimp);
     }
+    /// <summary>
+    /// Ends the turn for the given player and starts the next player's turn.
+    /// </summary>
+    /// <param name="data">Name of the player that finished</param>
     public void PlayerFinishedRound(string data)
     {
         SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;//beállitani a használt képességeket falsera
@@ -721,6 +857,9 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region Game Methods
+    /// <summary>
+    /// Starts the next player's turn.
+    /// </summary>
     private void StartNextTurn()
     {
         gameModel.CurrentPlayer.StartedRound = true;
@@ -731,6 +870,12 @@ public class GameController : MonoBehaviour
 
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
     }
+    /// <summary>
+    /// Opens the given door with the given weapon.
+    /// </summary>
+    /// <param name="objectName">Name of the door object</param>
+    /// <param name="weaponOption">Name of the weapon</param>
+    /// <param name="s">Player that opens the door</param>
     private void OpenDoor(string objectName, string weaponOption, Survivor s)
     {
         GameObject door = null;
@@ -773,6 +918,12 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawnInBuilding, data);
         }
     }
+    /// <summary>
+    /// The given player deducts the used action.
+    /// </summary>
+    /// <param name="action">The action used</param>
+    /// <param name="s">Player</param>
+    /// <param name="isMelee">True - Melee attack, False - Range attack, null - not attack</param>
     private void IncreaseUsedActions(string action, Survivor s, string? isMelee)
     {
         gameModel.CheckWin();
@@ -786,6 +937,12 @@ public class GameController : MonoBehaviour
             TraitController.Instance.OpenMenu(level, survivor.GetTraitUpgrades(level), OnTraitSelected);
         }
     }
+    /// <summary>
+    /// The client executes the given action locally with the given player.
+    /// </summary>
+    /// <param name="playerID">ID of the player</param>
+    /// <param name="actionName">Name of the action</param>
+    /// <param name="objectName">Name of the tile object</param>
     public void ApplyActionLocally(ulong playerID, string actionName, string objectName)
     {
         Survivor s = SurvivorFactory.GetSurvivorByName(playerSelections[playerID]);
@@ -864,6 +1021,11 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
         }
     }
+    /// <summary>
+    /// Initiates the appropriate dice roll for the given attack.
+    /// </summary>
+    /// <param name="objectName">Name of the tile object</param>
+    /// <param name="isRightHand">True - player used right hand for the attack, False - player used left hand for the attack</param>
     public void StartAttack(string objectName, bool isRightHand)
     {
         bool isMelee = AttackFlag == "Melee";
@@ -884,12 +1046,12 @@ public class GameController : MonoBehaviour
 
         if (isMelee)
         {
-            OpenSniperMenu(data);
+            OpenPriorityMenu(data);
             return;
         }
         else if((!isMelee && survivor.Traits.Contains(Trait.SNIPER))||((!isMelee)&& (weapon.Name==ItemName.SNIPERRIFLE || weapon.Name==ItemName.MILITARYSNIPERRIFLE)))
         {
-            OpenSniperMenu(data);
+            OpenPriorityMenu(data);
             return;
         }
         else 
@@ -898,6 +1060,10 @@ public class GameController : MonoBehaviour
             RollDice(data);
         }
     }
+    /// <summary>
+    /// Performs the dice roll.
+    /// </summary>
+    /// <param name="data">Contains the name of the player who attacked and the name of the weapon used</param>
     private void RollDice(string data)
     {
         string[] strings = data.Split(':');
@@ -932,6 +1098,10 @@ public class GameController : MonoBehaviour
             OnDiceResultsReady(data, results);
         }));
     }
+    /// <summary>
+    /// The host performs the search locally and then sends the result to the clients.
+    /// </summary>
+    /// <param name="s">Player who searched</param>
     private void SearchOnTile(Survivor s)
     {
         if (NetworkManager.Singleton.IsHost)
@@ -958,6 +1128,10 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
         }
     }
+    /// <summary>
+    /// The host picks up the objective locally and then sends it to the clients.
+    /// </summary>
+    /// <param name="s">Player who picked the objective</param>
     private void PickUpObjective(Survivor s)
     {
         GameObject gObject = null;
@@ -972,6 +1146,11 @@ public class GameController : MonoBehaviour
         Destroy(gObject);
         ProgressBar.UpdateFill(survivor.APoints);
     }
+    /// <summary>
+    /// The clients delete the pimp weapon that got picked up.
+    /// </summary>
+    /// <param name="s">Player who picked up the pimp weapon</param>
+    /// <param name="pimp">Pimp weapon picked up</param>
     private void PickUpPimpWLocally(Survivor s, PimpWeapon pimp)
     {
         GameObject gObject = null;
@@ -989,6 +1168,10 @@ public class GameController : MonoBehaviour
             OpenInventory(new List<Item>() { pimp },true);
         }
     }
+    /// <summary>
+    /// The host picks up the pimp weapon and then sends it to the clients.
+    /// </summary>
+    /// <param name="s">Player who picked up the pimp weapon</param>
     private void PickUpPimpW(Survivor s)
     {
         if (NetworkManager.Singleton.IsHost)
@@ -997,6 +1180,9 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PimpWeapon, $"{pimp.Name.ToString()}:{s.Name}");
         }
     }
+    /// <summary>
+    /// Resets the players for the beginning of the new turn.
+    /// </summary>
     private void NewRoundForPlayers()
     {
         foreach(var s in playerSelections.Values)
@@ -1005,6 +1191,9 @@ public class GameController : MonoBehaviour
                 SurvivorFactory.GetSurvivorByName(s).NewRound();
         }
     }
+    /// <summary>
+    /// Executes the zombies' turn.
+    /// </summary>
     private void ZombieRound()
     {
         gameModel.EndRound();
@@ -1024,6 +1213,9 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region Event Handlers
+    /// <summary>
+    /// Event handler for the player's death.
+    /// </summary>
     private void GameController_SurvivorDied(object sender, string e)
     {
         if (isSurvivorDead) return;
@@ -1034,6 +1226,9 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.SurvivorDied, e);
         }
     }
+    /// <summary>
+    /// Event handler for the end of the game.
+    /// </summary>
     private void GameModel_GameEnded(object sender, bool e)
     {
         EnableBoardInteraction(false);
@@ -1049,6 +1244,9 @@ public class GameController : MonoBehaviour
         var okButton=endPanel.transform.GetChild(1).GetComponent<Button>();
         okButton.onClick.AddListener(() => OnOkEndGameClicked());
     }
+    /// <summary>
+    /// Event handler for in-game scene loading.
+    /// </summary>
     private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
         if (sceneName == "InGameScene")
@@ -1057,6 +1255,9 @@ public class GameController : MonoBehaviour
             NetworkManagerController.Instance.SendPlayerSelectionsServerRpc();
         }
     }
+    /// <summary>
+    /// Event handler for the completion of dice roll results.
+    /// </summary>
     private void OnDiceResultsReady(string data, List<int> results)
     {
         string[] strings = data.Split(':');
@@ -1079,12 +1280,18 @@ public class GameController : MonoBehaviour
             diceRoller.RollFinished(data, results);
         }
     }
+    /// <summary>
+    /// Event handler for the player confirming the dice rolls.
+    /// </summary>
     public void OnOkRollDiceClicked(string data, List<int> results)
     {
         isMenuOpen = false;
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data += $":{string.Join(',', results)}");
     }
-    private void OnOkSniperMenuClicked(string data)
+    /// <summary>
+    /// Event handler for the player confirming the priority window.
+    /// </summary>
+    private void OnOkPriorityMenuClicked(string data)
     {
         List<string> newPriority = new List<string>();
         if (sniperMenuForS != null)
@@ -1110,6 +1317,9 @@ public class GameController : MonoBehaviour
         isMenuOpen = false;
         RollDice(data);
     }
+    /// <summary>
+    /// Event handler for the player confirming the inventory window.
+    /// </summary>
     private void OnOkInventoryClicked(bool isSearch)
     {
         cameraDrag.SetActive(true);
@@ -1143,11 +1353,17 @@ public class GameController : MonoBehaviour
         isMenuOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
     }
+    /// <summary>
+    /// Event handler for the player selecting the trait.
+    /// </summary>
     private void OnTraitSelected(int level, int option)
     {
         isMenuOpen=false;
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TraitUpgrade, $"{survivor.Name};{level};{option}");
     }
+    /// <summary>
+    /// Event handler for the player confirming the game over panel.
+    /// </summary>
     public void OnOkEndGameClicked()
     {
         if (NetworkManager.Singleton.IsHost)
