@@ -11,6 +11,9 @@ namespace Model.Characters.Zombies
     public abstract class Zombie:Character
     {
         public int Priority { get; protected set; }
+        /// <summary>
+        /// Moves the zombie to the tile determined by the algorithm.
+        /// </summary>
         public void Move()
         {
             List<Survivor> survivors = model.GetSurvivorsOnTile(CurrentTile);
@@ -57,11 +60,20 @@ namespace Model.Characters.Zombies
             var destination = priority.First(x => x.Value == priority.Values.Max());
             MoveTo(destination.Key);
         }
+        /// <summary>
+        /// Attacks the first survivor of the list given
+        /// </summary>
+        /// <param name="survivors">List of survivors</param>
         public void Attack(List<Survivor> survivors)
         {
             survivors[0].TakeDamage(1);
             model.CheckWin();
         }
+        /// <summary>
+        /// Returns the amount of survivors seen by the zombie
+        /// </summary>
+        /// <param name="street">The street the zombie is on</param>
+        /// <returns>Amount of survivors seen</returns>
         private int LookUpStreet(Street street)
         {
             int seen = 0;

@@ -65,14 +65,29 @@ namespace Model
         #endregion
         #region Methods
         #region Query Methods
+        /// <summary>
+        /// Returns the amount of survivors on the given tile
+        /// </summary>
+        /// <param name="tileID">ID of the tile</param>
+        /// <returns>Amount of survivors on tile</returns>
         public int NumberOfPlayersOnTile(int tileID)
         {
             return SurvivorLocations.Count(x=>x==tileID);
         }
+        /// <summary>
+        /// Returns the survivor's reference by their name
+        /// </summary>
+        /// <param name="name">Name of the survivor</param>
+        /// <returns>Survivor</returns>
         public Survivor GetSurvivorByName(string name)
         {
             return survivors.First(x => x.Name == name);
         }
+        /// <summary>
+        /// Returns the zombies in priority order on the tile given
+        /// </summary>
+        /// <param name="mapTile">Tile</param>
+        /// <returns>List of zombies in priority order</returns>
         public List<Zombie> GetZombiesInPriorityOrderOnTile(MapTile mapTile)
         {
             List<Zombie> zombiesOnTile = new List<Zombie>();
@@ -83,6 +98,12 @@ namespace Model
             }
             return zombiesOnTile.OrderBy(x => x.Priority).ToList();
         }
+        /// <summary>
+        /// Returns the given zombie's index within the given list
+        /// </summary>
+        /// <param name="z">Zombie</param>
+        /// <param name="order">Priority order</param>
+        /// <returns></returns>
         private static int GetPriorityIndex(Zombie z, List<string> order)
         {
             string typeName = z.GetType().Name;
@@ -92,6 +113,11 @@ namespace Model
 
             return order.IndexOf(typeName);
         }
+        /// <summary>
+        /// Returns the list of survivors on the given tile
+        /// </summary>
+        /// <param name="mapTile">Tile</param>
+        /// <returns>List of survivors</returns>
         public List<Survivor> GetSurvivorsOnTile(MapTile mapTile)
         {
             List<Survivor> survivorsOnTile = new List<Survivor>();
@@ -104,6 +130,11 @@ namespace Model
         }
         #endregion
         #region New Game Methods
+        /// <summary>
+        /// Starts the game
+        /// </summary>
+        /// <param name="survivors">List of survivors that will play the game</param>
+        /// <param name="mapID">ID of the chosen map</param>
         public void StartGame(List<string> survivors, int mapID)
         {
             IsPlayerRoundOver = false;
@@ -117,10 +148,17 @@ namespace Model
             FindSpawns();
             MovePlayersToSpawn();
         }
+        /// <summary>
+        /// Loads the map by ID using MapLoader
+        /// </summary>
+        /// <param name="number">ID of the map</param>
         public void LoadGame(int number)
         {
             board=mapLoader.LoadMap(number);
         }
+        /// <summary>
+        /// Ending the players' round and starting the zombies' round 
+        /// </summary>
         public void EndRound()
         {
             //jatekosok itt jonnek
@@ -129,6 +167,10 @@ namespace Model
             ClearNoiseCounters();
             UpdateDangerLevel();
         }
+        /// <summary>
+        /// Gives every survivor their start weapon
+        /// </summary>
+        /// <param name="weapons">List of start weapons</param>
         public void GiveSurvivorsGenericWeapon(List<ItemName> weapons)
         {
             if(survivors.Count != weapons.Count) return;
@@ -137,6 +179,9 @@ namespace Model
                 survivors[i].PickGenericWeapon(ItemFactory.GetGenericWeaponByName(weapons[i]));
             }
         }
+        /// <summary>
+        /// Moves the players to the start tile
+        /// </summary>
         private void MovePlayersToSpawn()
         {
             foreach (var item in survivors)
@@ -147,12 +192,18 @@ namespace Model
             if (building != null)
                 building.OpenBuilding();
         }
+        /// <summary>
+        /// Generates all the items using ItemFactory
+        /// </summary>
         private void GenerateItems()
         {
             items = ItemFactory.CreateItems();
             ItemFactory.CreatePimpWeapons();
             ItemFactory.CreateGenericWeapons();
         }
+        /// <summary>
+        /// Finds all the zombie spawn locations, exit and start location
+        /// </summary>
         private void FindSpawns()
         {
             foreach (var item in board.Tiles)
@@ -167,6 +218,11 @@ namespace Model
                     exitTile = item;
             }
         }
+        /// <summary>
+        /// Instantiates all the survivors
+        /// </summary>
+        /// <param name="survivors">List of survivors</param>
+        /// <returns></returns>
         private List<Survivor> SpawnSurvivors(List<string> survivors)
         {
             List<Survivor> sList= new List<Survivor>();
@@ -180,6 +236,10 @@ namespace Model
             ResetSurvivors(sList);
             return sList;
         }
+        /// <summary>
+        /// Resets every survivor to their beginning state
+        /// </summary>
+        /// <param name="sList">List of survivors</param>
         private void ResetSurvivors(List<Survivor> sList)
         {
             foreach (var survivor in sList)
@@ -187,6 +247,10 @@ namespace Model
                 survivor.Reset();
             }
         }
+        /// <summary>
+        /// Generates all the start weapons using ItemFactory
+        /// </summary>
+        /// <returns></returns>
         public List<Weapon> GenerateGenericWeapons()
         {
             List<Weapon> weapons = new List<Weapon>
@@ -199,11 +263,18 @@ namespace Model
             }
             return weapons;
         }
+        /// <summary>
+        /// Determines the player order for the game
+        /// </summary>
         public void DecidePlayerOrder()
         {
             playerOrder = survivors.OrderBy(x => random.Next()).ToList();
             currentPlayer = playerOrder[0];
         }
+        /// <summary>
+        /// Sets the player order to the given order
+        /// </summary>
+        /// <param name="survivorOrder"></param>
         public void SetPlayerOrder(List<string>? survivorOrder)
         {
             if (playerOrder.Count==0)
@@ -219,6 +290,11 @@ namespace Model
         }
         #endregion
         #region New Round Methods
+        /// <summary>
+        /// Opens the building corresponding to the given tile connection
+        /// </summary>
+        /// <param name="connection">Tile connection</param>
+        /// <returns>Whether zombies should spawn or not</returns>
         public bool BuildingOpened(TileConnection connection)
         {
             Building building = board.GetBuildingByTile(connection.Destination.Id);
@@ -229,6 +305,9 @@ namespace Model
             }
             return false;
         }
+        /// <summary>
+        /// 
+        /// </summary>
         private void UpdateDangerLevel()
         {
             if (survivors.Any(x => x.APoints >= 43))
@@ -249,6 +328,9 @@ namespace Model
             else
                 dangerLevel = 0;
         }
+        /// <summary>
+        /// 
+        /// </summary>
         private void ClearNoiseCounters()
         {
             foreach (var item in board.Tiles)
@@ -256,6 +338,9 @@ namespace Model
                 item.NoiseCounter = 0;
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
         private void UpdateNoiseCounters()
         {
             foreach (var item in survivors)
@@ -264,6 +349,9 @@ namespace Model
                     item.CurrentTile.NoiseCounter++;
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
         public void NextPlayer()
         {
             if (currentPlayer==playerOrder.Last() && currentPlayer.FinishedRound)
@@ -280,6 +368,9 @@ namespace Model
                     NextPlayer();
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
         public void ShiftPlayerOrder()
         {
             var starter = playerOrder[0];

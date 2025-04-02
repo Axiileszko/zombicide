@@ -293,12 +293,13 @@ public class GameController : MonoBehaviour
     /// <param name="player">Object that needs to be moved</param>
     private void MovePlayerToTile(int tileID, GameObject player)
     {
+        RearrangePlayersOnTile(tileID, player.gameObject.name.Replace("(Clone)",""));
         Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
         BoxCollider collider = tile.GetComponent<BoxCollider>();
         float startX=collider.transform.position.x-2f;
         float startZ=collider.transform.position.z + 0.5f;
         float startY = 2f; //ez mindig marad
-        int playerCount = gameModel.NumberOfPlayersOnTile(tileID);
+        int playerCount = gameModel.NumberOfPlayersOnTile(tileID)-1;
         Vector3 newPosition = player.transform.position;
 
         if (playerCount < 3)
@@ -318,6 +319,46 @@ public class GameController : MonoBehaviour
         }
         newPosition.y = startY;
         player.transform.position = newPosition;
+    }
+    /// <summary>
+    /// Rearranges the players that are already on the tile
+    /// </summary>
+    /// <param name="tileID">ID of the tile</param>
+    /// <param name="steppingPlayer">Player who wants to move</param>
+    private void RearrangePlayersOnTile(int tileID, string steppingPlayer)
+    {
+        List<string> list = gameModel.GetSurvivorsOnTile(gameModel.Board.GetTileByID(tileID)).Select(x=>x.Name).ToList();
+        list.Remove(steppingPlayer);
+        if (list.Count == 0) return;
+        Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
+        BoxCollider collider = tile.GetComponent<BoxCollider>();
+        float startX = collider.transform.position.x - 2f;
+        float startZ = collider.transform.position.z + 0.5f;
+        float startY = 2f;
+        Vector3 newPosition = new Vector3();
+        newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
+        int multiply = 1;
+        foreach (string s in list)
+        {
+            GameObject player = playerPrefabs[s.Replace(" ", string.Empty)];
+            player.transform.position = newPosition;
+            if (multiply < 3)
+            {
+                newPosition.x = startX + (multiply * 1.5f);
+                newPosition.z = startZ;
+            }
+            else if (multiply < 5)
+            {
+                newPosition.x = startX + ((multiply - 3) * 1.5f);
+                newPosition.z = startZ - 0.7f;
+            }
+            else
+            {
+                newPosition.x = startX + ((multiply - 5) * 1.5f);
+                newPosition.z = startZ - (2 * 0.7f);
+            }
+            multiply++;
+        }
     }
     /// <summary>
     /// Updates the number and type of zombies on the given tile.
