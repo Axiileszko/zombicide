@@ -4,6 +4,7 @@ using Model.Characters.Survivors;
 using Model.Characters.Zombies;
 using Network;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -14,6 +15,7 @@ using UnityEngine.InputSystem.HID;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class GameController : MonoBehaviour
 {
@@ -170,6 +172,38 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region UI Methods
+    private void DestroyDoorWithTween(GameObject door, GameObject player)
+    {
+        Vector3 fallDirection = (door.transform.position - player.transform.position).normalized;
+        Quaternion targetRotation;
+
+        // Ha az ajtó függőleges (|), akkor oldalra dőljön (X tengelyen forog)
+        if (Mathf.Abs(door.transform.right.x) > Mathf.Abs(door.transform.right.z))
+        {
+            targetRotation = Quaternion.Euler(0, 20, 0);
+        }
+        else // Ha az ajtó vízszintes (--), akkor előre/hátra dőljön (Z tengelyen forog)
+        {
+            targetRotation = Quaternion.Euler(0,20, 0);
+        }
+
+        // Eldőlés + hátralökődés animáció
+        door.transform.DOMove(door.transform.position + fallDirection * 1.5f, 0.5f)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+                door.transform.DORotateQuaternion(targetRotation, 0.5f)
+                .SetEase(Ease.OutQuad)
+                .OnComplete(() => Destroy(door)));
+
+    }
+    /// <summary>
+    /// Destroyes the given object with animation
+    /// </summary>
+    /// <param name="obj">Gameobject that will be destroyed</param>
+    public void DestroyWithTween(GameObject obj)
+    {
+        obj.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack).OnComplete(() => Destroy(obj));
+    }
     /// <summary>
     /// Loads the map prefab corresponding to the given ID.
     /// </summary>
@@ -318,7 +352,8 @@ public class GameController : MonoBehaviour
             newPosition.z = startZ - (2 * 0.7f);
         }
         newPosition.y = startY;
-        player.transform.position = newPosition;
+        //player.transform.position = newPosition;
+        player.transform.DOMove(newPosition, 0.5f).SetEase(Ease.OutQuad);
     }
     /// <summary>
     /// Rearranges the players that are already on the tile
@@ -341,7 +376,8 @@ public class GameController : MonoBehaviour
         foreach (string s in list)
         {
             GameObject player = playerPrefabs[s.Replace(" ", string.Empty)];
-            player.transform.position = newPosition;
+            //player.transform.position = newPosition;
+            player.transform.DOMove(newPosition, 0.5f).SetEase(Ease.OutQuad);
             if (multiply < 3)
             {
                 newPosition.x = startX + (multiply * 1.5f);
@@ -939,6 +975,7 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
         else
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
+        //DestroyDoorWithTween(door, playerPrefabs[s.Name.Replace(" ", string.Empty)]);
         Destroy(door);
         EnableDoors(false);
         isMenuOpen = false;
@@ -1184,7 +1221,7 @@ public class GameController : MonoBehaviour
             }
         }
         s.PickUpObjective();
-        Destroy(gObject);
+        DestroyWithTween(gObject);
         ProgressBar.UpdateFill(survivor.APoints);
     }
     /// <summary>
@@ -1203,7 +1240,7 @@ public class GameController : MonoBehaviour
             }
         }
         s.CurrentTile.PickUpPimpWeapon();
-        Destroy(gObject);
+        DestroyWithTween(gObject);
         if (survivor == s)
         {
             OpenInventory(new List<Item>() { pimp },true);
