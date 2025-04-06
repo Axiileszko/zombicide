@@ -44,11 +44,10 @@ public class MenuController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            //DontDestroyOnLoad(gameObject); // Ezt akkor használd, ha a scene váltás miatt veszhet el
         }
         else
         {
-            Destroy(gameObject); // Ha több példány jön létre, töröljük a másodikat
+            Destroy(gameObject);
         }
     }
     public void ShowHostGame()

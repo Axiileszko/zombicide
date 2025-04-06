@@ -16,6 +16,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using DG.Tweening;
+using Assets.Controller;
 
 public class GameController : MonoBehaviour
 {
@@ -814,7 +815,31 @@ public class GameController : MonoBehaviour
             foreach (var item in strings[5].Split(',').ToList())
                 throws.Add(int.Parse(item));
         }
+        else
+        {
+            Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{strings[0]}");
+            BoxCollider collider = tile.GetComponent<BoxCollider>();
+            float startX = collider.transform.position.x - 0.8f;
+            float startZ = collider.transform.position.z - 1f;
+            float startY = 1.8f;
+            Vector3 newPosition = new Vector3();
+            newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
+            AnimationController.Instance.ShowPopupSkull(newPosition);
+        }
+        int zombieCount = gameModel.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(strings[0]))).Count;
         s.Attack(gameModel.Board.GetTileByID(int.Parse(strings[0])), weapon, bool.Parse(strings[2]), throws, strings[3].Split(',').ToList());
+        int newZombieCount = gameModel.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(strings[0]))).Count;
+        if (newZombieCount < zombieCount)
+        {
+            Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{strings[0]}");
+            BoxCollider collider = tile.GetComponent<BoxCollider>();
+            float startX = collider.transform.position.x - 0.8f;
+            float startZ = collider.transform.position.z - 1f;
+            float startY = 1.8f;
+            Vector3 newPosition = new Vector3();
+            newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
+            AnimationController.Instance.ShowPopupSkull(newPosition);
+        }
         UpdateZombieCanvasOnTile(int.Parse(strings[0]));
         if (survivor.Name == s.Name)
             IncreaseUsedActions("Attack", s, strings[2]);
@@ -975,8 +1000,8 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
         else
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
-        //DestroyDoorWithTween(door, playerPrefabs[s.Name.Replace(" ", string.Empty)]);
-        Destroy(door);
+        DestroyDoorWithTween(door, playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+        //Destroy(door);
         EnableDoors(false);
         isMenuOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
@@ -1205,6 +1230,7 @@ public class GameController : MonoBehaviour
             }
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
         }
+        AnimationController.Instance.ShowPopupSearch(playerPrefabs[s.Name.Replace(" ", string.Empty)].transform.position);
     }
     /// <summary>
     /// The host picks up the objective locally and then sends it to the clients.
