@@ -173,6 +173,10 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region UI Methods
+    /// <summary>
+    /// Animates the door gameobject before destroying it.
+    /// </summary>
+    /// <param name="door">Door that was clicked</param>
     private void DestroyDoorWithTween(GameObject door)
     {
         door.transform.DORotate(new Vector3(0, 90, 0), 1f, RotateMode.WorldAxisAdd)
@@ -513,7 +517,8 @@ public class GameController : MonoBehaviour
     /// <param name="playerName">Name of the player who left the game</param>
     public void PlayerLeft(string playerName)
     {
-        SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
+        if(!SurvivorFactory.GetSurvivorByName(playerName).IsDead)
+            SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
         RemovePlayer(playerName);
     }
     /// <summary>
