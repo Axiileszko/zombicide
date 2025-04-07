@@ -173,29 +173,10 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #region UI Methods
-    private void DestroyDoorWithTween(GameObject door, GameObject player)
+    private void DestroyDoorWithTween(GameObject door)
     {
-        Vector3 fallDirection = (door.transform.position - player.transform.position).normalized;
-        Quaternion targetRotation;
-
-        // Ha az ajtó függőleges (|), akkor oldalra dőljön (X tengelyen forog)
-        if (Mathf.Abs(door.transform.right.x) > Mathf.Abs(door.transform.right.z))
-        {
-            targetRotation = Quaternion.Euler(0, 20, 0);
-        }
-        else // Ha az ajtó vízszintes (--), akkor előre/hátra dőljön (Z tengelyen forog)
-        {
-            targetRotation = Quaternion.Euler(0,20, 0);
-        }
-
-        // Eldőlés + hátralökődés animáció
-        door.transform.DOMove(door.transform.position + fallDirection * 1.5f, 0.5f)
-            .SetEase(Ease.OutQuad)
-            .OnComplete(() =>
-                door.transform.DORotateQuaternion(targetRotation, 0.5f)
-                .SetEase(Ease.OutQuad)
-                .OnComplete(() => Destroy(door)));
-
+        door.transform.DORotate(new Vector3(0, 90, 0), 1f, RotateMode.WorldAxisAdd)
+            .OnComplete(() => Destroy(door));
     }
     /// <summary>
     /// Destroyes the given object with animation
@@ -518,7 +499,7 @@ public class GameController : MonoBehaviour
                 {
                     if (int.Parse(subChild.name.Substring(5).Split('_')[0])==survivor.CurrentTile.Id || int.Parse(subChild.name.Substring(5).Split('_')[1]) == survivor.CurrentTile.Id)
                     {
-                        var collider = subChild.GetComponent<BoxCollider>();
+                        var collider = subChild.GetChild(0).GetComponent<BoxCollider>();
                         if (collider != null)
                             collider.enabled = enable;
                     }
@@ -1000,8 +981,7 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand);
         else
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand);
-        DestroyDoorWithTween(door, playerPrefabs[s.Name.Replace(" ", string.Empty)]);
-        //Destroy(door);
+        DestroyDoorWithTween(door);
         EnableDoors(false);
         isMenuOpen = false;
         EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
