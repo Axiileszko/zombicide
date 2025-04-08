@@ -19,8 +19,6 @@ public class TileClickHandler : MonoBehaviour
             Camera.main,
             out anchoredPosition
         );
-        anchoredPosition.x += 45;
-        anchoredPosition.y -= 85;
         List<string> availableActions = GameController.Instance.GetAvailableActionsOnTile(gameObject.name);
         availableActions.Add("Skip");
         availableActions.Add("Cancel");
@@ -46,8 +44,6 @@ public class TileClickHandler : MonoBehaviour
                     Camera.main,
                     out anchoredPosition
                 );
-                anchoredPosition.x += 45;
-                anchoredPosition.y -= 85;
                 ContextMenuController.Instance.OpenMenu(anchoredPosition, GameController.Instance.GetAvailableAttacks(gameObject.name.Substring(8)), OnAttackOptionSelected); return;
             default:
                 break;
@@ -74,8 +70,6 @@ public class TileClickHandler : MonoBehaviour
             Camera.main,
             out anchoredPosition
         );
-        anchoredPosition.x += 45;
-        anchoredPosition.y -= 85;
         ContextMenuController.Instance.OpenMenu(anchoredPosition, wOptions, OnWeaponOptionSelected); return;
     }
 

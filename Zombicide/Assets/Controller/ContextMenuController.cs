@@ -29,30 +29,28 @@ public class ContextMenuController : MonoBehaviour
         currentMenu.transform.localPosition = position;
 
         // Ellenõrizzük a menü magasságát
-        float menuHeight = 380;
+        float scaleFactor = 3.2f;
+        Debug.Log("scale"+scaleFactor);
+        float menuHeight = (float)(options.Count*3.7)+2f;
+        Debug.Log("height"+menuHeight);
         float menuTop = position.y;
         float screenHeight = Screen.height;
+        Debug.Log("y"+menuTop);
+        Debug.Log("screen" + screenHeight);
 
-        float difference = (screenHeight - menuHeight) - (Math.Abs(menuTop) + menuHeight);
-        if (difference < 0)
+        float difference = (225 - menuHeight*scaleFactor) - (Math.Abs(menuTop) + menuHeight*scaleFactor);
+        Debug.Log(difference);
+        if (difference < 0 && menuTop<0)
         {
-            position.y +=Math.Abs(difference);
+            position.y +=Math.Abs(difference)+ options.Count + 2f;
             currentMenu.transform.localPosition = position;
         }
 
         currentMenus.Add(currentMenu);
 
-        VerticalLayoutGroup layout = null;
-        foreach (Transform child in currentMenu.transform)
-        {
-            layout=child.GetComponent<VerticalLayoutGroup>();
-            if (layout != null)
-                break;
-        }
-        // Menü opciók dinamikus hozzáadása
         foreach (var option in options)
         {
-            GameObject button = Instantiate(contextMenuButtonPrefab, layout.transform);
+            GameObject button = Instantiate(contextMenuButtonPrefab, currentMenu.transform);
             button.GetComponentInChildren<TMP_Text>().text = option;
             button.GetComponent<Button>().onClick.AddListener(() => {
                 onOptionSelected(option);
