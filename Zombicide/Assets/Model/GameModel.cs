@@ -9,38 +9,39 @@ using System.Diagnostics;
 
 namespace Model
 {
+    #nullable enable
     public class GameModel
     {
         #region Fields
-        private Board.Board board;
+        private Board.Board? board;
         private List<Survivor> survivors = new List<Survivor>();
         private List<Zombie> zombies = new List<Zombie>();
         private List<Item> items = new List<Item>();
-        private Survivor currentPlayer;
+        private Survivor? currentPlayer;
         private List<Survivor> playerOrder = new List<Survivor>();
-        private MapTile firstSpawn=null;
-        private MapTile exitTile=null;
+        private MapTile? firstSpawn=null;
+        private MapTile? exitTile=null;
         private List<MapTile> zSpawns=new List<MapTile>();
-        private MapTile startTile=null;
+        private MapTile? startTile=null;
         private int dangerLevel;
         private bool hasAbomination;
-        private Zombie abomination = null;
+        private Zombie? abomination = null;
         private System.Random random=new System.Random();
         private MapLoader mapLoader;
         #endregion
         #region Properties
-        public event EventHandler<bool> GameEnded;
+        public event EventHandler<bool>? GameEnded;
         public bool GameOver {  get; private set; }=false;
         public bool IsPlayerRoundOver { get; set; } = false;
-        public Zombie Abomination { get {  return abomination; } }
+        public Zombie? Abomination { get {  return abomination; } }
         public int SpawnCount { get {  return zSpawns.Count+1; } }
-        public MapTile ExitTile { get { return exitTile; } }
-        public Board.Board Board { get { return board; } }
+        public MapTile? ExitTile { get { return exitTile; } }
+        public Board.Board Board { get { return board!; } }
         public List<Survivor> PlayerOrder { get { return playerOrder; } }
-        public Survivor CurrentPlayer { get { return currentPlayer; } }
-        public MapTile StartTile { get { return startTile; } }
+        public Survivor? CurrentPlayer { get { return currentPlayer; } }
+        public MapTile StartTile { get { return startTile!; } }
         public delegate bool WinningConditionDelegate();
-        public WinningConditionDelegate CheckWinningCondition;
+        public WinningConditionDelegate? CheckWinningCondition;
         public List<int> SurvivorLocations {  get 
             {
                 List<int> locations = new List<int>();
@@ -188,7 +189,7 @@ namespace Model
             {
                 item.MoveTo(startTile);
             }
-            Building building = board.GetBuildingByTile(startTile.Id);
+            Building building = board!.GetBuildingByTile(startTile!.Id);
             if (building != null)
                 building.OpenBuilding();
         }
@@ -206,7 +207,7 @@ namespace Model
         /// </summary>
         private void FindSpawns()
         {
-            foreach (var item in board.Tiles)
+            foreach (var item in board!.Tiles)
             {
                 if (item.SpawnType==ZombieSpawnType.FIRST)
                     firstSpawn = item;
@@ -280,7 +281,7 @@ namespace Model
             if (playerOrder.Count==0)
             {
                 List<Survivor> newOrder = new List<Survivor>();
-                foreach (var item in survivorOrder)
+                foreach (var item in survivorOrder!)
                 {
                     newOrder.Add(survivors.First(x => x.Name == item));
                 }
@@ -297,7 +298,7 @@ namespace Model
         /// <returns>Whether zombies should spawn or not</returns>
         public bool BuildingOpened(TileConnection connection)
         {
-            Building building = board.GetBuildingByTile(connection.Destination.Id);
+            Building building = board!.GetBuildingByTile(connection.Destination.Id);
             if (building != null && !building.IsOpened)
             {
                 building.OpenBuilding();
@@ -333,7 +334,7 @@ namespace Model
         /// </summary>
         private void ClearNoiseCounters()
         {
-            foreach (var item in board.Tiles)
+            foreach (var item in board!.Tiles)
             {
                 item.NoiseCounter = 0;
             }
@@ -361,7 +362,7 @@ namespace Model
             }
             else
             {
-                int index=playerOrder.IndexOf(currentPlayer);
+                int index=playerOrder.IndexOf(currentPlayer!);
                 index++;
                 currentPlayer = playerOrder[index];
                 if(currentPlayer.IsDead || currentPlayer.LeftExit)
@@ -475,15 +476,15 @@ namespace Model
                     item.Move();
             }
         }
-        public MapTile FindNextStepToNoisiest(MapTile start)
+        public MapTile? FindNextStepToNoisiest(MapTile start)
         {
             //Megkeressük a leghangosabb mezõt
-            MapTile target = board.Tiles.OrderByDescending(t => t.NoiseCounter).FirstOrDefault();
+            MapTile target = board!.Tiles.OrderByDescending(t => t.NoiseCounter).FirstOrDefault();
             if (target == null || target == start) return null;
 
             //Dijkstra algoritmus
             Queue<MapTile> queue = new Queue<MapTile>();
-            Dictionary<MapTile, MapTile> cameFrom = new Dictionary<MapTile, MapTile>(); // Honnan jöttünk egy mezõre
+            Dictionary<MapTile, MapTile?> cameFrom = new Dictionary<MapTile, MapTile?>(); // Honnan jöttünk egy mezõre
             HashSet<MapTile> visited = new HashSet<MapTile>(); // Már bejárt mezõk
 
             queue.Enqueue(start);
@@ -514,12 +515,12 @@ namespace Model
             MapTile step = target;
             while (cameFrom[step] != start) // Visszakövetjük az utat a kezdõ mezõig
             {
-                step = cameFrom[step];
+                step = cameFrom[step]!;
             }
 
             return step; // Az elsõ lépés a start mezõ szomszédja
         }
-        public List<Item> Search(MapTile tile, bool useFlashlight, bool matchingSet)
+        public List<Item>? Search(MapTile tile, bool useFlashlight, bool matchingSet)
         {
             if (useFlashlight)
             {
@@ -572,7 +573,7 @@ namespace Model
         }
         public void SpawnZombies(List<(ZombieType, int, int, int, int, bool)> spawns)
         {
-            SpawnZombiesOnTile(spawns[0], firstSpawn);
+            SpawnZombiesOnTile(spawns[0], firstSpawn!);
             int i = 1;
             foreach (var item in zSpawns)
             {
@@ -623,7 +624,7 @@ namespace Model
         }
         private void MoveAbomination()
         {
-            abomination.Move();
+            abomination!.Move();
         }
         #endregion
         #region Event Handlers
@@ -636,7 +637,7 @@ namespace Model
         private void OnGameEnded(bool survivorsWon)
         {
             GameOver = true;
-            GameEnded.Invoke(this, survivorsWon);
+            GameEnded!.Invoke(this, survivorsWon);
         }
         #endregion
         #endregion

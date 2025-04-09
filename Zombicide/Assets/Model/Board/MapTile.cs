@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Model.Board
 {
+    #nullable enable
     public enum TileType
     {
         DARKROOM,ROOM,STREET
@@ -66,13 +67,13 @@ namespace Model.Board
         {
             var pimpWeapon = PimpWeapon;
             PimpWeapon = null;
-            return pimpWeapon;
+            return pimpWeapon!;
         }
         public Objective PickUpObjective()
         {
             var obj = Objective;
             Objective = null;
-            return obj;
+            return obj!;
         }
     }
 }

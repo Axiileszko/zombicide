@@ -218,7 +218,7 @@ public class MenuController : MonoBehaviour
     }
     public void OnJoinButtonPressed()
     {
-        characterDropdown.gameObject.SetActive(false);
+        characterDropdownForClient.gameObject.SetActive(false);
         characterLabel.gameObject.SetActive(false);
         characterImageForClient.gameObject.SetActive(false);
         joinButton.enabled = false;

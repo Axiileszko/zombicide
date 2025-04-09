@@ -10,6 +10,7 @@ using Unity.Services.Matchmaker.Models;
 
 namespace Model.Characters.Survivors
 {
+    #nullable enable
     public enum Trait
     {
         SLIPPERY, MEDIC, LUCKY, SNIPER, SPRINT,JUMP,CHARGE, SHOVE, AMBIDEXTROUS, MATCHINGSET,
@@ -36,10 +37,10 @@ namespace Model.Characters.Survivors
         protected bool isKid;
         protected int level = 0;
         protected List<Item> backpack = new List<Item>();
-        protected Item rightHand;
-        protected Item leftHand;
+        protected Item? rightHand;
+        protected Item? leftHand;
         protected bool isDead;
-        public event EventHandler<string> SurvivorDied;
+        public event EventHandler<string>? SurvivorDied;
         #endregion
         #region Properties
         public int ObjectiveCount {  get; protected set; }
@@ -55,8 +56,8 @@ namespace Model.Characters.Survivors
         public bool IsDead { get { return isDead; } set { isDead = value; if (value) OnSurvivorDied(); } }
         public int APoints { get {  return aPoints; } }
         public string Name { get { return name; } }
-        public Item RightHand { get { return rightHand; } }
-        public Item LeftHand { get { return leftHand; } }
+        public Item? RightHand { get { return rightHand; } }
+        public Item? LeftHand { get { return leftHand; } }
         public List<Item> BackPack { get { return backpack; } }
         public Dictionary<string, GameAction> Actions { get; protected set; } = new Dictionary<string, GameAction>();
         public Dictionary<string, GameAction> FreeActions { get; protected set; } = new Dictionary<string, GameAction>();
@@ -178,10 +179,10 @@ namespace Model.Characters.Survivors
                 }
                 if (targetTile == CurrentTile)
                 {
-                    if ((isLeftRange && ((Weapon)leftHand).CanBeUsedAsMelee || (isRightRange && ((Weapon)rightHand).CanBeUsedAsMelee))) result.Add("Range");
+                    if ((isLeftRange && ((Weapon)leftHand!).CanBeUsedAsMelee || (isRightRange && ((Weapon)rightHand!).CanBeUsedAsMelee))) result.Add("Range");
                 }
                 else
-                    if ((isLeftRange && distance <= ((Weapon)leftHand).Range) || (isRightRange && distance <= ((Weapon)rightHand).Range)) result.Add("Range");
+                    if ((isLeftRange && distance <= ((Weapon)leftHand!).Range) || (isRightRange && distance <= ((Weapon)rightHand!).Range)) result.Add("Range");
             }
             return result;
         }
@@ -512,7 +513,7 @@ namespace Model.Characters.Survivors
         /// </summary>
         /// <param name="isRightHand">True - put into right hand, False - put into left hand</param>
         /// <param name="item"></param>
-        public void PutIntoHand(bool isRightHand, Item item)
+        public void PutIntoHand(bool isRightHand, Item? item)
         {
             if (isRightHand)
             {
@@ -568,7 +569,7 @@ namespace Model.Characters.Survivors
         private void OnSurvivorDied()
         {
             FinishedRound = true;
-            SurvivorDied.Invoke(this, name);
+            SurvivorDied!.Invoke(this, name);
         }
         #endregion
         #endregion

@@ -33,7 +33,7 @@ public class RelayManager : MonoBehaviour
         string code = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
         codeText.text = code;
 
-        var relayServerData = hostAllocation.ToRelayServerData("dtls"); //Datagram Transport Layer Security
+        var relayServerData = hostAllocation.ToRelayServerData("dtls");
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
         NetworkManager.Singleton.StartHost();
     }
@@ -48,7 +48,6 @@ public class RelayManager : MonoBehaviour
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
 
-            // **Amint csatlakozott a kliens, kérjük le az elérhetõ karaktereket**
             NetworkManager.Singleton.OnClientConnectedCallback += (clientId) =>
             {
                 if (clientId == NetworkManager.Singleton.LocalClientId)
