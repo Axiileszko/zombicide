@@ -77,14 +77,10 @@ namespace Network
 
             if (NetworkManager.Singleton.IsHost)
             {
-                Debug.Log("A host megszakította a lobbit. Mindenki lecsatlakozik...");
-
                 NetworkManager.Singleton.Shutdown();
             }
             else
             {
-                Debug.Log($"Kliens ({localClientId}) kilépett a lobbiból.");
-
                 RequestLeaveLobbyServerRpc(localClientId);
 
                 NetworkManager.Singleton.Shutdown();
@@ -113,8 +109,6 @@ namespace Network
                 availableCharacters.Add(character);
 
                 selectedCharacters.Remove(clientId);
-
-                Debug.Log($"Kliens ({clientId}) kilépett. Karakter ({character}) visszaadva.");
             }
 
             ulong[] clientIds = selectedCharacters.Keys.ToArray();
@@ -203,7 +197,6 @@ namespace Network
         [ServerRpc(RequireOwnership = false)]
         public void RequestActionServerRpc(ulong playerId, string actionName, string objectName)
         {
-            Debug.Log($"[SERVER] Player {playerId} requested action: {actionName} on tile {objectName}");
             ApplyActionClientRpc(playerId, actionName, objectName);
         }
         #endregion
@@ -288,8 +281,6 @@ namespace Network
         [ClientRpc]
         private void StartGameClientRpc()
         {
-            Debug.Log("Minden játékos csatlakozott! Játék indítása...");
-
             if (NetworkManager.Singleton.IsHost)
             {
                 NetworkManager.Singleton.SceneManager.LoadScene("InGameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
@@ -303,7 +294,6 @@ namespace Network
         [ClientRpc]
         private void ReceivePlayerSelectionsClientRpc(string clientIDsSerialized, string characterNamesSerialized)
         {
-            // Stringek visszaalakítása tömbökké
             string[] clientIDsArray = clientIDsSerialized.Split(',');
             string[] characterNamesArray = characterNamesSerialized.Split(',');
 
@@ -316,7 +306,6 @@ namespace Network
                 receivedSelections[clientID] = characterName;
             }
 
-            // Átadjuk a GameControllernek
             GameController.Instance.SetPlayerSelections(receivedSelections);
         }
         /// <summary>
@@ -386,8 +375,6 @@ namespace Network
         [ClientRpc]
         public void ApplyActionClientRpc(ulong playerId, string actionName, string objectName)
         {
-            Debug.Log($"[CLIENT] Player {playerId} executed action: {actionName} on tile {objectName}");
-
             GameController.Instance.ApplyActionLocally(playerId,actionName, objectName);
         }
         #endregion

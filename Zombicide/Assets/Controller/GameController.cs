@@ -89,11 +89,9 @@ public class GameController : MonoBehaviour
         {
             gameModel.DecidePlayerOrder();
 
-            // The host sends the predetermined player order
             string serializedOrder = string.Join(',', gameModel.PlayerOrder.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PlayerOrder, serializedOrder);
 
-            // The host sends the starting weapons to the players
             List<Weapon> genericW=gameModel.GenerateGenericWeapons();
             string serializedGenericW = string.Join(",", genericW.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GenericWeapon, serializedGenericW);
@@ -101,7 +99,6 @@ public class GameController : MonoBehaviour
         ShowPlayerUI();
         if(NetworkManager.Singleton.IsHost)
             StartNextTurn();
-        // Subscribe to the death event of all characters in the game
         foreach (var item in playerSelections.Values)
         {
             SurvivorFactory.GetSurvivorByName(item).SurvivorDied += GameController_SurvivorDied;
@@ -210,7 +207,6 @@ public class GameController : MonoBehaviour
             charImagePrefab = Resources.Load<GameObject>($"Prefabs/CharImagePrefab");
             charListContainer = GameObject.FindFirstObjectByType<HorizontalLayoutGroup>();
         }
-        // Töröljük az elõzõ listát
         foreach (Transform child in charListContainer.transform)
         {
             Destroy(child.gameObject);
@@ -219,7 +215,6 @@ public class GameController : MonoBehaviour
         zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
         Outline zoutline = zombieEntry.GetComponent<Outline>();
         zoutline.enabled = gameModel!.IsPlayerRoundOver;
-        //majd állitsuk be a zombik outlinejat is rendesen
 
         List<Survivor> reversed = gameModel.PlayerOrder.ToList();
         reversed.Reverse();
@@ -319,7 +314,7 @@ public class GameController : MonoBehaviour
         BoxCollider collider = tile.GetComponent<BoxCollider>();
         float startX=collider.transform.position.x-2f;
         float startZ=collider.transform.position.z + 0.5f;
-        float startY = 2f; //ez mindig marad
+        float startY = 2f;
         int playerCount = gameModel!.NumberOfPlayersOnTile(tileID)-1;
         Vector3 newPosition = player.transform.position;
 
@@ -476,10 +471,9 @@ public class GameController : MonoBehaviour
     public void EnableBoardInteraction(bool enable)
     {
         if (enable && isMenuOpen) return; 
-        //SubTile objektumok collidereinek engedélyezése/tiltása
         foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
         {
-            if (child.name.StartsWith("SubTile_")) // Csak a kattintható részeket érinti
+            if (child.name.StartsWith("SubTile_"))
             {
                 var collider = child.GetComponent<BoxCollider>();
                 if (collider != null)
@@ -678,10 +672,10 @@ public class GameController : MonoBehaviour
         {
             if (entry.Value == characterName)
             {
-                return entry.Key; // Megtaláltuk a karaktert, visszaadjuk a kliens ID-t
+                return entry.Key;
             }
         }
-        return null; // Ha nem található a karakter, visszatérünk null-lal
+        return null;
     }
     /// <summary>
     /// The client sets up the characters in the game and assigns their corresponding client IDs.
@@ -943,7 +937,7 @@ public class GameController : MonoBehaviour
     /// <param name="data">Name of the player that finished</param>
     public void PlayerFinishedRound(string data)
     {
-        SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;//beállitani a használt képességeket falsera
+        SurvivorFactory.GetSurvivorByName(data).FinishedRound=true;
         gameModel!.NextPlayer();
         if(gameModel.IsPlayerRoundOver)
         {
@@ -1467,17 +1461,14 @@ public class GameController : MonoBehaviour
     {
         if (NetworkManager.Singleton.IsHost)
         {
-            // Ha a host nyomja meg, mindenki visszakerül a főmenübe
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GameEnded, "");
         }
         else
         {
-            // Ha kliens nyomja meg, csak ő lép ki
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.PlayerLeft, survivor!.Name);
             if(gameModel!.CurrentPlayer==survivor)
                 NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
 
-            // Kliens kilépése a főmenübe
             NetworkManager.Singleton.Shutdown();
             SceneManager.LoadScene("MenuScene");
         }

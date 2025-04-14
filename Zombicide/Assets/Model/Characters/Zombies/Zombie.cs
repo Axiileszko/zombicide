@@ -23,7 +23,6 @@ namespace Model.Characters.Zombies
                 return;
             } 
             Dictionary<MapTile, int> priority = new Dictionary<MapTile, int>();
-            //Latas
             foreach (var item in CurrentTile.Neighbours)
             {
                 if (model.Board.CanMove(CurrentTile, item.Destination))
@@ -51,7 +50,6 @@ namespace Model.Characters.Zombies
                     }
                 }
             }
-            //Hallas
             MapTile noisiest = model.FindNextStepToNoisiest(CurrentTile);
             if (noisiest != null)
             {

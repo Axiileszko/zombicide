@@ -39,7 +39,7 @@ namespace Model.Characters
                 return false;
             hp -= amount;
             if (hp <= 0)
-                return true;//true ha meghalt a karakter
+                return true;
             return false;
         }
         public void SetReference(GameModel gameModel)

@@ -64,16 +64,8 @@ namespace Persistence
     }
     public class MapLoader
     {
-        //private readonly string jsonFilePath;
-        //public MapLoader(string jsonFilePath)
-        //{
-        //    this.jsonFilePath = jsonFilePath;
-        //}
         public Board LoadMap(int mapID)
         {
-            ////JSON beolvasása fájlból
-            //string jsonText = File.ReadAllText(jsonFilePath);
-            //MissionList missionList = JsonConvert.DeserializeObject<MissionList>(jsonText);
 
             TextAsset jsonFile = Resources.Load<TextAsset>("missions");
             MissionList missionList = JsonUtility.FromJson<MissionList>(jsonFile.text);
@@ -83,7 +75,6 @@ namespace Persistence
                 throw new Exception("Nincsenek pályák a JSON fájlban!");
             }
 
-            //Keresd meg a megfelelő ID missiont
             Mission mission = missionList.missions.FirstOrDefault(m => m.id == mapID);
             if (mission == null)
             {
@@ -93,7 +84,6 @@ namespace Persistence
             Board board = new Board();
             Dictionary<int, MapTile> tileMap = new Dictionary<int, MapTile>();
 
-            //Mezők létrehozása és hozzáadása a Boardhoz
             foreach (var tileData in mission.boardData.tiles)
             {
                 TileType? type=null;
@@ -131,7 +121,6 @@ namespace Persistence
                 board.AddTile(tile);
             }
 
-            //Kapcsolatok létrehozása
             foreach (var connectionData in mission.boardData.connections)
             {
                 if (tileMap.ContainsKey(connectionData.from) && tileMap.ContainsKey(connectionData.to))
@@ -147,7 +136,6 @@ namespace Persistence
                 }
             }
 
-            //Épületek létrehozása
             foreach (var buildingData in mission.boardData.buildings)
             {
                 List<MapTile> rooms = new List<MapTile>();
@@ -160,7 +148,6 @@ namespace Persistence
                 }
                 board.AddBuilding(new Building(rooms));
             }
-            //Utcák létrehozása
             foreach (var streetData in mission.boardData.streets)
             {
                 List<int> streetTiles = new List<int>();

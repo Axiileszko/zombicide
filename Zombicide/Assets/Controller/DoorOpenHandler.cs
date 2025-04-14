@@ -7,8 +7,6 @@ public class DoorOpenHandler : MonoBehaviour
 {
     private void OnMouseDown()
     {
-        Debug.Log($"Door clicked: {gameObject.name}");
-
         GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
         RectTransform canvasRect = canvas.GetComponent<RectTransform>();
         Vector2 anchoredPosition;
@@ -26,7 +24,6 @@ public class DoorOpenHandler : MonoBehaviour
 
     private void OnOptionSelected(string option)
     {
-        Debug.Log($"Játékos választotta: {option}");
         if(option=="Cancel")
             ContextMenuController.Instance.CloseMenu();
         else

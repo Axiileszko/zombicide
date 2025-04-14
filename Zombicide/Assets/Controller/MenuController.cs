@@ -10,11 +10,19 @@ using Unity.Netcode;
 
 public class MenuController : MonoBehaviour
 {
+    #region Fields
+    #region Data
+    private List<MapData> maps;
+    private List<CharacterData> characters;
+    private Dictionary<ulong, GameObject> lobbyUIEntries= new Dictionary<ulong, GameObject>();
+    #endregion
+    #region Canvases
     [SerializeField] private GameObject mainMenuCanvas;
     [SerializeField] private GameObject hostGameCanvas;
     [SerializeField] private GameObject joinGameCanvas;
     [SerializeField] private GameObject lobbyCanvas;
-
+    #endregion
+    #region Host
     [SerializeField] private TMP_Dropdown mapDropdown;
     [SerializeField] private Image mapImage;
     [SerializeField] private TMP_Text mapObjectives;
@@ -23,22 +31,25 @@ public class MenuController : MonoBehaviour
     [SerializeField] private TMP_Dropdown characterDropdown;
     [SerializeField] private Image characterImage;
     [SerializeField] private TMP_Dropdown playerCount;
-    private List<MapData> maps;
-    private List<CharacterData> characters;
-    private Dictionary<ulong, GameObject> lobbyUIEntries= new Dictionary<ulong, GameObject>();
-
-
+    #endregion
+    #region Join
     [SerializeField] private TMP_InputField codeInputField;
     [SerializeField] private TMP_Text characterLabel;
     [SerializeField] private Button codeButton;
     [SerializeField] private Image characterImageForClient;
     [SerializeField] private TMP_Dropdown characterDropdownForClient;
     [SerializeField] private Button joinButton;
-
+    #endregion
+    #region Lobby
     [SerializeField] private GameObject lobbyPlayerPrefab;
     [SerializeField] private VerticalLayoutGroup lobbyPlayerListContainer;
-
+    #endregion
+    #endregion
+    #region Properties
     public static MenuController Instance { get; private set; }
+    public int SelectedPlayerCount { get { return playerCount.value + 2; } }
+    #endregion
+    #region Methods
     private void Awake()
     {
         if (Instance == null)
@@ -50,6 +61,7 @@ public class MenuController : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    #region Switching Between Canvases
     public void ShowHostGame()
     {
         mainMenuCanvas.SetActive(false);
@@ -64,7 +76,6 @@ public class MenuController : MonoBehaviour
         PopulateCharacterDropdown();
         PopulatePlayerCountDropdown();
     }
-
     public void ShowJoinGame()
     {
         mainMenuCanvas.SetActive(false);
@@ -91,12 +102,8 @@ public class MenuController : MonoBehaviour
         lobbyCanvas.SetActive(true);
         joinGameCanvas.SetActive(false);
     }
-    public void Quit()
-    {
-        Application.Quit();
-    }
-
-    void PopulateMapDropdown()
+    #endregion
+    public void PopulateMapDropdown()
     {
         mapDropdown.ClearOptions();
         List<string> mapNames = new List<string>();
@@ -112,8 +119,35 @@ public class MenuController : MonoBehaviour
 
         UpdateMapDetails(0); // Alapértelmezett kiválasztott pálya
     }
+    public void PopulatePlayerCountDropdown()
+    {
+        playerCount.ClearOptions();
 
-    void UpdateMapDetails(int index)
+        List<string> options = new List<string>();
+        for (int i = 2; i <= 6; i++)
+        {
+            options.Add(i.ToString());
+        }
+
+        playerCount.AddOptions(options);
+    }
+    public void PopulateCharacterDropdown()
+    {
+        characterDropdown.ClearOptions();
+        List<string> characterNames = new List<string>();
+
+        foreach (var character in characters)
+        {
+            characterNames.Add(character.name);
+        }
+        characterNames.Sort();
+
+        characterDropdown.AddOptions(characterNames);
+        characterDropdown.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdown.value); });
+
+        UpdateCharacterDetails(0); // Alapértelmezett kiválasztott karakter
+    }
+    public void UpdateMapDetails(int index)
     {
         mapImage.sprite = Resources.Load<Sprite>("Maps/" + maps[index].image);
         mapObjectives.text = maps[index].objectives;
@@ -135,42 +169,13 @@ public class MenuController : MonoBehaviour
 
         UpdateCharacterDetails(0);
     }
-    void PopulateCharacterDropdown()
-    {
-        characterDropdown.ClearOptions();
-        List<string> characterNames = new List<string>();
-
-        foreach (var character in characters)
-        {
-            characterNames.Add(character.name);
-        }
-        characterNames.Sort();
-
-        characterDropdown.AddOptions(characterNames);
-        characterDropdown.onValueChanged.AddListener(delegate { UpdateCharacterDetails(characterDropdown.value); });
-
-        UpdateCharacterDetails(0); // Alapértelmezett kiválasztott karakter
-    }
-
-    void UpdateCharacterDetails(int index)
+    public void UpdateCharacterDetails(int index)
     {
         characters=characters.OrderBy(c => c.name).ToList();
         if(hostGameCanvas.activeInHierarchy)
             characterImage.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
         else
             characterImageForClient.sprite = Resources.Load<Sprite>("Characters/" + characters[index].image);
-    }
-    void PopulatePlayerCountDropdown()
-    {
-        playerCount.ClearOptions();
-
-        List<string> options = new List<string>();
-        for (int i = 2; i <= 6; i++)
-        {
-            options.Add(i.ToString());
-        }
-
-        playerCount.AddOptions(options);
     }
     public void UpdateLobbyDisplay(Dictionary<ulong, string> selectedCharacters)
     {
@@ -186,7 +191,6 @@ public class MenuController : MonoBehaviour
             else
             {
                 GameObject playerEntry = Instantiate(lobbyPlayerPrefab, lobbyPlayerListContainer.transform);
-                // A TMP_Text keresése a prefabban
                 TMP_Text playerText = playerEntry.GetComponent<TMP_Text>();
                 playerText.text = $"Player {entry.Key}: {entry.Value}";
                 playerText.enabled = true;
@@ -199,13 +203,14 @@ public class MenuController : MonoBehaviour
             lobbyUIEntries.Remove(clientID);
         }
     }
-    public int GetSelectedPlayerCount()
+    #region Event handlers
+    public void Quit()
     {
-        return playerCount.value + 2;
+        Application.Quit();
     }
     public void OnOkButtonPressed()
     {
-        int playerCount = GetSelectedPlayerCount();
+        int playerCount = SelectedPlayerCount;
         int selectedMap = maps[mapDropdown.value].id;
         string selectedCharacter = characters[characterDropdown.value].name;
 
@@ -235,4 +240,6 @@ public class MenuController : MonoBehaviour
     {
         ShowMainMenu();
     }
+    #endregion
+    #endregion
 }

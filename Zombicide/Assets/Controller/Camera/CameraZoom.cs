@@ -35,7 +35,6 @@ public class CameraZoom : MonoBehaviour
             float CamX = Camera.main.transform.position.x;
             float CamY = Camera.main.transform.position.y;
             float CamZ = Camera.main.transform.position.z;
-            //Camera.main.transform.position = new Vector3(CamX + X, CamY + Y, CamZ + Z);
             Vector3 newPosition = Camera.main.transform.position + new Vector3(X, Y, Z);
 
             if (newPosition.y >= minZoom && newPosition.y <= maxZoom)
@@ -57,7 +56,7 @@ public class CameraZoom : MonoBehaviour
     {
         foreach (var script in itemHoverScripts)
         {
-            script.enabled = state; // Engedélyezzük vagy tiltjuk a hover scripteket
+            script.enabled = state;
         }
         if(PanelHoverScript != null)
             PanelHoverScript.enabled = state;

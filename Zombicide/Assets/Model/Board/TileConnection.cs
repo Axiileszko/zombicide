@@ -9,9 +9,9 @@ namespace Model.Board
     public class TileConnection
     {
         public MapTile Destination { get; }
-        public bool IsWall { get; }  // Ha fal, akkor nem lehet áthaladni
-        public bool HasDoor { get; } // Van-e ajtó
-        public bool IsDoorOpen { get; set; } // Az ajtó nyitva van-e
+        public bool IsWall { get; }
+        public bool HasDoor { get; }
+        public bool IsDoorOpen { get; set; }
 
         public TileConnection(MapTile destination, bool isWall, bool hasDoor, bool isDoorOpen)
         {

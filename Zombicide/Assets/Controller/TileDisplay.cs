@@ -10,7 +10,6 @@ public class TileDisplay : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = tileSprite;
 
-        // Beállítjuk a helyzetet és forgatást
         transform.position = position;
         transform.rotation = Quaternion.Euler(90, 0, rotation);
 

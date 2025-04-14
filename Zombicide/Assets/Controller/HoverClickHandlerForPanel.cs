@@ -23,8 +23,4 @@ public class HoverClickHandlerForPanel : MonoBehaviour
         panel.transform.position = originalPositionPanel;
     }
 
-    void OnMouseDown()
-    {
-        Debug.Log($"panelre kattintottál!");
-    }
 }

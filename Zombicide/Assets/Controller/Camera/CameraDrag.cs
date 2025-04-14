@@ -71,7 +71,7 @@ public class CameraDrag : MonoBehaviour
     {
         foreach (var script in itemHoverScripts)
         {
-            script.enabled = state; // Engedélyezzük vagy tiltjuk a hover scripteket
+            script.enabled = state;
         }
         if (PanelHoverScript != null)
             PanelHoverScript.enabled = state;

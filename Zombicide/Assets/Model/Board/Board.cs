@@ -77,21 +77,21 @@ namespace Model.Board
                 foreach (var connection in currentTile.Neighbours)
                 {
                     if (connection.IsWall || (connection.HasDoor && !connection.IsDoorOpen))
-                        continue; // Nem lehet áthaladni
+                        continue;
 
                     MapTile nextTile = connection.Destination;
                     if (visited.Contains(nextTile))
-                        continue; // Már meglátogattuk
+                        continue;
 
                     if (nextTile == goal)
-                        return distance + 1; // Cél elérése
+                        return distance + 1;
 
                     queue.Enqueue((nextTile, distance + 1));
                     visited.Add(nextTile);
                 }
             }
 
-            return -1; // Ha nincs elérhető út
+            return -1;
         }
     }
 

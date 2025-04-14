@@ -9,7 +9,7 @@ public class FPSLimiter : MonoBehaviour
     }
     void SetFPSLimit()
     {
-        QualitySettings.vSyncCount = 0;  // VSync kikapcsolása, mert ütközhet az FPS limittel
+        QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 60;
     }
 }

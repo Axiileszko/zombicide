@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class DiceRoller : MonoBehaviour
 {
-    [SerializeField] private Transform spawnPoint;   // Honnan essen le a kocka?
-    [SerializeField] private GameObject dicePrefab;  // Kocka prefab
-    [SerializeField] private Transform groundPlane;  // Hova essen le?
+    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private GameObject dicePrefab;
+    [SerializeField] private Transform groundPlane;
     [SerializeField] private GameObject okBtn;
     private Vector3 resetCameraPosition;
     private List<GameObject> spawnedDice = new List<GameObject>();
@@ -29,26 +29,22 @@ public class DiceRoller : MonoBehaviour
     }
     IEnumerator RollDiceCoroutine(int diceNum)
     {
-        // Töröljük a régi kockákat
         foreach (var die in spawnedDice)
         {
             Destroy(die);
         }
         spawnedDice.Clear();
-        // Létrehozzuk az új kockákat
         for (int i = 0; i < diceNum; i++)
         {
             GameObject dice = Instantiate(dicePrefab, spawnPoint.position + new Vector3(i * 1.5f, 0, 0), Random.rotation);
             Rigidbody rb = dice.GetComponent<Rigidbody>();
 
-            // Egy véletlenszerû erõt adunk neki, hogy dobásnak tûnjön
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
             rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
 
             spawnedDice.Add(dice);
         }
 
-        // Megvárjuk, hogy a kockák leessenek és megálljanak
         yield return new WaitForSeconds(2f);
     }
     public IEnumerator WaitForDiceToStop(System.Action<List<int>> onResultReady)
@@ -63,39 +59,36 @@ public class DiceRoller : MonoBehaviour
             {
                 Rigidbody rb = die.GetComponent<Rigidbody>();
 
-                if (!rb.IsSleeping()) // Ha még mozog, nem állt meg
+                if (!rb.IsSleeping())
                 {
                     allStopped = false;
                     break;
                 }
             }
 
-            yield return null; // Várunk egy frame-et, majd újra ellenõrizzük
+            yield return null;
         }
 
-        // Amikor minden kocka megállt, akkor olvassuk le az eredményeket
         List<int> results = new List<int>();
         foreach (var die in spawnedDice)
         {
             results.Add(ReadDieValue(die));
         }
 
-        // Callback, hogy jelezzük a dobás eredményét
         onResultReady?.Invoke(results);
     }
     private int ReadDieValue(GameObject die)
     {
         Transform dieTransform = die.transform;
 
-        // Az arcok lehetséges irányai és azokhoz tartozó értékek
         Dictionary<Vector3, int> faceValues = new Dictionary<Vector3, int>()
         {
-        { dieTransform.up, 2 },    // Felfelé nézõ
-        { -dieTransform.up, 5 },   // Lefelé nézõ
-        { dieTransform.right, 4 }, // Jobbra nézõ
-        { -dieTransform.right, 3 },// Balra nézõ
-        { dieTransform.forward, 1 },// Elõre nézõ
-        { -dieTransform.forward, 6 } // Hátra nézõ
+        { dieTransform.up, 2 },
+        { -dieTransform.up, 5 },
+        { dieTransform.right, 4 },
+        { -dieTransform.right, 3 },
+        { dieTransform.forward, 1 },
+        { -dieTransform.forward, 6 }
         };
 
         Vector3 upVector = Vector3.up;
@@ -104,7 +97,7 @@ public class DiceRoller : MonoBehaviour
 
         foreach (var face in faceValues)
         {
-            float dot = Vector3.Dot(face.Key, upVector); // Mennyire néz felfelé?
+            float dot = Vector3.Dot(face.Key, upVector);
             if (dot > maxDot)
             {
                 maxDot = dot;
@@ -131,7 +124,6 @@ public class DiceRoller : MonoBehaviour
             GameObject newDie = Instantiate(dicePrefab, spawnPoint.position + new Vector3(i * 1.5f, 0, 0), Random.rotation);
             Rigidbody rb = newDie.GetComponent<Rigidbody>();
 
-            // Egy véletlenszerû erõt adunk neki, hogy dobásnak tûnjön
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
             rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
 

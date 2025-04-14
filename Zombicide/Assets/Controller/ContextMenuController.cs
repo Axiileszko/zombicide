@@ -24,22 +24,15 @@ public class ContextMenuController : MonoBehaviour
     {
         GameController.Instance.EnableBoardInteraction(false);
 
-        // Menü létrehozása
         GameObject currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);
         currentMenu.transform.localPosition = position;
 
-        // Ellenõrizzük a menü magasságát
         float scaleFactor = 3.2f;
-        Debug.Log("scale"+scaleFactor);
         float menuHeight = (float)(options.Count*3.7)+2f;
-        Debug.Log("height"+menuHeight);
         float menuTop = position.y;
         float screenHeight = Screen.height;
-        Debug.Log("y"+menuTop);
-        Debug.Log("screen" + screenHeight);
 
         float difference = (225 - menuHeight*scaleFactor) - (Math.Abs(menuTop) + menuHeight*scaleFactor);
-        Debug.Log(difference);
         if (difference < 0 && menuTop<0)
         {
             position.y +=Math.Abs(difference)+ options.Count + 2f;

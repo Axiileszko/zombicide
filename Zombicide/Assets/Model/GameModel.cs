@@ -478,14 +478,12 @@ namespace Model
         }
         public MapTile? FindNextStepToNoisiest(MapTile start)
         {
-            //Megkeressük a leghangosabb mezõt
             MapTile target = board!.Tiles.OrderByDescending(t => t.NoiseCounter).FirstOrDefault();
             if (target == null || target == start) return null;
 
-            //Dijkstra algoritmus
             Queue<MapTile> queue = new Queue<MapTile>();
-            Dictionary<MapTile, MapTile?> cameFrom = new Dictionary<MapTile, MapTile?>(); // Honnan jöttünk egy mezõre
-            HashSet<MapTile> visited = new HashSet<MapTile>(); // Már bejárt mezõk
+            Dictionary<MapTile, MapTile?> cameFrom = new Dictionary<MapTile, MapTile?>();
+            HashSet<MapTile> visited = new HashSet<MapTile>();
 
             queue.Enqueue(start);
             visited.Add(start);
@@ -495,7 +493,7 @@ namespace Model
             {
                 MapTile current = queue.Dequeue();
 
-                if (current == target) break; // Megtaláltuk a célt
+                if (current == target) break;
 
                 foreach (var connection in current.Neighbours)
                 {
@@ -509,16 +507,15 @@ namespace Model
                 }
             }
 
-            // 3. Útvonal visszafejtése: Az elsõ lépés kinyerése
-            if (!cameFrom.ContainsKey(target)) return null; // Nincs elérhetõ út
+            if (!cameFrom.ContainsKey(target)) return null;
 
             MapTile step = target;
-            while (cameFrom[step] != start) // Visszakövetjük az utat a kezdõ mezõig
+            while (cameFrom[step] != start)
             {
                 step = cameFrom[step]!;
             }
 
-            return step; // Az elsõ lépés a start mezõ szomszédja
+            return step;
         }
         public List<Item>? Search(MapTile tile, bool useFlashlight, bool matchingSet)
         {

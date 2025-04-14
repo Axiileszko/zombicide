@@ -8,8 +8,6 @@ public class TileClickHandler : MonoBehaviour
 {
     private void OnMouseDown()
     {
-        Debug.Log($"Tile clicked: {gameObject.name}");
-
         GameObject canvas = GameObject.FindGameObjectWithTag("GameUI");
         RectTransform canvasRect = canvas.GetComponent<RectTransform>();
         Vector2 anchoredPosition;
@@ -26,9 +24,6 @@ public class TileClickHandler : MonoBehaviour
     }
     private void OnOptionSelected(string option)
     {
-        Debug.Log($"Játékos választotta: {option}");
-
-        // Ide jön a konkrét akció végrehajtása a játékban
         switch (option)
         {
             case "Cancel": ContextMenuController.Instance.CloseMenu(); return;
