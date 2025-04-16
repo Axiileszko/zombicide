@@ -27,7 +27,7 @@ namespace Model
         private bool hasAbomination;
         private Zombie? abomination = null;
         private System.Random random=new System.Random();
-        private MapLoader mapLoader;
+        private IMapLoader mapLoader;
         #endregion
         #region Properties
         public event EventHandler<bool>? GameEnded;
@@ -59,7 +59,7 @@ namespace Model
         {
             mapLoader=new MapLoader();
         }
-        public GameModel(MapLoader mapLoader)
+        public GameModel(IMapLoader mapLoader)
         {
             this.mapLoader = mapLoader;
         }
@@ -82,7 +82,7 @@ namespace Model
         /// <returns>Survivor</returns>
         public Survivor GetSurvivorByName(string name)
         {
-            return survivors.First(x => x.Name == name);
+            return survivors.FirstOrDefault(x => x.Name == name);
         }
         /// <summary>
         /// Returns the zombies in priority order on the tile given
@@ -105,7 +105,7 @@ namespace Model
         /// <param name="z">Zombie</param>
         /// <param name="order">Priority order</param>
         /// <returns></returns>
-        private static int GetPriorityIndex(Zombie z, List<string> order)
+        private int GetPriorityIndex(Zombie z, List<string> order)
         {
             string typeName = z.GetType().Name;
 
@@ -155,14 +155,13 @@ namespace Model
         /// <param name="number">ID of the map</param>
         public void LoadGame(int number)
         {
-            board=mapLoader.LoadMap(number);
+            board=new Board.Board(mapLoader.LoadMap(number));
         }
         /// <summary>
         /// Ending the players' round and starting the zombies' round 
         /// </summary>
         public void EndRound()
         {
-            //jatekosok itt jonnek
             CheckWin();
             MoveZombies();
             ClearNoiseCounters();

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Persistence;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +13,87 @@ namespace Model.Board
         public List<MapTile> Tiles { get; } = new List<MapTile>();
         public List<Building> Buildings { get; } = new List<Building>();
         public List<Street> Streets { get; } = new List<Street>();
+        public Board(BoardData boardData)
+        {
+            Dictionary<int, MapTile> tileMap = new Dictionary<int, MapTile>();
 
+            foreach (var tileData in boardData.tiles)
+            {
+                TileType? type = null;
+                ZombieSpawnType? stype = null;
+                switch (tileData.type)
+                {
+                    case "R": type = TileType.ROOM; break;
+                    case "D": type = TileType.DARKROOM; break;
+                    case "S": type = TileType.STREET; break;
+                }
+                if (tileData.extra != null && tileData.extra.Contains("Z"))
+                {
+                    switch (tileData.extra.Substring(tileData.extra.IndexOf('Z'), 2))
+                    {
+                        case "ZF": stype = ZombieSpawnType.FIRST; break;
+                        case "ZB": stype = ZombieSpawnType.BLUE; break;
+                        case "ZG": stype = ZombieSpawnType.GREEN; break;
+                        case "ZR": stype = ZombieSpawnType.RED; break;
+                    }
+                }
+                bool hasObj, hasPW, isExit, isStart;
+                if (tileData.extra != null)
+                {
+                    hasObj = tileData.extra.Contains('O');
+                    hasPW = tileData.extra.Contains('P');
+                    isExit = tileData.extra.Contains('E');
+                    isStart = tileData.extra.Contains('S');
+                }
+                else
+                {
+                    hasObj = false; hasPW = false; isExit = false; isStart = false;
+                }
+                MapTile tile = new MapTile(tileData.id, type, hasObj, hasPW, isExit, isStart, stype);
+                tileMap[tileData.id] = tile;
+                AddTile(tile);
+            }
+
+            foreach (var connectionData in boardData.connections)
+            {
+                if (tileMap.ContainsKey(connectionData.from) && tileMap.ContainsKey(connectionData.to))
+                {
+                    MapTile fromTile = tileMap[connectionData.from];
+                    MapTile toTile = tileMap[connectionData.to];
+
+                    TileConnection connection = new TileConnection(toTile, connectionData.isWall, connectionData.hasDoor, connectionData.isDoorOpen);
+                    fromTile.AddNeighbour(connection);
+
+                    TileConnection connection2 = new TileConnection(fromTile, connectionData.isWall, connectionData.hasDoor, connectionData.isDoorOpen);
+                    toTile.AddNeighbour(connection2);
+                }
+            }
+
+            foreach (var buildingData in boardData.buildings)
+            {
+                List<MapTile> rooms = new List<MapTile>();
+                foreach (var roomId in buildingData.rooms)
+                {
+                    if (tileMap.ContainsKey(roomId))
+                    {
+                        rooms.Add(tileMap[roomId]);
+                    }
+                }
+                AddBuilding(new Building(rooms));
+            }
+            foreach (var streetData in boardData.streets)
+            {
+                List<int> streetTiles = new List<int>();
+                foreach (var tileId in streetData.tiles)
+                {
+                    if (tileMap.ContainsKey(tileId))
+                    {
+                        streetTiles.Add(tileId);
+                    }
+                }
+                AddStreet(new Street(streetTiles));
+            }
+        }
         public void AddTile(MapTile tile)
         {
             Tiles.Add(tile);

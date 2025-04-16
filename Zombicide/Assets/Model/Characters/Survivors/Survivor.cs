@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.Services.Matchmaker.Models;
 
 namespace Model.Characters.Survivors
 {
@@ -398,7 +397,7 @@ namespace Model.Characters.Survivors
         /// </summary>
         public void PickUpObjective() 
         { 
-            CurrentTile.PickUpObjective();//lehet kezdünk még valamit az object refel amit visszaadna
+            CurrentTile.PickUpObjective();
             aPoints += 5;
             ObjectiveCount++;
         }
@@ -465,7 +464,7 @@ namespace Model.Characters.Survivors
             if (hp <= 0)
             {
                 IsDead = true;
-                return true;//true ha meghalt a karakter
+                return true;
             }
             return false;
         }

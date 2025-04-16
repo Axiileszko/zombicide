@@ -28,14 +28,22 @@ namespace Model.Characters.Zombies
                 if (model.Board.CanMove(CurrentTile, item.Destination))
                 {
                     priority.Add(item.Destination, 1);
-
                     if (CurrentTile.Type == Board.TileType.STREET)
                     {
                         Street street = model.Board.GetStreetByTiles(CurrentTile.Id, item.Destination.Id);
                         if (street != null)
                         {
-                            int survivorsSeen = LookUpStreet(street);
-                            priority[item.Destination] += survivorsSeen;
+                            Dictionary<int,int> survivorsSeen = LookUpStreet(street);
+                            var (bestTile, seenCount) = ClosestToSurvivors(
+                                CurrentTile.Neighbours.Select(n => n.Destination).ToList(),
+                                street,
+                                survivorsSeen
+                            );
+                            if (bestTile != null)
+                            {
+                                if (item.Destination == bestTile)
+                                    priority[item.Destination] += seenCount;
+                            }
                         }
                     }
                     else
@@ -49,6 +57,12 @@ namespace Model.Characters.Zombies
                         priority[item.Destination] += seen;
                     }
                 }
+            }
+            if (priority.Values.Any(x=>x>1))
+            {
+                var seenDestination = priority.First(x => x.Value == priority.Values.Max());
+                MoveTo(seenDestination.Key);
+                return;
             }
             MapTile noisiest = model.FindNextStepToNoisiest(CurrentTile);
             if (noisiest != null)
@@ -72,18 +86,40 @@ namespace Model.Characters.Zombies
         /// </summary>
         /// <param name="street">The street the zombie is on</param>
         /// <returns>Amount of survivors seen</returns>
-        private int LookUpStreet(Street street)
+        private Dictionary<int,int> LookUpStreet(Street street)
         {
-            int seen = 0;
+            Dictionary<int,int> seen = new Dictionary<int,int>();
             foreach (var tile in street.Tiles)
             {
+                int seenOnTile = 0;
                 foreach (var location in model.SurvivorLocations)
                 {
                     if(location==tile)
-                        seen++;
+                        seenOnTile++;
                 }
+                seen.Add(tile, seenOnTile);
             }
             return seen;
+        }
+        private (MapTile tile, int priority) ClosestToSurvivors(List<MapTile> neighbours, Street street, Dictionary<int, int> survivorsSeen)
+        {
+            Dictionary<MapTile, int> neighbourPriority = new();
+            var max=survivorsSeen.OrderByDescending(x=>x.Value).First();
+
+            foreach (var neighbour in neighbours)
+            {
+                if (!street.Tiles.Contains(neighbour.Id)) continue;
+
+                int distance = Math.Abs(street.Tiles.IndexOf(neighbour.Id) - street.Tiles.IndexOf(max.Key));
+
+                neighbourPriority[neighbour] = distance;
+            }
+
+            if (neighbourPriority.Count == 0)
+                return (null, 0);
+
+            var best = neighbourPriority.OrderBy(x => x.Value).First();
+            return (best.Key, max.Value);
         }
     }
 }

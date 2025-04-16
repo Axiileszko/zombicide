@@ -12,7 +12,7 @@ namespace Model.Characters.Zombies
         {
             hp = 2;
             action = 1;
-            Priority = 1;
+            Priority = 2;
         }
     }
 }
