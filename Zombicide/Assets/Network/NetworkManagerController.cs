@@ -353,6 +353,8 @@ namespace Network
                     break;
                 case MessageType.GameEnded:
                     NetworkManager.Singleton.Shutdown();
+                    Destroy(NetworkManager.Singleton.gameObject);
+                    Resources.UnloadUnusedAssets();
                     SceneManager.LoadScene("MenuScene");
                     break;
                 case MessageType.SurvivorDied:
@@ -390,6 +392,8 @@ namespace Network
                 if (!NetworkManager.Singleton.IsHost)
                 {
                     NetworkManager.Singleton.Shutdown();
+                    Destroy(NetworkManager.Singleton.gameObject);
+                    Resources.UnloadUnusedAssets();
                     SceneManager.LoadScene("MenuScene");
                 }
             }

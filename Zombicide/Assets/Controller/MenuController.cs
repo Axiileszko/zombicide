@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using Unity.Netcode;
+using System.Collections;
 
 public class MenuController : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class MenuController : MonoBehaviour
     private List<MapData> maps;
     private List<CharacterData> characters;
     private Dictionary<ulong, GameObject> lobbyUIEntries= new Dictionary<ulong, GameObject>();
+    [SerializeField] GameObject networkManagerPrefab;
     #endregion
     #region Canvases
     [SerializeField] private GameObject mainMenuCanvas;
@@ -59,6 +61,19 @@ public class MenuController : MonoBehaviour
         else
         {
             Destroy(gameObject);
+        }
+    }
+    private void Start()
+    {
+        StartCoroutine(EnsureNetworkManagerInitialized());
+    }
+    private IEnumerator EnsureNetworkManagerInitialized()
+    {
+        yield return null;
+
+        if (NetworkManager.Singleton == null && networkManagerPrefab != null)
+        {
+            Instantiate(networkManagerPrefab);
         }
     }
     #region Switching Between Canvases

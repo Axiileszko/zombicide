@@ -29,13 +29,22 @@ public class ContextMenuController : MonoBehaviour
 
         float scaleFactor = 3.2f;
         float menuHeight = (float)(options.Count*3.7)+2f;
+        float menuWidth = 7.5f;
         float menuTop = position.y;
+        float menuLeft = position.x;
         float screenHeight = Screen.height;
+        float screenWidth = Screen.width;
 
-        float difference = (225 - menuHeight*scaleFactor) - (Math.Abs(menuTop) + menuHeight*scaleFactor);
-        if (difference < 0 && menuTop<0)
+        float differenceH = (225 - menuHeight*scaleFactor) - (Math.Abs(menuTop) + menuHeight*scaleFactor);
+        float differenceW = (400 - menuWidth*scaleFactor) - (Math.Abs(menuLeft) + menuWidth*scaleFactor);
+        if (differenceH < 0 && menuTop<0)
         {
-            position.y +=Math.Abs(difference)+ options.Count + 2f;
+            position.y +=Math.Abs(differenceH)+ options.Count + 2f;
+            currentMenu.transform.localPosition = position;
+        }
+        if (menuLeft>280)
+        {
+            position.x -= Math.Abs(differenceW) + 7.5f*8;
             currentMenu.transform.localPosition = position;
         }
 
