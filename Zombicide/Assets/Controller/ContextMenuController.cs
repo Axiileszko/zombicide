@@ -4,6 +4,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using View;
 
 public class ContextMenuController : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class ContextMenuController : MonoBehaviour
 
     public void OpenMenu(Vector2 position, List<string> options, System.Action<string> onOptionSelected)
     {
-        GameController.Instance.EnableBoardInteraction(false);
+        InGameView.Instance.EnableBoardInteraction(false);
 
         GameObject currentMenu = Instantiate(contextMenuPrefab, gameUI.transform);
         currentMenu.transform.localPosition = position;
@@ -68,7 +69,7 @@ public class ContextMenuController : MonoBehaviour
             var menu = currentMenus[0];
             currentMenus.RemoveAt(0);
             Destroy(menu);
-            GameController.Instance.EnableBoardInteraction(currentMenus.Count==0);
+            InGameView.Instance.EnableBoardInteraction(currentMenus.Count==0);
         }
     }
 }

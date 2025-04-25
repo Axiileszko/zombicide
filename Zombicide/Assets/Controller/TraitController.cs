@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using TMPro;
+using View;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,7 +21,7 @@ public class TraitController : MonoBehaviour
     }
     public void OpenMenu(int level, List<string> options, System.Action<int,int> onOptionSelected)
     {
-        GameController.Instance.EnableBoardInteraction(false);
+        InGameView.Instance.EnableBoardInteraction(false);
         currentMenu = Instantiate(traitMenuPrefab, gameUI.transform);
 
         VerticalLayoutGroup layout = null;

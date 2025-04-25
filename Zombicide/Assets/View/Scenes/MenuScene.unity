@@ -1575,26 +1575,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkManagerPrefab: {fileID: 3697667581460506978, guid: 5199d7436a4938946a3805b7b8fb9aad, type: 3}
-  mainMenuCanvas: {fileID: 1365933251}
-  hostGameCanvas: {fileID: 53013402}
-  joinGameCanvas: {fileID: 914046529}
-  lobbyCanvas: {fileID: 1174676239}
-  mapDropdown: {fileID: 1540576966}
-  mapImage: {fileID: 211108216}
-  mapObjectives: {fileID: 464043449}
-  mapDifficulty: {fileID: 2073469485}
-  mapRules: {fileID: 1360517347}
-  characterDropdown: {fileID: 1822726259}
-  characterImage: {fileID: 1320187242}
-  playerCount: {fileID: 916099264}
-  codeInputField: {fileID: 926003653}
-  characterLabel: {fileID: 1796362796}
-  codeButton: {fileID: 767819168}
-  characterImageForClient: {fileID: 1973526831}
-  characterDropdownForClient: {fileID: 1575126487}
-  joinButton: {fileID: 1017399106}
-  lobbyPlayerPrefab: {fileID: 886097736278382525, guid: d9287082fa26aa04784a460433ddf847, type: 3}
-  lobbyPlayerListContainer: {fileID: 1050552450}
 --- !u!4 &359415034
 Transform:
   m_ObjectHideFlags: 0
@@ -1700,6 +1680,70 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 0
+--- !u!1 &375438684
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 375438686}
+  - component: {fileID: 375438685}
+  m_Layer: 0
+  m_Name: MenuView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &375438685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 375438684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02a89f84be7c1764b9e41edd8e85c21a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainMenuCanvas: {fileID: 1365933251}
+  hostGameCanvas: {fileID: 53013402}
+  joinGameCanvas: {fileID: 914046529}
+  lobbyCanvas: {fileID: 1174676239}
+  mapDropdown: {fileID: 1540576966}
+  mapImage: {fileID: 211108216}
+  mapObjectives: {fileID: 464043449}
+  mapDifficulty: {fileID: 2073469485}
+  mapRules: {fileID: 1360517347}
+  characterDropdown: {fileID: 1822726259}
+  characterImage: {fileID: 1320187242}
+  playerCount: {fileID: 916099264}
+  codeInputField: {fileID: 926003653}
+  characterLabel: {fileID: 1796362796}
+  codeButton: {fileID: 767819168}
+  characterImageForClient: {fileID: 1973526831}
+  characterDropdownForClient: {fileID: 1575126487}
+  joinButton: {fileID: 1017399106}
+  lobbyPlayerPrefab: {fileID: 886097736278382525, guid: d9287082fa26aa04784a460433ddf847, type: 3}
+  lobbyPlayerListContainer: {fileID: 1050552450}
+--- !u!4 &375438686
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 375438684}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 22.61, z: -24.91}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &378143544
 GameObject:
   m_ObjectHideFlags: 0
@@ -10067,7 +10111,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 359415033}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
-        m_MethodName: OnCancelButtonPressed
+        m_MethodName: OnCancelJoinButtonPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10485,3 +10529,4 @@ SceneRoots:
   - {fileID: 1174676243}
   - {fileID: 416425694}
   - {fileID: 378143546}
+  - {fileID: 375438686}

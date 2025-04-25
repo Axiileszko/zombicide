@@ -3,6 +3,7 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using View;
 
 namespace Network
 {
@@ -68,6 +69,11 @@ namespace Network
             availableCharacters = new List<string>(characters);
             MenuController.Instance.UpdateLobbyDisplay(selectedCharacters);
         }
+        public void JoinCancel()
+        {
+            if(!NetworkManager.Singleton.IsHost)
+                NetworkManager.Singleton.Shutdown();
+        }
         /// <summary>
         /// Handler of a player leaving the lobby.
         /// </summary>
@@ -86,7 +92,7 @@ namespace Network
                 NetworkManager.Singleton.Shutdown();
             }
 
-            MenuController.Instance.ShowMainMenu();
+            MenuView.Instance.ShowMainMenu();
         }
         /// <summary>
         /// Subcribing to the clients' disconnected event.

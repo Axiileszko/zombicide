@@ -3,6 +3,7 @@ using Model.Board;
 using Model.Characters.Survivors;
 using Model.Characters.Zombies;
 using Network;
+using View;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,26 +25,10 @@ public class GameController : MonoBehaviour
     #region Fields
     private GameModel? gameModel;
     private Survivor? survivor;
-    private GameObject? MapPrefab;
-    [SerializeField] private GameObject? cameraDrag;
     [SerializeField] private DiceRoller? diceRoller;
-    [SerializeField] private GameObject? rightHand;
-    [SerializeField] private GameObject? leftHand;
-    [SerializeField] private List<GameObject> backPack=new List<GameObject>();
-    private GameObject? aPointsText;
-    private GameObject? healthText;
-    private GameObject? usedActionsText;
-    private GameObject? freeActionsLayoutGroup;
     private int selectedMapID;
     private Dictionary<ulong, string> playerSelections=new Dictionary<ulong, string>();
-    private Dictionary<string, GameObject> playerPrefabs=new Dictionary<string, GameObject>();
-    private GameObject? charImagePrefab;
-    private HorizontalLayoutGroup? charListContainer;
-    private GameObject? inventoryForS;
-    private GameObject? sniperMenuForS;
-    private bool isMenuOpen=false;
     private bool isSurvivorDead=false;
-    private Dictionary<int, GameObject> zombieCanvases = new Dictionary<int, GameObject>();
     #endregion
     #region Properties
     public string? AttackFlag {  get; set; }
@@ -81,8 +66,8 @@ public class GameController : MonoBehaviour
         gameModel = new GameModel();
         gameModel.StartGame(playerSelections.Values.ToList(),mapID);
         gameModel.GameEnded += GameModel_GameEnded;
-        GenerateBoard(mapID);
-        GeneratePlayersOnBoard();
+        InGameView.Instance!.GenerateBoard(mapID);
+        InGameView.Instance!.GeneratePlayersOnBoard(gameModel!.StartTile.Id, playerSelections.Values.ToList());
         survivor = gameModel.GetSurvivorByName(playerSelections[NetworkManager.Singleton.LocalClientId]);
         survivor.SetReference(gameModel);
         if (NetworkManager.Singleton.IsHost)
@@ -96,7 +81,7 @@ public class GameController : MonoBehaviour
             string serializedGenericW = string.Join(",", genericW.Select(x => x.Name));
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.GenericWeapon, serializedGenericW);
         }
-        ShowPlayerUI();
+        InGameView.Instance.ShowPlayerUI(survivor!,playerSelections[NetworkManager.Singleton.LocalClientId]);
         if(NetworkManager.Singleton.IsHost)
             StartNextTurn();
         foreach (var item in playerSelections.Values)
@@ -170,496 +155,6 @@ public class GameController : MonoBehaviour
         return result;
     }
     #endregion
-    #region UI Methods
-    /// <summary>
-    /// Animates the door gameobject before destroying it.
-    /// </summary>
-    /// <param name="door">Door that was clicked</param>
-    private void DestroyDoorWithTween(GameObject door)
-    {
-        door.transform.DORotate(new Vector3(0, 90, 0), 1f, RotateMode.WorldAxisAdd)
-            .OnComplete(() => Destroy(door));
-    }
-    /// <summary>
-    /// Destroyes the given object with animation
-    /// </summary>
-    /// <param name="obj">Gameobject that will be destroyed</param>
-    public void DestroyWithTween(GameObject obj)
-    {
-        obj.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack).OnComplete(() => Destroy(obj));
-    }
-    /// <summary>
-    /// Loads the map prefab corresponding to the given ID.
-    /// </summary>
-    /// <param name="mapID">ID of the map that needs to be loaded</param>
-    private void GenerateBoard(int mapID)
-    {
-        MapPrefab = Resources.Load<GameObject>($"Prefabs/Missions/Map_{mapID}");
-        GameObject.Instantiate(MapPrefab);
-    }
-    /// <summary>
-    /// Displays the player order for the current round.
-    /// </summary>
-    private void ShowPlayerOrder()
-    {
-        if(charImagePrefab==null || charListContainer == null)
-        {
-            charImagePrefab = Resources.Load<GameObject>($"Prefabs/CharImagePrefab");
-            charListContainer = GameObject.FindFirstObjectByType<HorizontalLayoutGroup>();
-        }
-        foreach (Transform child in charListContainer.transform)
-        {
-            Destroy(child.gameObject);
-        }
-        GameObject zombieEntry = Instantiate(charImagePrefab, charListContainer.transform);
-        zombieEntry.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Characters/zombie_head");
-        Outline zoutline = zombieEntry.GetComponent<Outline>();
-        zoutline.enabled = gameModel!.IsPlayerRoundOver;
-
-        List<Survivor> reversed = gameModel.PlayerOrder.ToList();
-        reversed.Reverse();
-        foreach (var item in reversed)
-        {
-            GameObject playerEntry = Instantiate(charImagePrefab, charListContainer.transform);
-            playerEntry.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Characters/{item.Name.ToLower().Replace(" ",string.Empty)+"_head"}");
-            Outline outline = playerEntry.GetComponent<Outline>();
-            outline.enabled = gameModel.CurrentPlayer==item;
-        }
-        
-    }
-    /// <summary>
-    /// Displays the panel associated with the selected character.
-    /// </summary>
-    private void ShowPlayerUI()
-    {
-        string name = playerSelections[NetworkManager.Singleton.LocalClientId];
-        GameObject ui = GameObject.FindWithTag("GameUI");
-        GameObject panelPrefab = Resources.Load<GameObject>($"Prefabs/Players/PlayerPanel_{name.Replace(" ", string.Empty)}");
-        foreach(Transform child in panelPrefab.transform)
-        {
-            var component=child.GetComponent<HoverClickHandlerForPanel>();
-            if (component != null)
-            {
-                CameraZoom.PanelHoverScript=component;
-                CameraDrag.PanelHoverScript =component;
-            }
-        }
-        GameObject player = Instantiate(panelPrefab,ui.transform);
-        foreach (Transform child in player.transform)
-        {
-            if (child.name == "Data")
-            {
-                foreach (Transform subChild in child.transform)
-                {
-                    if (subChild.name == "Health")
-                        healthText = subChild.gameObject;
-                    else if (subChild.name == "Points")
-                        aPointsText = subChild.gameObject;
-                }
-            }
-            if (child.name =="UsedActions")
-                usedActionsText = child.gameObject;
-            if(child.name == "FreeActions")
-                freeActionsLayoutGroup = child.gameObject;
-        }
-        UpdatePlayerStats();
-    }
-    /// <summary>
-    /// Generates the players' figurines on the starting tile.
-    /// </summary>
-    private void GeneratePlayersOnBoard()
-    {
-        Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{gameModel!.StartTile.Id}");
-        BoxCollider collider = tile.GetComponent<BoxCollider>();
-        float startX = collider.transform.position.x - 2f;
-        float startZ = collider.transform.position.z + 0.5f;
-        float startY = 2f;
-        Vector3 newPosition = new Vector3();
-        newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
-        int multiply = 1;
-
-        foreach (var item in playerSelections.Values)
-        {
-            GameObject playerPrefab = Resources.Load<GameObject>($"Prefabs/Players/{item.Replace(" ",string.Empty)}");
-            GameObject player=Instantiate(playerPrefab);
-            playerPrefabs.Add(item.Replace(" ", string.Empty), player);
-            player.transform.position = newPosition;
-            if (multiply < 3)
-            {
-                newPosition.x = startX + (multiply * 1.5f);
-                newPosition.z = startZ;
-            }
-            else if(multiply<5)
-            {
-                newPosition.x = startX + ((multiply - 3) * 1.5f);
-                newPosition.z = startZ - 0.7f;
-            }
-            else
-            {
-                newPosition.x = startX + ((multiply - 5) * 1.5f);
-                newPosition.z = startZ - (2 * 0.7f);
-            }
-            multiply++;
-        }
-    }
-    /// <summary>
-    /// Moves the given player's figurine to the specified tile.
-    /// </summary>
-    /// <param name="tileID">ID of the tile the object should be put to</param>
-    /// <param name="player">Object that needs to be moved</param>
-    private void MovePlayerToTile(int tileID, GameObject player)
-    {
-        RearrangePlayersOnTile(tileID, player.gameObject.name.Replace("(Clone)",""));
-        Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
-        BoxCollider collider = tile.GetComponent<BoxCollider>();
-        float startX=collider.transform.position.x-2f;
-        float startZ=collider.transform.position.z + 0.5f;
-        float startY = 2f;
-        int playerCount = gameModel!.NumberOfPlayersOnTile(tileID)-1;
-        Vector3 newPosition = player.transform.position;
-
-        if (playerCount < 3)
-        {
-            newPosition.x = startX + (playerCount * 1.5f);
-            newPosition.z = startZ;
-        }
-        else if (playerCount < 5)
-        {
-            newPosition.x = startX + ((playerCount - 3) * 1.5f);
-            newPosition.z = startZ - 0.7f;
-        }
-        else
-        {
-            newPosition.x = startX + ((playerCount - 5) * 1.5f);
-            newPosition.z = startZ - (2 * 0.7f);
-        }
-        newPosition.y = startY;
-        player.transform.DOMove(newPosition, 0.5f).SetEase(Ease.OutQuad);
-    }
-    /// <summary>
-    /// Rearranges the players that are already on the tile
-    /// </summary>
-    /// <param name="tileID">ID of the tile</param>
-    /// <param name="steppingPlayer">Player who wants to move</param>
-    private void RearrangePlayersOnTile(int tileID, string steppingPlayer)
-    {
-        List<string> list = gameModel!.GetSurvivorsOnTile(gameModel.Board.GetTileByID(tileID)).Select(x=>x.Name).ToList();
-        list.Remove(steppingPlayer);
-        if (list.Count == 0) return;
-        Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
-        BoxCollider collider = tile.GetComponent<BoxCollider>();
-        float startX = collider.transform.position.x - 2f;
-        float startZ = collider.transform.position.z + 0.5f;
-        float startY = 2f;
-        Vector3 newPosition = new Vector3();
-        newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
-        int multiply = 1;
-        foreach (string s in list)
-        {
-            GameObject player = playerPrefabs[s.Replace(" ", string.Empty)];
-            player.transform.DOMove(newPosition, 0.5f).SetEase(Ease.OutQuad);
-            if (multiply < 3)
-            {
-                newPosition.x = startX + (multiply * 1.5f);
-                newPosition.z = startZ;
-            }
-            else if (multiply < 5)
-            {
-                newPosition.x = startX + ((multiply - 3) * 1.5f);
-                newPosition.z = startZ - 0.7f;
-            }
-            else
-            {
-                newPosition.x = startX + ((multiply - 5) * 1.5f);
-                newPosition.z = startZ - (2 * 0.7f);
-            }
-            multiply++;
-        }
-    }
-    /// <summary>
-    /// Updates the number and type of zombies on the given tile.
-    /// </summary>
-    /// <param name="tileID">ID of the tile the zombies should be updated on</param>
-    private void UpdateZombieCanvasOnTile(int tileID)
-    {
-        if(zombieCanvases.ContainsKey(tileID))
-        {
-            Destroy(zombieCanvases[tileID]);
-            zombieCanvases.Remove(tileID);
-        }
-        List<Zombie> zombies = gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(tileID));
-        if(zombies!=null && zombies.Count > 0)
-        {
-            GameObject zombieCanvasPrefab = Resources.Load<GameObject>("Prefabs/ZombieCanvas");
-            Transform tile = GameObject.FindWithTag("MapPrefab").transform.Find($"SubTile_{tileID}");
-            BoxCollider collider = tile.GetComponent<BoxCollider>();
-            float startX = collider.transform.position.x - 0.8f;
-            float startZ = collider.transform.position.z-1f;
-            float startY = 1.8f;
-            Vector3 newPosition = new Vector3();
-            newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
-            GameObject zc = Instantiate(zombieCanvasPrefab);
-            zc.transform.position = newPosition;
-            Transform panel=zc.transform.GetChild(0);
-            GameObject zombiePrefab = Resources.Load<GameObject>("Prefabs/Zombie");
-            foreach (string zombie in zombies.Select(x=>x.GetType().Name).Distinct())
-            {
-                int amount = zombies.Count(x => x.GetType().Name == zombie);
-                GameObject newZombie = Instantiate(zombiePrefab, panel.transform);
-                newZombie.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Characters/Zombies/{zombie}");
-                newZombie.transform.GetChild(0).GetComponent<TMP_Text>().text = amount.ToString();
-            }
-            zombieCanvases.Add(tileID, zc);
-        }
-    }
-    /// <summary>
-    /// Updates the player's data on the panel.
-    /// </summary>
-    private void UpdatePlayerStats()
-    {
-        healthText!.GetComponent<TMP_Text>().text = survivor!.HP.ToString();
-        aPointsText!.GetComponent<TMP_Text>().text=survivor.APoints.ToString();
-        usedActionsText!.GetComponent<TMP_Text>().text=survivor.UsedAction.ToString();
-        foreach (Transform child in freeActionsLayoutGroup!.transform)
-        {
-            Destroy(child.gameObject);
-        }
-        foreach (var item in survivor.FreeActions)
-        {
-            var prefab= Resources.Load<GameObject>($"Prefabs/Players/FreeActionLabelPrefab");
-            var newAction = Instantiate(prefab, freeActionsLayoutGroup.transform);
-            newAction.GetComponent<TMP_Text>().text = item.Key;
-        }
-    }
-    /// <summary>
-    /// Updates the map interaction lock for the current player.
-    /// </summary>
-    /// <param name="playerID">ID of the player</param>
-    private void UpdateBoardForActivePlayer(ulong playerID)
-    {
-        bool isActive = playerID == NetworkManager.Singleton.LocalClientId;
-        EnableBoardInteraction(isActive);
-    }
-    /// <summary>
-    /// Updates the player's inventory.
-    /// </summary>
-    private void UpdateItemSlots()
-    {
-        if (survivor!.LeftHand == null)
-            leftHand!.GetComponent<Image>().sprite= Resources.Load<Sprite>("Objects/card_lefthand");
-        else
-            leftHand!.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.LeftHand.Name.ToString().ToLower()}");
-        if (survivor.RightHand == null)
-            rightHand!.GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_righthand");
-        else
-            rightHand!.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.RightHand.Name.ToString().ToLower()}");
-        for (int i = 0; i < 3; i++)
-        {
-            if(survivor.BackPack.Count > i)
-            {
-                if (survivor.BackPack[i] == null)
-                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("Objects/card_backpack");
-                else
-                    backPack[i].GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.BackPack[i].Name.ToString().ToLower()}");
-            }
-        }
-    }
-    /// <summary>
-    /// Locks or unlocks map interaction based on the parameter.
-    /// </summary>
-    /// <param name="enable">If true then enable otherwise disable</param>
-    public void EnableBoardInteraction(bool enable)
-    {
-        if (enable && isMenuOpen) return; 
-        foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
-        {
-            if (child.name.StartsWith("SubTile_"))
-            {
-                var collider = child.GetComponent<BoxCollider>();
-                if (collider != null)
-                    collider.enabled = enable;
-            }   
-        }
-    }
-    /// <summary>
-    /// Enables or disables clicking on doors on the map based on the parameter.
-    /// </summary>
-    /// <param name="enable">If true then enable otherwise disable</param>
-    public void EnableDoors(bool enable)
-    {
-        isMenuOpen = true;
-        foreach (Transform child in GameObject.FindWithTag("MapPrefab").transform)
-        {
-            if (child.name=="Doors")
-            {
-                foreach (Transform subChild in child.transform)
-                {
-                    if (int.Parse(subChild.name.Substring(5).Split('_')[0])==survivor!.CurrentTile.Id || int.Parse(subChild.name.Substring(5).Split('_')[1]) == survivor.CurrentTile.Id)
-                    {
-                        var collider = subChild.GetChild(0).GetComponent<BoxCollider>();
-                        if (collider != null)
-                            collider.enabled = enable;
-                    }
-                }
-            }
-        }
-    }
-    /// <summary>
-    /// Handles the character of the player who has left the game.
-    /// </summary>
-    /// <param name="playerName">Name of the player who left the game</param>
-    public void PlayerLeft(string playerName)
-    {
-        if(!SurvivorFactory.GetSurvivorByName(playerName).IsDead)
-            SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
-        RemovePlayer(playerName);
-    }
-    /// <summary>
-    /// Handles the character of the player who disconnected from the game.
-    /// </summary>
-    /// <param name="clientID">ID of the player who disconnected</param>
-    public void PlayerDisconnected(string clientID)
-    {
-        string playerName = playerSelections[ulong.Parse(clientID)];
-        if (!SurvivorFactory.GetSurvivorByName(playerName).IsDead)
-            SurvivorFactory.GetSurvivorByName(playerName).IsDead = true;
-        RemovePlayer(playerName);
-    }
-    /// <summary>
-    /// Deletes the figurine of the given player.
-    /// </summary>
-    /// <param name="playerName">Name of the player who should be removed</param>
-    public void RemovePlayer(string playerName)
-    {
-        if (!playerPrefabs.ContainsKey(playerName.Replace(" ", string.Empty)))
-            return;
-        GameObject player = playerPrefabs[playerName.Replace(" ", string.Empty)];
-        playerPrefabs.Remove(playerName.Replace(" ", string.Empty));
-        Destroy(player);
-        if (survivor!.Name == playerName)
-            EnableBoardInteraction(false);
-        if(gameModel!.CurrentPlayer==survivor && survivor.Name==playerName && !survivor.LeftExit)
-            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
-    }
-    /// <summary>
-    /// Displays the priority selection window.
-    /// </summary>
-    /// <param name="data">Contains the list of zombies</param>
-    private void OpenPriorityMenu(string data)
-    {
-        List<Zombie> zombies = gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(data.Split(':')[0])));
-        isMenuOpen = true;
-        cameraDrag!.SetActive(false);
-        GameObject gameUI = GameObject.FindGameObjectWithTag("GameUI");
-        GameObject sniperPrefab = Resources.Load<GameObject>($"Prefabs/SniperMenu");
-        GameObject sniper = Instantiate(sniperPrefab, gameUI.transform);
-        EnableBoardInteraction(false);
-        List<string> zombieTypeList = zombies.Select(x=>x.GetType().Name).Distinct().ToList();
-        foreach (Transform child in sniper.transform)
-        {
-            if (child.name.StartsWith("Zombie"))
-            {
-                int i = 0;
-                foreach (Transform subChild in child.transform)
-                {
-                    if (i >=zombieTypeList.Count)
-                        break;
-                    if (zombieTypeList[i] != null)
-                    {
-                        GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
-                        GameObject item = Instantiate(itemPrefab, subChild.transform);
-                        if (zombieTypeList[i].StartsWith("Hobo")|| zombieTypeList[i].StartsWith("Abo") || zombieTypeList[i].StartsWith("Pat"))
-                            item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Menu/AbominationSlot");
-                        else
-                            item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Menu/{zombieTypeList[i]}Slot");
-                    }
-                    i++;
-                }
-            }
-            else if (child.name.StartsWith("Ok"))
-            {
-                child.GetComponent<Button>().onClick.AddListener(() => {
-                    OnOkPriorityMenuClicked(data);
-                });
-            }
-        }
-        sniperMenuForS = sniper;
-    }
-    /// <summary>
-    /// Displays the inventory window.
-    /// </summary>
-    /// <param name="additionalItems">New items the player got</param>
-    /// <param name="isSearch">Was the method called from a search</param>
-    public void OpenInventory(List<Item>? additionalItems, bool isSearch)
-    {
-        isMenuOpen = true;
-        cameraDrag!.SetActive(false);
-        GameObject gameUI = GameObject.FindGameObjectWithTag("GameUI");
-        GameObject inventoryPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Inventory");
-        GameObject inventory = Instantiate(inventoryPrefab, gameUI.transform);
-        EnableBoardInteraction(false);
-        foreach (Transform child in inventory.transform)
-        {
-            if (child.name.StartsWith("Hand"))
-            {
-                foreach (Transform subChild in child.transform)
-                {
-                    if (subChild.name.Substring(14) == "Left" && survivor!.LeftHand != null)
-                    {
-                        GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
-                        GameObject item = Instantiate(itemPrefab, subChild.transform);
-                        item.GetComponent<Image>().sprite= Resources.Load<Sprite>($"Items/{survivor.LeftHand.Name.ToString().ToLower()}");
-                    }
-                    else if(subChild.name.Substring(14) == "Right" && survivor!.RightHand != null)
-                    {
-                        GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
-                        GameObject item = Instantiate(itemPrefab, subChild.transform);
-                        item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.RightHand.Name.ToString().ToLower()}");
-                    }
-                }
-            }
-            else if (child.name.StartsWith("Back"))
-            {
-                int i = 0;
-                foreach (Transform subChild in child.transform)
-                {
-                    if (i >= survivor!.BackPack.Count)
-                        break;
-                    if (survivor.BackPack[i] != null)
-                    {
-                        GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
-                        GameObject item = Instantiate(itemPrefab, subChild.transform);
-                        item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{survivor.BackPack[i].Name.ToString().ToLower()}");
-                    }
-                    i++;
-                }
-            }
-            else if(child.name.StartsWith("Throw") && additionalItems != null && additionalItems.Count > 0)
-            {
-                int i = 0;
-                foreach (Transform subChild in child.transform)
-                {
-                    if (i >= additionalItems.Count)
-                        break;
-                    if (additionalItems[i] != null)
-                    {
-                        GameObject itemPrefab = Resources.Load<GameObject>($"Prefabs/Inventory/Item");
-                        GameObject item = Instantiate(itemPrefab, subChild.transform);
-                        item.GetComponent<Image>().sprite = Resources.Load<Sprite>($"Items/{additionalItems[i].Name.ToString().ToLower()}");
-                    }
-                    i++;
-                }
-            }
-            else if (child.name.StartsWith("Ok"))
-            {
-                child.GetComponent<Button>().onClick.AddListener(() => {
-                    OnOkInventoryClicked(isSearch);
-                });
-            }
-        }
-        inventoryForS=inventory;
-    }
-    #endregion
     #region NetworkManager Methods
     /// <summary>
     /// Returns the client ID associated with the given character.
@@ -694,7 +189,7 @@ public class GameController : MonoBehaviour
     {
         List<string> orderedPlayers = serializedOrder.Split(',').ToList();
         gameModel!.SetPlayerOrder(orderedPlayers);
-        ShowPlayerOrder();
+        InGameView.Instance!.ShowPlayerOrder(gameModel!.IsPlayerRoundOver, gameModel.CurrentPlayer!, gameModel.PlayerOrder.ToList());
     }
     /// <summary>
     /// Starts the turn for the specified player.
@@ -706,7 +201,7 @@ public class GameController : MonoBehaviour
         if (gameModel!.CurrentPlayer == survivor)
         {
             survivor!.SetFreeActions();
-            UpdatePlayerStats();
+            InGameView.Instance!.UpdatePlayerStats(survivor!);
         }
     }
     /// <summary>
@@ -717,7 +212,7 @@ public class GameController : MonoBehaviour
     {
         List<ItemName> weapons=data.Split(',').Select(x=>(ItemName)Enum.Parse(typeof(ItemName), x.Replace("ItemName.",""),true)).ToList();
         gameModel!.GiveSurvivorsGenericWeapon(weapons);
-        UpdateItemSlots();
+        InGameView.Instance!.UpdateItemSlots(survivor!);
     }
     /// <summary>
     /// Grants the specified trait to the given player.
@@ -729,8 +224,8 @@ public class GameController : MonoBehaviour
         Survivor s = SurvivorFactory.GetSurvivorByName(strings[0]);
         s.UpgradeTo(int.Parse(strings[1]), int.Parse(strings[2])+1);
         if (s == survivor)
-            UpdatePlayerStats();
-        EnableBoardInteraction(survivor == gameModel!.CurrentPlayer);
+            InGameView.Instance!.UpdatePlayerStats(survivor!);
+        InGameView.Instance!.EnableBoardInteraction(survivor == gameModel!.CurrentPlayer);
     }
     /// <summary>
     /// Rearranges the received items for the player given.
@@ -769,15 +264,15 @@ public class GameController : MonoBehaviour
         s.PutIntoBackpack(backpackItem);
         foreach (var item in throwAwayItem) { s.ThrowAway(item); }
         ProgressBar.UpdateFill(survivor!.APoints);
-        UpdateItemSlots();
-        UpdatePlayerStats();
+        InGameView.Instance!.UpdateItemSlots(survivor!);
+        InGameView.Instance.UpdatePlayerStats(survivor!);
         if (survivor.Name == s.Name && isSearch=="False")
             IncreaseUsedActions("Rearrange Items", s, null);
         int level = s.CanUpgradeTo();
         if (level > 0 && s==survivor)
         {
             if(s.FinishedRound) s.FinishedRound = false;
-            isMenuOpen = true;
+            InGameView.Instance.IsMenuOpen = true;
             TraitController.Instance.OpenMenu(level, survivor.GetTraitUpgrades(level), OnTraitSelected);
         }
         if (survivor.FinishedRound && survivor == gameModel!.CurrentPlayer)
@@ -830,13 +325,13 @@ public class GameController : MonoBehaviour
             newPosition.x = startX; newPosition.y = startY; newPosition.z = startZ;
             AnimationController.Instance.ShowPopupSkull(newPosition);
         }
-        UpdateZombieCanvasOnTile(int.Parse(strings[0]));
+        InGameView.Instance!.UpdateZombieCanvasOnTile(int.Parse(strings[0]), gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(strings[0]))));
         if (survivor!.Name == s.Name)
             IncreaseUsedActions("Attack", s, strings[2]);
-        EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
+        InGameView.Instance.EnableBoardInteraction(survivor == gameModel.CurrentPlayer);
         ProgressBar.UpdateFill(survivor.APoints);
-        UpdatePlayerStats();
-        UpdateItemSlots();
+        InGameView.Instance.UpdatePlayerStats(survivor!);
+        InGameView.Instance.UpdateItemSlots(survivor!);
         if (survivor.FinishedRound && survivor == gameModel.CurrentPlayer)
         {
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
@@ -860,7 +355,7 @@ public class GameController : MonoBehaviour
         gameModel.SpawnZombies(spawns);
         foreach (var item in gameModel.Board.Tiles)
         {
-            UpdateZombieCanvasOnTile(item.Id);
+            InGameView.Instance!.UpdateZombieCanvasOnTile(item.Id, gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(item.Id)));
         }
 
         gameModel.IsPlayerRoundOver = false;
@@ -889,7 +384,7 @@ public class GameController : MonoBehaviour
         }
         foreach (var item in gameModel!.Board.Tiles)
         {
-            UpdateZombieCanvasOnTile(item.Id);
+            InGameView.Instance!.UpdateZombieCanvasOnTile(item.Id, gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(item.Id)));
         }
     }
     /// <summary>
@@ -914,11 +409,11 @@ public class GameController : MonoBehaviour
                     realItems.Add(ItemFactory.GetItemByName((ItemName)Enum.Parse(typeof(ItemName), item, true)));
             }
             if (realItems.Count > 0)
-                OpenInventory(realItems,true);
+                InGameView.Instance!.OpenInventory(realItems,true, survivor);
             if (survivor.Name == s.Name)
                 IncreaseUsedActions("Search", s, null);
         }
-        UpdateZombieCanvasOnTile(s.CurrentTile.Id);
+        InGameView.Instance!.UpdateZombieCanvasOnTile(s.CurrentTile.Id, gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(s.CurrentTile.Id)));
     }
     /// <summary>
     /// The given player picks up the specified pimp weapon.
@@ -941,7 +436,7 @@ public class GameController : MonoBehaviour
         gameModel!.NextPlayer();
         if(gameModel.IsPlayerRoundOver)
         {
-            ShowPlayerOrder();
+            InGameView.Instance!.ShowPlayerOrder(gameModel!.IsPlayerRoundOver, gameModel.CurrentPlayer!, gameModel.PlayerOrder.ToList());
             ZombieRound();
         }
         else
@@ -950,15 +445,57 @@ public class GameController : MonoBehaviour
     #endregion
     #region Game Methods
     /// <summary>
+    /// Updates the map interaction lock for the current player.
+    /// </summary>
+    /// <param name="playerID">ID of the player</param>
+    private void UpdateBoardForActivePlayer(ulong playerID)
+    {
+        bool isActive = playerID == NetworkManager.Singleton.LocalClientId;
+        InGameView.Instance!.EnableBoardInteraction(isActive);
+    }
+    /// <summary>
+    /// Handles the character of the player who has left the game.
+    /// </summary>
+    /// <param name="playerName">Name of the player who left the game</param>
+    public void PlayerLeft(string playerName)
+    {
+        if(!SurvivorFactory.GetSurvivorByName(playerName).IsDead)
+            SurvivorFactory.GetSurvivorByName(playerName).IsDead=true;
+        RemovePlayer(playerName);
+    }
+    /// <summary>
+    /// Handles the character of the player who disconnected from the game.
+    /// </summary>
+    /// <param name="clientID">ID of the player who disconnected</param>
+    public void PlayerDisconnected(string clientID)
+    {
+        string playerName = playerSelections[ulong.Parse(clientID)];
+        if (!SurvivorFactory.GetSurvivorByName(playerName).IsDead)
+            SurvivorFactory.GetSurvivorByName(playerName).IsDead = true;
+        RemovePlayer(playerName);
+    }
+    /// <summary>
+    /// Deletes the figurine of the given player.
+    /// </summary>
+    /// <param name="playerName">Name of the player who should be removed</param>
+    public void RemovePlayer(string playerName)
+    {
+        InGameView.Instance!.RemovePlayer(playerName);
+        if (survivor!.Name == playerName)
+            InGameView.Instance.EnableBoardInteraction(false);
+        if(gameModel!.CurrentPlayer==survivor && survivor.Name==playerName && !survivor.LeftExit)
+            NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, survivor.Name);
+    }
+    /// <summary>
     /// Starts the next player's turn.
     /// </summary>
     private void StartNextTurn()
     {
         gameModel!.CurrentPlayer!.StartedRound = true;
         gameModel.CurrentPlayer.SetFreeActions();
-        ShowPlayerOrder();
-        if(gameModel.CurrentPlayer==survivor)
-            UpdatePlayerStats();
+        InGameView.Instance!.ShowPlayerOrder(gameModel!.IsPlayerRoundOver, gameModel.CurrentPlayer!, gameModel.PlayerOrder.ToList());
+        if (gameModel.CurrentPlayer==survivor)
+            InGameView.Instance.UpdatePlayerStats(survivor!);
 
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TurnStart, GetClientIdByCharacter(gameModel.CurrentPlayer.Name).ToString());
     }
@@ -990,10 +527,10 @@ public class GameController : MonoBehaviour
             s.CurrentTile.OpenDoor(connection, (Weapon)s.RightHand!);
         else
             s.CurrentTile.OpenDoor(connection, (Weapon)s.LeftHand!);
-        DestroyDoorWithTween(door);
-        EnableDoors(false);
-        isMenuOpen = false;
-        EnableBoardInteraction(survivor == gameModel!.CurrentPlayer);
+        InGameView.Instance!.DestroyDoorWithTween(door);
+        InGameView.Instance.EnableDoors(false,survivor!);
+        InGameView.Instance.IsMenuOpen = false;
+        InGameView.Instance.EnableBoardInteraction(survivor == gameModel!.CurrentPlayer);
         if (NetworkManager.Singleton.IsHost)
         {
             if (!gameModel.BuildingOpened(connection))
@@ -1020,12 +557,12 @@ public class GameController : MonoBehaviour
     {
         gameModel!.CheckWin();
         s.OnUsedAction(action, isMelee);
-        UpdatePlayerStats();
+        InGameView.Instance!.UpdatePlayerStats(survivor!);
         int level = s.CanUpgradeTo();
         if (level > 0)
         {
             if(s.FinishedRound) s.FinishedRound = false;
-            isMenuOpen = true;
+            InGameView.Instance.IsMenuOpen = true;
             TraitController.Instance.OpenMenu(level, survivor!.GetTraitUpgrades(level), OnTraitSelected);
         }
     }
@@ -1044,13 +581,13 @@ public class GameController : MonoBehaviour
                 OpenDoor(objectName, "Right Hand", s);
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Open Door", s, null);
-                EnableBoardInteraction(gameModel!.CurrentPlayer == survivor);
+                InGameView.Instance!.EnableBoardInteraction(gameModel!.CurrentPlayer == survivor);
                 break;
             case "Open Door Left Hand":
                 OpenDoor(objectName, "Left Hand", s);
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Open Door", s, null);
-                EnableBoardInteraction(gameModel!.CurrentPlayer == survivor);
+                InGameView.Instance!.EnableBoardInteraction(gameModel!.CurrentPlayer == survivor);
                 break;
             case "Search":
                 SearchOnTile(s);
@@ -1060,31 +597,31 @@ public class GameController : MonoBehaviour
                 break;
             case "Move":
                 s.Move(gameModel!.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ",string.Empty)]);
+                InGameView.Instance!.MovePlayerToTile(int.Parse(objectName.Substring(8)), s.Name.Replace(" ",string.Empty), gameModel!.NumberOfPlayersOnTile(int.Parse(objectName.Substring(8))) - 1, gameModel!.GetSurvivorsOnTile(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8)))).Select(x => x.Name).ToList());
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Move", s, null);
                 break;
             case "Slippery Move":
                 s.SlipperyMove(gameModel!.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                InGameView.Instance!.MovePlayerToTile(int.Parse(objectName.Substring(8)), s.Name.Replace(" ", string.Empty), gameModel!.NumberOfPlayersOnTile(int.Parse(objectName.Substring(8))) - 1, gameModel!.GetSurvivorsOnTile(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8)))).Select(x => x.Name).ToList());
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Slippery Move", s, null);
                 break;
             case "Sprint Move":
                 s.SprintMove(gameModel!.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                InGameView.Instance!.MovePlayerToTile(int.Parse(objectName.Substring(8)), s.Name.Replace(" ", string.Empty), gameModel!.NumberOfPlayersOnTile(int.Parse(objectName.Substring(8))) - 1, gameModel!.GetSurvivorsOnTile(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8)))).Select(x => x.Name).ToList());
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Sprint Move", s, null);
                 break;
             case "Jump":
                 s.Jump(gameModel!.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                InGameView.Instance!.MovePlayerToTile(int.Parse(objectName.Substring(8)), s.Name.Replace(" ", string.Empty), gameModel!.NumberOfPlayersOnTile(int.Parse(objectName.Substring(8))) - 1, gameModel!.GetSurvivorsOnTile(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8)))).Select(x => x.Name).ToList());
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Jump", s, null);
                 break;
             case "Charge":
                 s.Charge(gameModel!.Board.GetTileByID(int.Parse(objectName.Substring(8))));
-                MovePlayerToTile(int.Parse(objectName.Substring(8)), playerPrefabs[s.Name.Replace(" ", string.Empty)]);
+                InGameView.Instance!.MovePlayerToTile(int.Parse(objectName.Substring(8)), s.Name.Replace(" ", string.Empty), gameModel!.NumberOfPlayersOnTile(int.Parse(objectName.Substring(8))) - 1, gameModel!.GetSurvivorsOnTile(gameModel.Board.GetTileByID(int.Parse(objectName.Substring(8)))).Select(x => x.Name).ToList());
                 if (survivor!.Name == s.Name)
                     IncreaseUsedActions("Charge", s, null);
                 break;
@@ -1107,7 +644,7 @@ public class GameController : MonoBehaviour
                 break;
         }
         if (survivor == s)
-            UpdatePlayerStats();
+            InGameView.Instance!.UpdatePlayerStats(survivor!);
         if (survivor!.FinishedRound && survivor==gameModel!.CurrentPlayer)
         {
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.FinishedRound, s.Name);
@@ -1138,12 +675,12 @@ public class GameController : MonoBehaviour
 
         if (isMelee)
         {
-            OpenPriorityMenu(data);
+            InGameView.Instance!.OpenPriorityMenu(data, gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(data.Split(':')[0]))));
             return;
         }
         else if((!isMelee && survivor.Traits.Contains(Trait.SNIPER))||((!isMelee)&& (weapon.Name==ItemName.SNIPERRIFLE || weapon.Name==ItemName.MILITARYSNIPERRIFLE)))
         {
-            OpenPriorityMenu(data);
+            InGameView.Instance!.OpenPriorityMenu(data, gameModel!.GetZombiesInPriorityOrderOnTile(gameModel.Board.GetTileByID(int.Parse(data.Split(':')[0]))));
             return;
         }
         else 
@@ -1184,7 +721,7 @@ public class GameController : MonoBehaviour
         if (s.Traits.Contains(Trait.P1DR) && strings[2] == "False")
             diceAmount++;
 
-        isMenuOpen = true;
+        InGameView.Instance!.IsMenuOpen = true;
         diceRoller!.RollDice(diceAmount);
         StartCoroutine(diceRoller.WaitForDiceToStop((results) => {
             OnDiceResultsReady(data, results);
@@ -1219,7 +756,7 @@ public class GameController : MonoBehaviour
             }
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Search, data);
         }
-        AnimationController.Instance.ShowPopupSearch(playerPrefabs[s.Name.Replace(" ", string.Empty)].transform.position);
+        InGameView.Instance!.ShowPopupSearch(s.Name.Replace(" ", string.Empty));
     }
     /// <summary>
     /// The host picks up the objective locally and then sends it to the clients.
@@ -1236,7 +773,7 @@ public class GameController : MonoBehaviour
             }
         }
         s.PickUpObjective();
-        DestroyWithTween(gObject!);
+        InGameView.Instance!.DestroyWithTween(gObject!);
         ProgressBar.UpdateFill(survivor!.APoints);
     }
     /// <summary>
@@ -1255,10 +792,10 @@ public class GameController : MonoBehaviour
             }
         }
         s.CurrentTile.PickUpPimpWeapon();
-        DestroyWithTween(gObject!);
+        InGameView.Instance!.DestroyWithTween(gObject!);
         if (survivor == s)
         {
-            OpenInventory(new List<Item>() { pimp },true);
+            InGameView.Instance.OpenInventory(new List<Item>() { pimp },true,survivor);
         }
     }
     /// <summary>
@@ -1302,7 +839,7 @@ public class GameController : MonoBehaviour
             }
             NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ZombieSpawn, string.Join(';',spawns));
         }
-        UpdatePlayerStats();
+        InGameView.Instance!.UpdatePlayerStats(survivor!);
     }
     #endregion
     #region Event Handlers
@@ -1324,11 +861,11 @@ public class GameController : MonoBehaviour
     /// </summary>
     private void GameModel_GameEnded(object sender, bool e)
     {
-        EnableBoardInteraction(false);
+        InGameView.Instance!.EnableBoardInteraction(false);
         GameObject ui = GameObject.FindWithTag("GameUI");
         GameObject endPanelPrefab = Resources.Load<GameObject>("Prefabs/EndPanel");
         GameObject endPanel=Instantiate(endPanelPrefab,ui.transform);
-        isMenuOpen = true;
+        InGameView.Instance.IsMenuOpen = true;
         var innerImg=endPanel.transform.GetChild(0).GetComponent<Image>();
         if(e)
             innerImg.sprite= Resources.Load<Sprite>("Menu/survivors_won");
@@ -1378,13 +915,13 @@ public class GameController : MonoBehaviour
     /// </summary>
     public void OnOkRollDiceClicked(string data, List<int> results)
     {
-        isMenuOpen = false;
+        InGameView.Instance!.IsMenuOpen = false;
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.Attack, data += $":{string.Join(',', results)}");
     }
     /// <summary>
     /// Event handler for the player confirming the priority window.
     /// </summary>
-    private void OnOkPriorityMenuClicked(string data)
+    public void OnOkPriorityMenuClicked(string data, GameObject sniperMenuForS)
     {
         List<string> newPriority = new List<string>();
         if (sniperMenuForS != null)
@@ -1403,19 +940,19 @@ public class GameController : MonoBehaviour
             }
         }
         if (newPriority.Count == 0) return;
-        cameraDrag!.SetActive(true);
+        InGameView.Instance!.SetCameraDrag(true);
         Destroy(sniperMenuForS);
 
         data += $":{string.Join(',', newPriority)}:{survivor!.Name}";
-        isMenuOpen = false;
+        InGameView.Instance.IsMenuOpen = false;
         RollDice(data);
     }
     /// <summary>
     /// Event handler for the player confirming the inventory window.
     /// </summary>
-    private void OnOkInventoryClicked(bool isSearch)
+    public void OnOkInventoryClicked(bool isSearch, GameObject inventoryForS)
     {
-        cameraDrag!.SetActive(true);
+        InGameView.Instance!.SetCameraDrag(true);
         string leftH = string.Empty;string rightH = string.Empty;
         List<string> backP = new List<string>();
         List<string> throwAway = new List<string>();
@@ -1443,15 +980,15 @@ public class GameController : MonoBehaviour
         Destroy(inventoryForS);
         string data = $"{leftH};{rightH};{string.Join(',', backP)};{string.Join(',', throwAway)};{isSearch}:{survivor!.Name}";
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.ItemsChanged, data);
-        isMenuOpen = false;
-        EnableBoardInteraction(survivor == gameModel!.CurrentPlayer);
+        InGameView.Instance.IsMenuOpen = false;
+        InGameView.Instance.EnableBoardInteraction(survivor == gameModel!.CurrentPlayer);
     }
     /// <summary>
     /// Event handler for the player selecting the trait.
     /// </summary>
     private void OnTraitSelected(int level, int option)
     {
-        isMenuOpen=false;
+        InGameView.Instance!.IsMenuOpen =false;
         NetworkManagerController.Instance.SendMessageToClientsServerRpc(MessageType.TraitUpgrade, $"{survivor!.Name};{level};{option}");
     }
     /// <summary>
@@ -1472,6 +1009,15 @@ public class GameController : MonoBehaviour
             NetworkManager.Singleton.Shutdown();
             SceneManager.LoadScene("MenuScene");
         }
+    }
+    public void OnOpenInventory(bool isSearch)
+    {
+        InGameView.Instance!.OpenInventory(null, isSearch, survivor!);
+    }
+    public void OnOpenDoors(bool enable)
+    {
+        InGameView.Instance!.EnableDoors(true,survivor!); 
+        InGameView.Instance.EnableBoardInteraction(false);
     }
     #endregion
     #endregion
