@@ -1,0 +1,31 @@
+{
+    "m_Dictionary": {
+        "m_DictionaryValues": [
+            {
+                "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "key": "IncludeAssemblies",
+                "value": "{\"m_Value\":\"EditMode,Model,Persistence\"}"
+            },
+            {
+                "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "key": "Path",
+                "value": "{\"m_Value\":\"{ProjectPath}\"}"
+            },
+            {
+                "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "key": "HistoryPath",
+                "value": "{\"m_Value\":\"{ProjectPath}\"}"
+            },
+            {
+                "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "key": "PathsToExclude",
+                "value": "{\"m_Value\":\"{ProjectPath}/Assets/Model/Characters/Zombies/Abominacop.cs,{ProjectPath}/Assets/Model/Characters/Zombies/AbominationZombie.cs,{ProjectPath}/Assets/Model/Characters/Zombies/Abominawild.cs,{ProjectPath}/Assets/Model/Characters/Zombies/Hobomination.cs,{ProjectPath}/Assets/Model/Characters/Zombies/Patientzero.cs,{ProjectPath}/Assets/Persistence/FileManager.cs,{ProjectPath}/Assets/Persistence/MapLoader.cs\"}"
+            },
+            {
+                "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "key": "EnableCodeCoverage",
+                "value": "{\"m_Value\":true}"
+            }
+        ]
+    }
+}

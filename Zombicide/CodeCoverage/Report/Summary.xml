@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CoverageReport scope="Summary">
+  <Summary>
+    <Generatedon>2025. 04. 28. - 16:41:33</Generatedon>
+    <Parser>MultiReportParser (2x OpenCoverParser)</Parser>
+    <Assemblies>3</Assemblies>
+    <Classes>37</Classes>
+    <Files>35</Files>
+    <Coveredlines>2853</Coveredlines>
+    <Uncoveredlines>938</Uncoveredlines>
+    <Coverablelines>3791</Coverablelines>
+    <Totallines>5511</Totallines>
+    <Linecoverage>75.2</Linecoverage>
+    <Coveredbranches>0</Coveredbranches>
+    <Totalbranches>0</Totalbranches>
+    <Coveredmethods>354</Coveredmethods>
+    <Totalmethods>367</Totalmethods>
+    <Methodcoverage>96.4</Methodcoverage>
+  </Summary>
+  <Coverage>
+    <Assembly name="EditMode" classes="4" coverage="100" coveredlines="970" coverablelines="970" totallines="1152" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="57" totalmethods="57" methodcoverage="100">
+      <Class name="BoardTest" coverage="100" coveredlines="71" coverablelines="71" totallines="96" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="ModelTests" coverage="100" coveredlines="219" coverablelines="219" totallines="281" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="20" totalmethods="20" methodcoverage="100" />
+      <Class name="SurvivorTest" coverage="100" coveredlines="645" coverablelines="645" totallines="719" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="28" totalmethods="28" methodcoverage="100" />
+      <Class name="ZombieTest" coverage="100" coveredlines="35" coverablelines="35" totallines="56" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="3" totalmethods="3" methodcoverage="100" />
+    </Assembly>
+    <Assembly name="Model" classes="32" coverage="65.6" coveredlines="1794" coverablelines="2732" totallines="4470" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="295" totalmethods="308" methodcoverage="95.7">
+      <Class name="Model.Board.Board" coverage="98.5" coveredlines="133" coverablelines="135" totallines="180" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="12" totalmethods="12" methodcoverage="100" />
+      <Class name="Model.Board.Building" coverage="100" coveredlines="9" coverablelines="9" totallines="23" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="5" totalmethods="5" methodcoverage="100" />
+      <Class name="Model.Board.MapTile" coverage="75.5" coveredlines="37" coverablelines="49" totallines="79" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="16" totalmethods="18" methodcoverage="88.8" />
+      <Class name="Model.Board.Street" coverage="100" coveredlines="5" coverablelines="5" totallines="17" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="2" totalmethods="2" methodcoverage="100" />
+      <Class name="Model.Board.TileConnection" coverage="100" coveredlines="11" coverablelines="11" totallines="24" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Character" coverage="92" coveredlines="23" coverablelines="25" totallines="50" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="8" totalmethods="8" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Amy" coverage="54.6" coveredlines="65" coverablelines="119" totallines="167" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.BunnyG" coverage="55.4" coveredlines="61" coverablelines="110" totallines="159" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Doug" coverage="57.2" coveredlines="59" coverablelines="103" totallines="151" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Elle" coverage="59.2" coveredlines="64" coverablelines="108" totallines="155" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Josh" coverage="53.3" coveredlines="63" coverablelines="118" totallines="166" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Lili" coverage="52" coveredlines="65" coverablelines="125" totallines="174" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Lou" coverage="53.5" coveredlines="68" coverablelines="127" totallines="175" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Ned" coverage="55.9" coveredlines="61" coverablelines="109" totallines="157" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Odin" coverage="54.4" coveredlines="67" coverablelines="123" totallines="171" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Ostara" coverage="53.3" coveredlines="63" coverablelines="118" totallines="166" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Survivor" coverage="71" coveredlines="258" coverablelines="363" totallines="578" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="56" totalmethods="57" methodcoverage="98.2" />
+      <Class name="Model.Characters.Survivors.SurvivorFactory" coverage="93.7" coveredlines="15" coverablelines="16" totallines="27" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="1" totalmethods="1" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.TigerSam" coverage="53.3" coveredlines="63" coverablelines="118" totallines="166" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Survivors.Wanda" coverage="55.9" coveredlines="71" coverablelines="127" totallines="176" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Zombies.FattyZombie" coverage="100" coveredlines="6" coverablelines="6" totallines="18" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="1" totalmethods="1" methodcoverage="100" />
+      <Class name="Model.Characters.Zombies.RunnerZombie" coverage="100" coveredlines="6" coverablelines="6" totallines="18" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="1" totalmethods="1" methodcoverage="100" />
+      <Class name="Model.Characters.Zombies.WalkerZombie" coverage="100" coveredlines="6" coverablelines="6" totallines="18" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="1" totalmethods="1" methodcoverage="100" />
+      <Class name="Model.Characters.Zombies.Zombie" coverage="76.1" coveredlines="64" coverablelines="84" totallines="125" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="6" totalmethods="6" methodcoverage="100" />
+      <Class name="Model.Characters.Zombies.ZombieFactory" coverage="43.7" coveredlines="7" coverablelines="16" totallines="87" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="2" totalmethods="3" methodcoverage="66.6" />
+      <Class name="Model.Consumable" coverage="100" coveredlines="5" coverablelines="5" totallines="25" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="3" totalmethods="3" methodcoverage="100" />
+      <Class name="Model.GameAction" coverage="100" coveredlines="7" coverablelines="7" totallines="19" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="5" totalmethods="5" methodcoverage="100" />
+      <Class name="Model.GameModel" coverage="70.2" coveredlines="293" coverablelines="417" totallines="641" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="46" totalmethods="54" methodcoverage="85.1" />
+      <Class name="Model.Item" coverage="100" coveredlines="5" coverablelines="5" totallines="25" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="3" totalmethods="3" methodcoverage="100" />
+      <Class name="Model.ItemFactory" coverage="56.2" coveredlines="36" coverablelines="64" totallines="145" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="7" totalmethods="8" methodcoverage="87.5" />
+      <Class name="Model.PimpWeapon" coverage="100" coveredlines="73" coverablelines="73" totallines="194" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="19" totalmethods="19" methodcoverage="100" />
+      <Class name="Model.Weapon" coverage="100" coveredlines="25" coverablelines="25" totallines="194" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="23" totalmethods="23" methodcoverage="100" />
+    </Assembly>
+    <Assembly name="Persistence" classes="1" coverage="100" coveredlines="89" coverablelines="89" totallines="108" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="2" totalmethods="2" methodcoverage="100">
+      <Class name="Assets.Persistence.DummyMapLoader" coverage="100" coveredlines="89" coverablelines="89" totallines="108" branchcoverage="" coveredbranches="0" totalbranches="0" coveredmethods="2" totalmethods="2" methodcoverage="100" />
+    </Assembly>
+  </Coverage>
+</CoverageReport>

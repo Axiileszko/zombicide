@@ -16,7 +16,7 @@ namespace Model.Characters.Survivors
             {
                 if (instance == null)
                 {
-                    instance = new Elle("Elle", true);
+                    instance = new Elle("Elle", false);
                 }
                 return instance;
             }

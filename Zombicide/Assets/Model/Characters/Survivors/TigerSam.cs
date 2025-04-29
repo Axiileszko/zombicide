@@ -21,7 +21,7 @@ namespace Model.Characters.Survivors
                 return instance;
             }
         }
-        private TigerSam(string name, bool isKid) : base(name, isKid) { }
+        private TigerSam(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.P1DR); }
         public override void SetFreeActions()
         {
             FreeActions.Clear();

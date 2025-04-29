@@ -39,7 +39,7 @@ namespace Model
             IsDual = isDual;
         }
     }
-    public class PimpWeapon : Weapon
+    public abstract class PimpWeapon : Weapon
     {
         public PimpWeapon(ItemName name, char bulletType, int damage, int accuracy, int diceAmount, int range, bool isLoud, bool reloadable, WeaponType type, bool canOpenDoors, bool canBeMelee) : base(name, bulletType, damage, accuracy, diceAmount, range, isLoud, reloadable, type, canOpenDoors,canBeMelee,false) { }
         public class AutShotGun : PimpWeapon

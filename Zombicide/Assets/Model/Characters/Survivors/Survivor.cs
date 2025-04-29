@@ -66,6 +66,8 @@ namespace Model.Characters.Survivors
         {
             this.name = name;
             this.isKid = isKid;
+            if (isKid)
+                Traits.Add(Trait.SLIPPERY);
             Reset();
         }
         #endregion
@@ -473,6 +475,8 @@ namespace Model.Characters.Survivors
         /// </summary>
         public void Reset()
         {
+            FreeActions.Clear();
+            Actions.Clear();
             CurrentTile = null;
             StartedRound = false;
             FinishedRound = false;
@@ -486,8 +490,6 @@ namespace Model.Characters.Survivors
             level = 0;
             aPoints = 0;
             backpack = new List<Item>();
-            if (isKid)
-                Traits.Add(Trait.SLIPPERY);
             rightHand = null;
             leftHand = null;
             if (isKid)

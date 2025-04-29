@@ -21,7 +21,7 @@ namespace Model.Characters.Survivors
                 return instance;
             }
         }
-        private Odin(string name, bool isKid) : base(name, isKid) { }
+        private Odin(string name, bool isKid) : base(name, isKid) { Traits.Add(Trait.P1DM); }
         public override void SetFreeActions()
         {
             FreeActions.Clear();
